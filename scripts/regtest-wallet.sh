@@ -6,6 +6,8 @@
 #                                          Orchard-only UA and fetch the full tx (M0.1, V-21)
 #   scripts/regtest-wallet.sh zip321-test  pay a ZIP-321 URI with a 237-byte FRST1 memo and compare
 #                                          the received memo byte for byte (M0.6 regtest half)
+#   scripts/regtest-wallet.sh send <addr> <zat> <memo>  send from the faucet, mine 1 block, print txid
+#   scripts/regtest-wallet.sh mine [n]     mine n blocks (default 1), print the tip
 #   scripts/regtest-wallet.sh dt <args>    run zcash-devtool with arbitrary arguments
 #
 # Wallet state lives in .regtest/ (gitignored). Activation heights for the wallets are derived
@@ -170,10 +172,23 @@ zip321_test() {
   fi
 }
 
+# Send <zat> with <memo> from the faucet to <address>, mine one block, print the txid.
+send_note() { # address zat memo
+  sync_wallet faucet
+  local txid
+  txid="$(dt wallet -w /work/faucet send -i /work/identity.txt -s "$SERVER" --min-confirmations 1 \
+    --address "$1" --value "$2" --memo "$3" 2>/dev/null | grep -oE '[0-9a-f]{64}' | tail -1)"
+  [ -n "$txid" ] || { echo "send failed" >&2; exit 1; }
+  mine 1
+  echo "$txid"
+}
+
 case "${1:-}" in
   setup) setup ;;
+  send) shift; send_note "$@" ;;
+  mine) mine "${2:-1}"; tip ;;
   memo-test) memo_test ;;
   zip321-test) zip321_test ;;
   dt) shift; dt "$@" ;;
-  *) echo "usage: $0 {setup|memo-test|dt <args>}" >&2; exit 2 ;;
+  *) echo "usage: $0 {setup|memo-test|zip321-test|send <addr> <zat> <memo>|mine [n]|dt <args>}" >&2; exit 2 ;;
 esac

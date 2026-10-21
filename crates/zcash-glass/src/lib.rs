@@ -3,7 +3,7 @@
 //! Every Frosted component (indexer, API, coordinator, verifier, WASM) uses this crate so that
 //! memos, hashes, odds and payouts are byte-identical (docs/PROJECT_SPEC_FROSTED.md §18, §19).
 //! The default build has no dependency on `orchard`, `zcash_*` or `zip321`; Orchard receivers are
-//! opaque 43-byte values here.
+//! opaque 43-byte values here. Chain scanning lives behind the `zcash` feature (`scan`).
 
 pub mod envelope;
 pub mod hash;
@@ -11,8 +11,11 @@ pub mod memo;
 pub mod odds;
 pub mod params;
 pub mod payout;
+#[cfg(feature = "zcash")]
+pub mod scan;
 pub mod status;
 pub mod thaw;
+pub mod validate;
 
 #[cfg(test)]
 pub(crate) mod test_vectors;
