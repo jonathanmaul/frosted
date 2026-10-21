@@ -1,5 +1,5 @@
-import { ScreenPlaceholder } from "@/components/ScreenPlaceholder";
+import { Landing } from "@/components/landing/Landing";
 
 export default function Page() {
-  return <ScreenPlaceholder id="S-01" title="Markets" features="F-04" />;
+  return <Landing />;
 }
