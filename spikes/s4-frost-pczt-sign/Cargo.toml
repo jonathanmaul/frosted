@@ -1,0 +1,21 @@
+[package]
+name = "s4-frost-pczt-sign"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# M0.4 spike (docs/SPIKES.md). Standalone crate, excluded from the Frosted workspace.
+# Uses the same librustzcash revision as the zcash-devtool image so PCZT bytes are compatible.
+[workspace]
+
+[dependencies]
+anyhow = "1"
+hex = "0.4"
+orchard = "0.16"
+pczt = { git = "https://github.com/zcash/librustzcash.git", rev = "eb38d7a373661179dbc083a2fd58b3a6c9b25818", features = ["orchard", "signer"] }
+rand = "0.10"
+ff = "0.14"
+rand_core_06 = { package = "rand_core", version = "0.6", features = ["getrandom"] }
+reddsa = { version = "0.5.2", features = ["frost"] }
+frost-rerandomized = "3.0.0"
+serde_json = "1"
