@@ -1,0 +1,3 @@
+# Build scripts are not needed: unrs-resolver ships prebuilt binaries via optional dependencies.
+allowBuilds:
+  unrs-resolver: false

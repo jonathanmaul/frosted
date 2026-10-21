@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* NFR-P2: system font stack only, no external font requests. */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+body {
+  @apply bg-white text-slate-900 font-sans antialiased;
+}
