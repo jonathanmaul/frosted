@@ -1,0 +1,44 @@
+# Public-side regtest stack (zebrad + Zaino). Ports are published on 127.0.0.1 only.
+# Start with scripts/dev-up.sh.
+#
+# Zaino and the test wallet share zebra's network namespace: Zaino refuses non-localhost
+# validator addresses without TLS, and zcash-devtool only uses plaintext gRPC for localhost.
+name: frosted-regtest
+
+services:
+  zebra:
+    image: zfnd/zebra:6.4.2
+    command: ["zebrad", "-c", "/etc/zebrad/zebrad.toml", "start"]
+    environment:
+      # Coinbase recipient; scripts/regtest-wallet.sh sets it to the test wallet address.
+      ZEBRA_MINING__MINER_ADDRESS: ${FROSTED_MINER_ADDRESS:-t27eWDgjFYJGVXmzrXeVjnb5J3uXDM9xH9v}
+    volumes:
+      - ./zebra/regtest.toml:/etc/zebrad/zebrad.toml:ro
+      - zebra-regtest:/home/zebra/.cache/zebra
+    ports:
+      - "127.0.0.1:18232:18232" # zebrad JSON-RPC
+      - "127.0.0.1:9067:8137"   # Zaino gRPC (lightwalletd-compatible)
+
+  zaino:
+    image: frosted/zaino:0.10.1-regtest
+    build: ./zaino
+    depends_on: [zebra]
+    network_mode: "service:zebra"
+    command: ["start", "--config", "/app/config/zainod.toml"]
+    volumes:
+      - ./zaino/zainod.regtest.toml:/app/config/zainod.toml:ro
+      - zaino-regtest:/app/data
+
+  # Test wallet, run on demand: docker compose --profile tools run --rm devtool wallet ...
+  devtool:
+    image: frosted/zcash-devtool:0b3436b
+    build: ./zcash-devtool
+    profiles: ["tools"]
+    depends_on: [zaino]
+    network_mode: "service:zebra"
+    volumes:
+      - ../.regtest:/work
+
+volumes:
+  zebra-regtest:
+  zaino-regtest:

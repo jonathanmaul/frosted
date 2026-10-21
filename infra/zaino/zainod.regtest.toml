@@ -1,0 +1,20 @@
+# zainod config for the Frosted regtest stack (docs/PROJECT_SPEC_FROSTED.md §27, M0.1).
+# Zaino 0.10.x learns regtest activation heights from the validator's getblockchaininfo,
+# so heights are configured only in infra/zebra/regtest.toml.
+backend = "fetch"
+network = "Regtest"
+zebra_db_path = "/app/data/unused-zebra-db"
+
+[grpc_settings]
+# Plaintext gRPC; published to 127.0.0.1 only by docker-compose.
+listen_address = "0.0.0.0:8137"
+
+[validator_settings]
+validator_jsonrpc_listen_address = "127.0.0.1:18232"
+validator_grpc_listen_address = "127.0.0.1:18230"
+
+[storage.database]
+path = "/app/data/db"
+size = 8
+sync_write_batch_size = 1
+accumulator_rebuild_memory_size = 1

@@ -1,0 +1,32 @@
+# zebrad regtest config for Frosted development (docs/PROJECT_SPEC_FROSTED.md §27.2, M0.1).
+# Verified key names against Zebra v6.4.2 source: zebra-chain/src/parameters/network/testnet.rs
+# (`ConfiguredActivationHeights`, serde names "NU5", "NU6", "NU6.1", "NU6.2", "NU6.3").
+# On Regtest, NU5 and later are NOT active unless configured here.
+
+[network]
+network = "Regtest"
+listen_addr = "127.0.0.1:18344"
+
+[network.testnet_parameters.activation_heights]
+NU5 = 1
+NU6 = 1
+"NU6.1" = 1
+"NU6.2" = 1
+# Ironwood. Activates after a few pre-Ironwood blocks so both sides of the boundary exist.
+"NU6.3" = 10
+
+[mining]
+# Overridden by ZEBRA_MINING__MINER_ADDRESS (scripts/dev-up.sh) once the test wallet exists.
+miner_address = "t27eWDgjFYJGVXmzrXeVjnb5J3uXDM9xH9v"
+internal_miner = false
+
+[rpc]
+listen_addr = "0.0.0.0:18232"
+enable_cookie_auth = false
+
+[state]
+cache_dir = "/home/zebra/.cache/zebra"
+ephemeral = false
+
+[health]
+enforce_on_test_networks = false
