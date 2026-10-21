@@ -3,7 +3,7 @@
 > **Public odds. Invisible bettors.**
 > Spesifikasi proyek untuk The Zecathon 2026, track **Private Markets**.
 > Versi: 0.2 (Part A–G) · Tanggal: 2026-10-21 · Pemilik: Naufal
-> Perubahan 0.2: errata hasil review spec dan keputusan ADR 0001–0012 (lihat `docs/decisions/`).
+> Perubahan 0.2: errata hasil review spec dan keputusan ADR 0001–0016 (lihat `docs/decisions/`).
 > Dokumen ini adalah konteks utama untuk Claude Code. Ikuti nama, ID, dan istilah persis seperti yang didefinisikan di sini.
 
 ---
@@ -1825,7 +1825,7 @@ Catatan: nilai berbasis blok (`ANNOUNCE_TIMEOUT_BLOCKS`, `DISPUTE_WINDOW_BLOCKS`
 | T-4 | Bettor terdeanonimisasi lewat input transparent | Bettor mengirim dari t-address | UI memperingatkan; Z-only Guard menolak dan merefund | **Kebocoran sudah terjadi di chain**; refund tidak membatalkannya |
 | T-5 | Korelasi jumlah dan waktu | Bet publik via UIVK dikorelasikan dengan swap/withdraw exchange | Edukasi: tunggu dan pakai jumlah acak; F-14 tidak mengirim langsung ke market | Sedang |
 | T-6 | Coordinator mengetahui payout address | Coordinator membuka envelope | Dinyatakan terbuka; anjurkan alamat baru; masa depan: threshold decryption | Diterima untuk MVP |
-| T-7 | Bias randomizer FROST | Coordinator memilih `alpha` | Varian FROST lama dipakai sadar; migrasi ke FROST v3 setelah alurnya terverifikasi | Rendah |
+| T-7 | Bias randomizer FROST | Coordinator memilih `alpha` | FROST v3 dipakai dengan randomizer dari PCZT lewat API deprecated (ADR-0013), disadari; migrasi ke alur native v3 (randomizer dari commitment round 1) pasca-MVP | Rendah |
 | T-8 | Kebocoran IP pengunjung | Log server/CDN, log platform Vercel (snapshot mode), Cloudflare Tunnel (live opsional) | `LOG_IP=false` di server sendiri, tanpa analytics, aset di-bundle, dukungan akses via Tor; snapshot mode tidak memuat data bettor; README menyatakan bahwa Vercel dan Cloudflare melihat trafik (ADR-0012) | Rendah (server sendiri); Sedang (Vercel/Cloudflare) |
 | T-9 | XSS lewat memo | Memo berbahaya | Memo tidak pernah dirender; hanya field hasil parse yang divalidasi | Rendah |
 | T-10 | Double count saat reorg | Blok diganti | `REORG_DEPTH`, `MIN_CONFIRMATIONS`, upsert idempoten | Rendah |
@@ -1871,11 +1871,11 @@ Versi di bawah adalah versi yang **diketahui ada** saat riset. Claude Code wajib
 | | `zcash_note_encryption` | sesuai kelompok orchard | `try_note_decryption` |
 | | `zcash_client_backend` | ≥ 0.24.0-rc.1, fitur `orchard`, `pczt`, `lightwalletd-tonic`, `sync` | Wallet escrow view-only, PCZT |
 | | `zcash_client_sqlite` | ≥ 0.22.0-rc.1 | Penyimpanan wallet escrow |
-| | `pczt` | ≥ 0.8.0-rc.1 (0.9.1 tersedia) | Role PCZT |
+| | `pczt` | 0.10.0-pre.2 (git rev `eb38d7a`) untuk coordinator; lihat ADR-0015 | Role PCZT; spend Ironwood hanya terbukti di grup pre-release (M0.4) |
 | | `zip321` | ≥ 0.9.0-rc.1 | URI pembayaran + memo base64 |
-| FROST | `reddsa` | 0.5.2 dengan fitur `frost` | Ciphersuite `redpallas` (ZIP 312) |
-| | `frost-rerandomized` | 2.2.x (lewat `reddsa`) `[TO VERIFY]` kompatibilitas | Re-randomized FROST |
-| | `frostd`, `frost-client` | dari `ZcashFoundation/frost-zcash-demo` | Transport dan CLI signer yang sudah ada |
+| FROST | `reddsa` | 0.5.2 dengan fitur `frost` (0.6.x membuang feature ini) | Ciphersuite `redpallas` (ZIP 312); terbukti di M0.3/M0.4 |
+| | `frost-rerandomized` | 3.0.0 (lewat `reddsa` 0.5.2, FROST v3) | Re-randomized FROST; randomizer dari PCZT lewat API deprecated (ADR-0013) |
+| | ~~`frostd`, `frost-client`~~ | tidak dipakai di MVP | Masih FROST 2.x; signing in-process di `frosted-operator` (ADR-0014) |
 | Kriptografi app | `x25519-dalek` 2.x, `chacha20poly1305` 0.10.x (XChaCha20Poly1305), `hkdf` + `sha2`, `blake2b_simd` 1.x (keyed + personalization), `ed25519-dalek` 2.x (hanya `COORDINATOR_KEY`) | `[TO VERIFY]` versi terbaru | Crate RustCrypto/dalek matang, bisa dikompilasi ke WASM |
 | Kanonikalisasi | Implementasi RFC 8785 (JCS), misalnya `serde_jcs` | `[TO VERIFY]` V-24 crate dan kesesuaian dengan RFC 8785 | `rules_hash` dan `plan_hash` harus identik di Rust native dan WASM |
 | Backend | Rust stable, `tokio` 1.x, `axum` 0.8.x, `sqlx` 0.8.x (SQLite), `serde`, `tracing` | `[TO VERIFY]` versi terbaru | Stack Rust standar; satu bahasa dengan librustzcash |
@@ -1958,7 +1958,7 @@ frosted/
 | Docker + Docker Compose | Menjalankan zebrad, zaino, layanan |
 | `zebrad` (binary rilis atau Docker) | Node regtest/testnet/mainnet. Zebra menyediakan binary rilis Linux x86_64/aarch64 dan bisa dipasang dengan `cargo binstall zebrad` ([Zebra 6.0.0-rc.0](https://github.com/ZcashFoundation/zebra/releases/tag/v6.0.0-rc.0)) |
 | `zcash-devtool` (ZODL) | Wallet CLI untuk bettor uji di regtest/testnet `[TO VERIFY]` dukungan Ironwood |
-| `frost-zcash-demo` (`frostd`, `frost-client`, `trusted-dealer`, `dkg`) | FROST ([repo](https://www.github.com/ZcashFoundation/frost-zcash-demo)) |
+| `frost-zcash-demo` | Referensi saja; MVP memakai `reddsa`/`frost-rerandomized` 3.0.0 langsung di `frosted-operator` (ADR-0014) |
 | Zodl (HP) | Wallet bettor untuk demo mainnet; `[TO VERIFY]` ketersediaan build testnet |
 | `sqlite3` | Inspeksi database |
 
@@ -2007,7 +2007,6 @@ ESCROW_WALLET_DB_PATH=./private/escrow-wallet.db
 SECRETS_KEY_FILE=./private/secrets.key           # kunci enkripsi at-rest (32 byte)
 ENVELOPE_SK_FILE=./private/envelope.sk
 HOT_WALLET_SEED_FILE=./private/hot-wallet.seed   # untuk FRSTM1 announcement
-FROSTD_URL=https://127.0.0.1:2744                # localhost only
 COMMITTEE_GROUP_ID=
 COMMITTEE_MEMBERS_JSON=./private/committee.json  # member_id, display_name, frost_identifier
 

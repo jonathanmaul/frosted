@@ -3,7 +3,8 @@
 Catatan kelayakan teknis Frosted. Setiap bagian menjawab item `[TO VERIFY]` (V-x) di `docs/PROJECT_SPEC_FROSTED.md` §36.
 
 Aturan:
-- Status: `PASS` / `FAIL` / `PARTIAL` (sementara boleh `PENDING (waiting for operator)` atau `NOT STARTED`).
+- Semua spike M0.2–M0.5 berjalan di regtest laptop lokal (`scripts/dev-up.sh`); verifikasi node live ditunda ke M12 (ADR-0012).
+- Status: `PASS` / `FAIL` / `PARTIAL` (sementara boleh `PENDING (waiting for operator)`, `DEFERRED (to Mx)`, atau `NOT STARTED`).
 - Bukti = perintah persis + output atau txid, sehingga bisa diulang.
 - Hasil yang bertentangan dengan spec → ADR baru di `docs/decisions/` + usulan perubahan spec (§28).
 - Semua spike dikerjakan di regtest laptop lokal; verifikasi node live ditandai "deferred to M12" (ADR-0012).
@@ -13,11 +14,30 @@ Aturan:
 | Spike | Status | Keputusan |
 | --- | --- | --- |
 | M0.1 regtest env | PASS | Regtest Ironwood siap; semua spike berikutnya memakai stack ini |
-| M0.2 Ironwood IVK decrypt | NOT STARTED | — |
-| M0.3 FVK dari FROST | NOT STARTED | — |
-| M0.4 FROST + PCZT + Zaino | NOT STARTED | — |
-| M0.5 valuePools historis | NOT STARTED | — |
-| M0.6 Zodl memo | NOT STARTED | — |
+| M0.2 Ironwood IVK decrypt | PASS | Glass Escrow layak: note Ironwood terdekripsi hanya dengan IVK |
+| M0.3 FVK dari FROST | PASS | FROST `ak` + `nk`/`rivk` → FVK → UFVK/UIVK Orchard-only berfungsi |
+| M0.4 FROST + PCZT + Zaino | PARTIAL | Spend escrow ditandatangani FROST 2-of-3 di PCZT dan terkonfirmasi; transport `frostd`/`frost-client` tidak kompatibel (FROST 2.x vs 3.0) → perlu ADR, tidak perlu fallback single-key |
+| M0.5 valuePools historis | PASS (regtest) | `getblock(h, 1)` memberi `valuePools` per blok; live deferred to M12 |
+| M0.6 Zodl memo | DEFERRED (to M6) | Bukan blocker; Zodl testnet hanya build iOS dari source. Dijalankan saat Bet Builder (M6) siap |
+
+### Status V-1..V-14
+
+| V | Jawaban di | Status |
+| --- | --- | --- |
+| V-1 | M0.2 | Terjawab: kiriman ke receiver Orchard pasca-NU6.3 → bundle Ironwood |
+| V-2 | M0.6 | Menunggu operator |
+| V-3 | M0.4 | Terjawab: ya, spend Ironwood ditandatangani FROST 2-of-3 |
+| V-4 | M0.3 | Terjawab |
+| V-5 | M0.3 | Terjawab: tidak ada item UFVK Ironwood terpisah di upstream |
+| V-6 | M0.2 | Terjawab: `IncomingViewingKey::diversifier_index` |
+| V-7 | M0.5 | Terjawab: ya |
+| V-8 | M0.4 | Terjawab |
+| V-9 | M0.4 | Terjawab: v3 di `reddsa` 0.5.2; `frostd` masih v2 → ADR |
+| V-10 | M0.2 | Terjawab: `Transaction::ironwood_bundle()` |
+| V-11 | M0.4 | Terjawab: Zaino 0.10.1 melayani sync Ironwood |
+| V-12 | — | Tidak relevan lagi (ADR-0009) |
+| V-13 | M0.1 | Terjawab |
+| V-14 | M0.6 | Faucet ditemukan, belum terverifikasi berfungsi |
 
 ---
 
@@ -103,48 +123,126 @@ Perintah yang dipakai: `curl https://crates.io/api/v1/crates/<crate>` (field `ma
 
 **Menjawab:** V-1, V-6, V-10.
 
-- **Status:** NOT STARTED
-- **Versi crate & tool yang terbukti jalan:**
+- **Status:** PASS
+- **Versi crate & tool yang terbukti jalan:** `orchard` 0.15.5, `zcash_primitives` 0.30.1, `zcash_keys` 0.16.1 (feature `orchard`), `zcash_note_encryption` 0.4.2, `zcash_protocol` 0.10.6 (feature `local-consensus`). Grup stabil ini memakai `orchard` 0.15.x (`orchard` 0.16 hanya dipakai grup pre-release). Spike: `spikes/s2-ironwood-ivk-decrypt`.
 - **Nama fungsi/API yang benar:**
+  - **V-10:** `Transaction::read(&bytes[..], BranchId::Nu6_3)` mem-parse tx v6 (`tx.version()` = `V6`); bundle Ironwood lewat `tx.ironwood_bundle() -> Option<&orchard::Bundle<_, ZatBalance>>` (terpisah dari `tx.orchard_bundle()`).
+  - **V-1:** kiriman ke UA Orchard-only pasca-NU6.3 menghasilkan aksi di bundle **Ironwood**, terdekripsi dengan `orchard::note_encryption::IronwoodDomain` (note plaintext versi V3, lead byte `0x03`; `OrchardDomain` hanya menerima V2).
+  - Dekripsi: `zcash_note_encryption::try_note_decryption(&IronwoodDomain::for_action(action), &ivk.prepare(), action) -> Option<(Note, Address, [u8; 512])>`.
+  - **V-6:** `orchard::keys::IncomingViewingKey::diversifier_index(&Address) -> Option<DiversifierIndex>` (juga `FullViewingKey::diversifier_index(&Diversifier)`); turunan alamat `IncomingViewingKey::address_at(j)`.
 - **Bukti:**
-- **Dampak ke desain:**
+  ```
+  $ spikes/s2-ironwood-ivk-decrypt/target/release/s2-ironwood-ivk-decrypt address 1
+  uregtest1n6ct38cjyvfcxt5u5amkqqt3rvrg0n09laepvzchhp8as9u2687jl5vx8pw647u2m9enhyj4pwlsya4xp8nv07qhl3jhdxjmxqelc2ha
+  $ scripts/regtest-wallet.sh dt wallet -w /work/faucet send ... --address <UA di atas> --value 2500000 --memo "FRST1:m0.2-spike"
+  baf8efd37ec597e7e2227b38cc5b33e1f36e7edb8347f29d15f42e336196bffa
+  $ curl getrawtransaction [txid, 0] > /tmp/m02.hex && s2-ironwood-ivk-decrypt decrypt /tmp/m02.hex
+  txid baf8efd3...bffa version V6
+  action 1: value=2500000 zat diversifier_index=Some(1) memo="FRST1:m0.2-spike"
+  ```
+- **Dampak ke desain:** tidak ada perubahan wajib. Catatan untuk §19.4/§25: domain dekripsi untuk bet adalah `IronwoodDomain` (bukan `OrchardDomain`), dan versi `orchard` stabil yang cocok dengan `zcash_primitives` 0.30.1 adalah 0.15.x. M2.7 (`scan`) boleh dimulai.
 
 ## M0.3 — `s3-fvk-from-frost`
 
 **Menjawab:** V-4, V-5.
 
-- **Status:** NOT STARTED
-- **Versi crate & tool yang terbukti jalan:**
+- **Status:** PASS
+- **Versi crate & tool yang terbukti jalan:** `reddsa` 0.5.2 (feature `frost`, memakai **`frost-rerandomized` 3.0.0 / `frost-core` 3.0.0**), `orchard` 0.15.5, `zcash_keys` 0.16.1 (features `orchard`, `unstable-frost`), `pasta_curves` 0.5. Spike: `spikes/s3-fvk-from-frost`.
 - **Nama fungsi/API yang benar:**
+  - **V-4:** `reddsa::frost::redpallas::keys::generate_with_dealer(3, 2, IdentifierList::Default, rng)` sudah menerapkan `EvenY`, sehingga `PublicKeyPackage::verifying_key().serialize()` (32 byte) langsung valid sebagai `ak`. `orchard::keys::FullViewingKey::from_bytes(&[u8; 96])` (`ak ‖ nk ‖ rivk`) publik dan memvalidasi `ak` (`SpendValidatingKey::from_bytes`), `nk`, `rivk`, serta ivk ≠ 0. `nk` = `pallas::Base::random().to_repr()`, `rivk` = `pallas::Scalar::random().to_repr()`.
+  - **V-5:** `zcash_keys::keys::UnifiedFullViewingKey::from_orchard_fvk(fvk)` (feature `unstable-frost`), `.to_unified_incoming_viewing_key()`, `.encode(&params)` → `uviewregtest1…` / `uivkregtest1…`; `UnifiedIncomingViewingKey::decode(&params, s)?.orchard()`. **Upstream `zcash_keys` 0.16.1 tidak punya item UFVK khusus Ironwood**: Ironwood memakai item Orchard yang sama (tipe `IronwoodFvk` hanya ada di fork `zakura-client-sqlite`). Dompet `zcash-devtool` (`init-fvk`) menerima UFVK ini dan mengenali saldo Ironwood-nya.
+  - Turunan Outcome Address dari UIVK saja: `ivk.address_at(j)` sama dengan `fvk.address_at(j, Scope::External)` (di-assert untuk j = 0..2).
 - **Bukti:**
-- **Dampak ke desain:**
+  ```
+  $ s3-fvk-from-frost dealer .regtest/escrow-m03.json
+  ak   70ae3d069e82758d596ef98540bb56b1ac83ac224c7753273e49020b4200a903
+  UIVK uivkregtest19e6ysaaf26dyc3ay3st73rkw6y4wl5npde3l7jnqy7qr9t7y8ag0a5ehgg4ya3hy0esm7stnjh6gwxsg0calkpd8c9ehw6wtq5etvae0773t3p9avl6tehx5jyj6h2p2650sexgszy
+  outcome 0 uregtest1tlkfh6...6hzam
+  outcome 1 uregtest1gvjrxm...469jk
+  $ faucet send 3000000 zat, memo "FRST1:m0.3-escrow" → outcome 1
+  dd1f10c29afd4fd06fbf97d331cdbf508029474030755a558623769232ee7ca7
+  $ s3-fvk-from-frost decrypt .regtest/escrow-m03.json /tmp/m03.hex     # hanya memakai UIVK
+  action 0: value=3000000 zat outcome_index=Some(1) memo="FRST1:m0.3-escrow"
+  ```
+  (Escrow ini kunci uji regtest; `.regtest/escrow-m03.json` gitignored.)
+- **Dampak ke desain:** fallback single-key **tidak** diperlukan. Perlu koreksi §25/SD-4/T-7: `reddsa` 0.5.2 sudah memakai FROST **v3** (`frost-rerandomized` 3.0.0), bukan 2.x; `reddsa` 0.6.x membuang feature `frost` sama sekali. Usulan ADR di laporan spike.
 
 ## M0.4 — `s4-frost-pczt-sign`
 
 **Menjawab:** V-3, V-8, V-9, V-11, V-22, V-28.
 
-- **Status:** NOT STARTED
-- **Versi crate & tool yang terbukti jalan:**
+- **Status:** PARTIAL — kriptografi dan alur PCZT terbukti ujung ke ujung (tx terkonfirmasi); transport `frostd` + `frost-client` tidak dijalankan karena tidak kompatibel versi (lihat V-9).
+- **Versi crate & tool yang terbukti jalan:** `pczt` 0.10.0-pre.2, `zcash_primitives` 0.31.0-pre.2, `zcash_protocol` 0.11.0-pre.1 (librustzcash upstream git rev `eb38d7a`, sama dengan image `zcash-devtool`), `orchard` 0.16.0, `reddsa` 0.5.2 + `frost-rerandomized` 3.0.0 untuk FROST. Wallet escrow view-only, sync, `pczt create/prove/send`: `zcash-devtool` `0b3436b` (librustzcash rev `eb38d7a`, `zcash_client_backend` 0.25.0-pre.2, `zcash_client_sqlite` 0.23.0-pre.2) lewat Zaino 0.10.1. Spike signer: `spikes/s4-frost-pczt-sign`.
 - **Nama fungsi/API yang benar:**
+  - **V-11:** Zaino 0.10.1 melayani sync wallet Ironwood. `zcash-devtool wallet init-fvk --fvk <UFVK>` + `wallet sync` lewat Zaino menghasilkan `Ironwood Spendable: 0.03` untuk escrow FROST. Fallback `z_gettreestate` (**V-22**) tidak diperlukan (Zebra memang menyediakan RPC `z_gettreestate`).
+  - **V-8:** sighash: `pczt::roles::signer::Signer::new(pczt)?.shielded_sighash() -> [u8; 32]`. `alpha` per aksi: `pczt::roles::low_level_signer::Signer::new(pczt).sign_ironwood_with(|_, bundle, _| …)` lalu `action.spend().alpha()` (getter publik di `orchard::pczt::Spend`). Sisipkan tanda tangan eksternal: `Signer::apply_ironwood_signature(index, orchard::primitives::redpallas::Signature::from([u8; 64]))`, yang memverifikasi terhadap `rk` aksi. **Dummy spend** sudah ditandatangani oleh IO Finalizer saat `pczt create` (`dummy_sk` lalu dihapus), sehingga signer cukup melewati aksi yang `spend_auth_sig()` sudah terisi. `zcash-devtool pczt update-with-signature` belum mendukung Ironwood (TODO di source), sehingga spike menyisipkan tanda tangan sendiri.
+  - **V-3:** FROST RedPallas **bisa** mengotorisasi spend Ironwood: tanda tangan 2-of-3 teragregasi lolos `apply_ironwood_signature` dan tx terkonfirmasi.
+  - **V-9:** `reddsa` 0.5.2 = FROST v3. Randomizer eksternal (alpha dari PCZT, SD-4 butir 2) hanya tersedia lewat API **deprecated**: `frost_rerandomized::sign(signing_package, nonces, key_package, Randomizer)` + `RandomizedParams::from_randomizer(group_vk, Randomizer::deserialize(alpha))` + `reddsa::frost::redpallas::rerandomized::aggregate(...)`. Jalur non-deprecated (`sign_with_randomizer_seed`) menurunkan randomizer dari seed + commitments, sehingga tidak cocok dengan alpha yang sudah tertanam di proof. `frost-zcash-demo` (`frostd`/`frost-client`, commit `53df99c`) masih memakai FROST 2.x (`frost-core` 2.2, `frost-rerandomized` 2.0.0-rc.0, `reddsa` git `ed49e9c`), jadi key package v3 tidak bisa dipakai bersama.
+  - **V-28:** fee ZIP 317 aktual = 10.000 zat untuk 2 aksi Ironwood (1 spend nyata + 1 dummy) = `5000 × max(2, actions)`.
+  - **Biaya signing (D-4):** 1 sesi FROST per spend escrow nyata; aksi dummy tidak butuh sesi. Durasi round1 + round2 + aggregate di proses yang sama (tanpa jaringan): 2–7 ms per sesi. Prove PCZT (Halo 2, 2 aksi) ≈ 2,6 s termasuk start container. Kemampuan multi-pesan per sesi di `frostd`: belum diuji (lihat status).
+  - Catatan: `wallet init-fvk` di devtool tidak menerima `--activation-heights` dan memakai default regtest devtool (termasuk **NU7 di tinggi 2**), sehingga tx pertama ditolak dengan `invalid consensus branch id 0x77190ad9`. Diperbaiki dengan menyalin activation heights yang diturunkan dari zebrad ke `keys.toml` wallet. Branch id NU7 di librustzcash (`0x77190ad9`) juga belum sama dengan Zebra 6.4.2 (placeholder `0xfffffffe`).
 - **Bukti:**
-- **Dampak ke desain:**
+  ```
+  $ scripts/regtest-wallet.sh dt wallet -w /work/escrow init-fvk --name escrow --fvk <UFVK M0.3> --birthday 600 -s 127.0.0.1:8137
+  $ ... wallet -w /work/escrow sync / balance          → Ironwood Spendable: 0.03000000 REG
+  $ ... pczt -w /work/escrow create --address <recipient Orchard-only UA> --value 1000000 --memo "FRST1:m0.4-payout" --output /work/m04.pczt
+  $ ... pczt -w /work/escrow prove /work/m04.pczt --output /work/m04.proven.pczt
+  $ spikes/s4-frost-pczt-sign/target/release/s4-frost-pczt-sign sign .regtest/escrow-m03.json .regtest/m04.proven.pczt .regtest/m04.signed.pczt
+  shielded sighash 36f293480b4c530568bd479e0bb357e2dba516dfbdad163509d98b164855c3b0
+  action 0: FROST 2-of-3 signature applied (2 ms)
+  action 1: already signed by the IO Finalizer (dummy spend)
+  FROST signing sessions: 1
+  $ ... pczt -w /work/escrow send /work/m04.signed.pczt -s 127.0.0.1:8137
+  b0c35548168bd9093516adbddf16a5dbe257b30b9e47bd6805534c0b4893f236
+  $ getrawtransaction [txid, 1]   → confirmations 3, height 742, version 6
+  recipient list-tx                → Amount: 0.01000000 REG
+  ```
+- **Dampak ke desain:** fallback single-key **tidak** diperlukan. Perlu ADR (usulan di laporan): (1) stack FROST = `reddsa` 0.5.2 + `frost-rerandomized` 3.0.0, randomizer eksternal lewat API deprecated (risiko penghapusan di versi mendatang; alternatif v3-native: jalankan round 1 FROST lebih dulu, turunkan randomizer dari commitments, dan set `alpha` ke PCZT sebelum proving); (2) `frostd`/`frost-client` dari `frost-zcash-demo` tidak bisa dipakai apa adanya → transport signing perlu diputuskan (port ke FROST v3, atau signing in-process di `frosted-operator` untuk demo satu orang, ADR-0008); (3) ADR-0007 tetap berlaku. `zcash_client_backend` yang benar-benar dipakai untuk PCZT Ironwood adalah grup **pre-release** (git rev), bukan 0.24.0 stabil — keputusan versi M7/M8 perlu mengikuti ini.
 
 ## M0.5 — `s5-valuepools-at-height`
 
 **Menjawab:** V-7, V-20, V-27 (regtest; live deferred to M12).
 
-- **Status:** NOT STARTED
-- **Versi crate & tool yang terbukti jalan:**
+- **Status:** PASS (regtest). Node live: **deferred to M12** (M12.0).
+- **Versi crate & tool yang terbukti jalan:** `zfnd/zebra:6.4.2`, RPC JSON-RPC langsung (tanpa crate). Spike: perintah RPC (folder `spikes/s5-valuepools-at-height` tidak diperlukan).
 - **Nama fungsi/API yang benar:**
+  - **V-7:** `getblock(height_as_string, 1)` mengembalikan `valuePools[]` per blok pada tinggi historis, dengan field `id`, `chainValueZat` (nilai pool **setelah** blok itu) dan `valueDeltaZat`, plus `chainSupply`. Fallback snapshot SD-3 tidak diperlukan.
+  - **V-20:** id pool = `transparent`, `sprout`, `sapling`, `orchard`, `lockbox`, `ironwood` (`sprout` ada di respons; daftar `POOL_THRESHOLD` §22.3 tidak memuatnya, dan itu tidak masalah). Nama upgrade di `getblockchaininfo.upgrades[].name`: `"NU5"`, `"NU6"`, `"NU6.1"`, `"NU6.2"`, `"NU6.3"`; **NU7 tidak muncul sama sekali** bila tidak dikonfigurasi, sehingga `UPGRADE_ACTIVE("NU7")` harus memperlakukan "tidak terdaftar" sebagai belum aktif.
+  - **V-27 (regtest):** `getblockchaininfo.valuePools` memuat `ironwood` dan `upgrades` memuat `activationheight` + `status`. Live: deferred to M12.
 - **Bukti:**
-- **Dampak ke desain:**
+  ```
+  $ curl getblock ["5", 1]    → ironwood (chainValueZat 0, valueDeltaZat 0)
+  $ curl getblock ["690", 1]  → ironwood (119373285000, 0); transparent (167501715000, 156250000)
+  $ curl getblock ["742", 1]  → ironwood (119373275000, -10000)   # blok berisi payout FROST M0.4; delta = fee 10.000 zat
+  $ curl getblockchaininfo     → upgrades [... ('NU6.2', 1, 'active'), ('NU6.3', 10, 'active')]
+  ```
+- **Deferred to M12 (V-27 live):** pada endpoint testnet publik atau node lokal (V-31), jalankan `getblockchaininfo` dan `getblock("<h>", 1)` untuk h di sekitar 4.134.000; harapkan `valuePools` memuat `ironwood` dengan `chainValueZat` dan `upgrades` memuat `NU6.3` di 4.134.000.
+- **Dampak ke desain:** tidak ada perubahan wajib. Catatan untuk §22.3/F-07: resolusi `UPGRADE_ACTIVE` harus menangani upgrade yang tidak terdaftar di node.
 
 ## M0.6 — `s6-zodl-memo`
 
 **Menjawab:** V-2, V-14, V-25, V-26.
 
-- **Status:** NOT STARTED
-- **Versi crate & tool yang terbukti jalan:**
+- **Status:** DEFERRED (to M6, diputuskan 2026-10-21)
+- **Alasan penundaan:** Zodl dari App Store/Play Store hanya mainnet. Build testnet (scheme `zodl-testnet`) hanya ada untuk iOS dan harus dikompilasi dari source dengan Xcode ([sumber, belum diverifikasi di repo resmi](https://tomevault.io/tome/zodl-inc/zodl-ios)). V-2 bukan blocker: fallback §34 (UI "copy memo" atau wallet lain) tetap tersedia. Spike dijalankan ulang di M6 dengan QR dari Bet Builder sungguhan, memakai salah satu opsi: (a) Zodl iOS testnet build, atau (b) Zodl mainnet dari store dengan ZEC mikro milik operator.
+- **Versi crate & tool yang terbukti jalan:** — (Zodl, dijalankan user)
 - **Nama fungsi/API yang benar:**
-- **Bukti:**
-- **Dampak ke desain:**
+  - **V-26:** tinggi aktivasi NU6.3 testnet = **4.134.000** (sumber: Zebra v6.4.2 `zebra-chain/src/parameters/constants.rs`, `activation_heights::testnet::NU6_3`; mainnet 3.428.143). Branch id NU6.3 = `0x37a5165b`.
+  - **V-14 (belum terverifikasi berfungsi):** faucet testnet yang tercantum di ZecHub: `testnet.zecaucet.com` (ejaan dari sumber; cek dulu). Alternatif resmi: minta TAZ di Discord Zcash (Zcash testnet guide).
+- **Persiapan:** penerima = alamat testnet Orchard-only dari kunci spike M0.2 (diversifier index 7), supaya memo bisa didekripsi dengan dekriptor M0.2 tanpa wallet kedua:
+  - UA: `utest10g3wfuycgmt6pts02urpmv3sfx95q4ak39gdu6ygh8ey3sqf9kcluthm67hfmu0ct3w50h9u68hw3hmtwh4urnj9kf037rv60qmrjaqu`
+  - Memo FRST1 dummy: 237 byte, SHA-256 `26f417576de1331e8af229b2ac279ed17d1e112ad86162184faa80a7bbe34375` (teks lengkap di `.regtest/m06-memo.txt`).
+  - URI ZIP-321 (memo = base64url tanpa padding dari teks memo):
+    ```
+    zcash:utest10g3wfuycgmt6pts02urpmv3sfx95q4ak39gdu6ygh8ey3sqf9kcluthm67hfmu0ct3w50h9u68hw3hmtwh4urnj9kf037rv60qmrjaqu?amount=0.001&memo=RlJTVDE6QVFEYzdsenVZZF94alpMZG0tVFJwV1RYQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQlJYaThFU3hiSVZtQ3hKSGo1cFhvdXVZelRDbVpxNkQwd2lBRHh4WUxfS1ViQ0pHQXBtYVEwZnpnYzhzNW1SWkhzM2dzRi1nNDhWNXNZbUdKUkFjSFZMcDVYLTFFM1FJRjNoR3pGb2RDeFVMSVRoSWItTkhweWVFUEt3ZE1rS2VkUUg0ZHE5QWFmajd5alpoQ1M2dzZHRnRON0ZFQkl2eE43UDI4
+    ```
+- **Instruksi untuk operator (testnet):**
+  1. Pasang Zodl dan buat/aktifkan wallet **testnet** (kalau Zodl tidak punya mode testnet, berhenti dan laporkan; opsi berikutnya mainnet mikro dengan nominal ≤ 0,001 ZEC, hanya jika kamu setuju).
+  2. Ambil TAZ dari faucet (`testnet.zecaucet.com`) atau minta di Discord Zcash; tunggu sampai saldo shielded tersedia.
+  3. Buat QR dari URI di atas (atau tempel URI langsung jika Zodl mendukung paste URI), lalu scan/buka di Zodl.
+  4. Di layar konfirmasi, **sebelum kirim**: catat apakah memo terisi otomatis, dan **coba ubah jumlah** (0.001 → 0.002). Catat apakah Zodl mengizinkannya (V-25). Kembalikan ke 0.001.
+  5. Kirim dari saldo **shielded**. Catat txid.
+  6. Laporkan: txid, apakah memo terisi otomatis, apakah jumlah bisa diedit, versi Zodl, dan screenshot layar konfirmasi bila ada.
+- **Setelah laporan (tugas agen, 6.4):** ambil raw tx dari explorer testnet publik (`testnet.zcashexplorer.app`, baca saja) dan jalankan `s2-ironwood-ivk-decrypt decrypt`; bandingkan memo dengan `.regtest/m06-memo.txt` byte per byte (V-2, A-3).
+- **Bukti:** —
+- **Dampak ke desain:** —
