@@ -18,7 +18,7 @@ Aturan:
 | M0.3 FVK dari FROST | PASS | FROST `ak` + `nk`/`rivk` → FVK → UFVK/UIVK Orchard-only berfungsi |
 | M0.4 FROST + PCZT + Zaino | PARTIAL | Spend escrow ditandatangani FROST 2-of-3 di PCZT dan terkonfirmasi; transport `frostd`/`frost-client` tidak kompatibel (FROST 2.x vs 3.0) → perlu ADR, tidak perlu fallback single-key |
 | M0.5 valuePools historis | PASS (regtest) | `getblock(h, 1)` memberi `valuePools` per blok; live deferred to M12 |
-| M0.6 Zodl memo | DEFERRED (to M6) | Bukan blocker; Zodl testnet hanya build iOS dari source. Dijalankan saat Bet Builder (M6) siap |
+| M0.6 Zodl memo | PARTIAL: regtest PASS, Zodl DEFERRED (to M6) | Bukan blocker; Zodl testnet hanya build iOS dari source. Dijalankan saat Bet Builder (M6) siap |
 
 ### Status V-1..V-14
 
@@ -224,6 +224,15 @@ Perintah yang dipakai: `curl https://crates.io/api/v1/crates/<crate>` (field `ma
 **Menjawab:** V-2, V-14, V-25, V-26.
 
 - **Status:** DEFERRED (to M6, diputuskan 2026-10-21)
+- **Separuh regtest (2026-10-21): PASS.** URI ZIP-321 berisi memo FRST1 asli 237 byte (vector `frst1[0]` dari `docs/test-vectors/memo.json`, sha256 `c9d844a7744865b2…`) dibayar dengan `zcash-devtool wallet pay --payment-uri` ke UA Orchard-only milik `recipient`. Memo yang diterima identik byte per byte. Jadi encoding URI kita (memo base64url tanpa padding, panjang URI 453 karakter) valid, dan memo 237 byte lolos utuh lewat jalur payment request.
+  ```
+  $ scripts/regtest-wallet.sh zip321-test
+  ==> memo 237 bytes, sha256 c9d844a7744865b2
+  ==> URI zcash:uregtest1e3jg6kwz0jfljua79cxy33rhvafamfsp2maypv0lldjzz... (453 chars)
+  ==> txid e60b6304f5d9502987d58ba2354d7de9399d5a01ce76c5789cb071280086abab
+  PASS: received memo is identical (237 bytes)
+  ```
+  Yang masih ditunda ke M6 hanya perilaku aplikasi Zodl di HP (V-2 untuk Zodl, V-25).
 - **Alasan penundaan:** Zodl dari App Store/Play Store hanya mainnet. Build testnet (scheme `zodl-testnet`) hanya ada untuk iOS dan harus dikompilasi dari source dengan Xcode ([sumber, belum diverifikasi di repo resmi](https://tomevault.io/tome/zodl-inc/zodl-ios)). V-2 bukan blocker: fallback §34 (UI "copy memo" atau wallet lain) tetap tersedia. Spike dijalankan ulang di M6 dengan QR dari Bet Builder sungguhan, memakai salah satu opsi: (a) Zodl iOS testnet build, atau (b) Zodl mainnet dari store dengan ZEC mikro milik operator.
 - **Versi crate & tool yang terbukti jalan:** — (Zodl, dijalankan user)
 - **Nama fungsi/API yang benar:**
