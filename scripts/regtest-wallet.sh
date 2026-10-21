@@ -4,6 +4,8 @@
 #   scripts/regtest-wallet.sh setup        create `faucet` + `recipient` wallets and fund `faucet`
 #   scripts/regtest-wallet.sh memo-test    send 0.01 ZEC with memo FRST1:test to recipient's
 #                                          Orchard-only UA and fetch the full tx (M0.1, V-21)
+#   scripts/regtest-wallet.sh zip321-test  pay a ZIP-321 URI with a 237-byte FRST1 memo and compare
+#                                          the received memo byte for byte (M0.6 regtest half)
 #   scripts/regtest-wallet.sh dt <args>    run zcash-devtool with arbitrary arguments
 #
 # Wallet state lives in .regtest/ (gitignored). Activation heights for the wallets are derived
@@ -142,9 +144,36 @@ print("full tx fetched:", len(hexdata) // 2, "bytes")'
   dt wallet -w /work/recipient list-tx | grep -E 'Memo:' | head -3
 }
 
+# M0.6 (regtest half): does a ZIP-321 payment request carrying a real 237-byte FRST1 memo
+# survive a wallet's URI handling byte for byte? Uses the shared zcash-glass test vector.
+zip321_test() {
+  local ua memo uri txid got
+  ua="$(dt wallet -w /work/recipient list-addresses --receiver orchard | sed -n 's/.*\(uregtest1[0-9a-z]*\).*/\1/p' | head -1)"
+  memo="$(python3 -I -c 'import json; print(json.load(open("'"$ROOT"'/docs/test-vectors/memo.json"))["frst1"][0]["memo_text"])')"
+  # ZIP-321 `memo` = base64url (no padding) of the raw memo bytes.
+  uri="zcash:${ua}?amount=0.01&memo=$(printf '%s' "$memo" | base64 | tr '+/' '-_' | tr -d '=\n')"
+  echo "==> memo ${#memo} bytes, sha256 $(printf '%s' "$memo" | shasum -a 256 | cut -c1-16)"
+  echo "==> URI ${uri:0:60}... (${#uri} chars)"
+  sync_wallet faucet
+  txid="$(dt wallet -w /work/faucet pay -i /work/identity.txt -s "$SERVER" --disable-confirmation \
+    --payment-uri "$uri" | grep -oE '[0-9a-f]{64}' | tail -1)"
+  [ -n "$txid" ] || { echo "pay did not return a txid" >&2; exit 1; }
+  mine 3
+  sync_wallet recipient
+  dt wallet -w /work/recipient enhance -s "$SERVER" >/dev/null 2>&1
+  got="$(dt wallet -w /work/recipient list-tx | grep -A30 "$txid" | sed -n 's/.*Memo: Memo::Text("\(.*\)").*/\1/p' | head -1)"
+  echo "==> txid $txid"
+  if [ "$got" = "$memo" ]; then
+    echo "PASS: received memo is identical (${#got} bytes)"
+  else
+    echo "FAIL: received memo differs"; echo "sent: $memo"; echo "got:  $got"; exit 1
+  fi
+}
+
 case "${1:-}" in
   setup) setup ;;
   memo-test) memo_test ;;
+  zip321-test) zip321_test ;;
   dt) shift; dt "$@" ;;
   *) echo "usage: $0 {setup|memo-test|dt <args>}" >&2; exit 2 ;;
 esac
