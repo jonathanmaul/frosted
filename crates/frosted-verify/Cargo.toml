@@ -1,0 +1,10 @@
+[package]
+name = "frosted-verify"
+description = "Independent verifier for Frosted markets, pools, resolutions, payouts and envelope proofs."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]

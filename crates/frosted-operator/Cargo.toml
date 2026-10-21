@@ -1,0 +1,10 @@
+[package]
+name = "frosted-operator"
+description = "Localhost-only operator CLI for private actions on the coordinator host."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]

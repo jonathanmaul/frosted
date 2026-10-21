@@ -1,0 +1,10 @@
+[package]
+name = "payout-coordinator"
+description = "Private payout coordinator: escrow keys, resolver, payout planning, PCZT, FROST orchestration."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]

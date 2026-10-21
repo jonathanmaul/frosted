@@ -1,0 +1,10 @@
+[package]
+name = "frosted-api"
+description = "Public REST + SSE API and signed ingest endpoint for the payout coordinator."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]

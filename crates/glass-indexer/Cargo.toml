@@ -1,0 +1,10 @@
+[package]
+name = "glass-indexer"
+description = "Public Glass Indexer: chain follower, UIVK scanner, bet validation, market lifecycle."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]

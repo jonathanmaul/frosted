@@ -1,0 +1,6 @@
+# Highest MSRV among planned dependencies (sqlx 0.9 = 1.94; librustzcash group = 1.88).
+# See docs/SPIKES.md §M0.1.
+[toolchain]
+channel = "1.94.0"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
