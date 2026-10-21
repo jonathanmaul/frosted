@@ -598,6 +598,8 @@ flowchart TD
 
 ## 16. Screen list
 
+Aturan visual semua layar (palet, tipografi, layout, gerak, daftar DILARANG) ada di `docs/DESIGN.md` dan wajib diikuti setiap change UI.
+
 | ID | Screen | Tujuan | Komponen kunci | Fitur |
 | --- | --- | --- | --- | --- |
 | S-01 | Markets (Home) | Menemukan market | Daftar kartu Market (pertanyaan, odds ringkas, pool total, status, blok tersisa), filter status/tipe, banner "How Frosted works" | F-04 |
