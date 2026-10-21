@@ -322,7 +322,7 @@ Format: **US-xx (F-yy)** — sebagai *peran*, saya ingin *X*, supaya *Y*.
 - Given Market bertipe `POOL_THRESHOLD(pool, threshold_zat, comparator)` dan tip ≥ `resolve_height + MIN_CONFIRMATIONS`,
   When resolver job berjalan,
   Then ia membaca `chainValueZat` pool tersebut pada `resolve_height`, menentukan outcome, menyimpan Resolution dengan `evidence` (nilai, hash blok), dan status Market = `RESOLVED`.
-- Given Market bertipe `UPGRADE_ACTIVE(upgrade_name)`, Then outcome YES jika `activationheight` upgrade tersebut ≤ `resolve_height` menurut `getblockchaininfo`.
+- Given Market bertipe `UPGRADE_ACTIVE(upgrade_name)`, Then outcome YES jika `activationheight` upgrade tersebut ≤ `resolve_height` menurut `getblockchaininfo`. Jika upgrade tidak terdaftar sama sekali di `upgrades`, outcome NO (ADR-0016).
 - Given data tidak tersedia (RPC gagal), Then job mencoba ulang dengan backoff dan tidak pernah menebak hasil.
 
 ### F-08 FROST Payout Batch
@@ -436,7 +436,7 @@ Format: **US-xx (F-yy)** — sebagai *peran*, saya ingin *X*, supaya *Y*.
 | --- | --- | --- |
 | Zebra / Zakura node (testnet + mainnet) | JSON-RPC, data chain, broadcast | Sinkronisasi node memakan waktu |
 | librustzcash crates upstream dari crates.io (orchard 0.15.x, zcash_client_backend 0.24.0-rc.x, zcash_primitives 0.29.x, zcash_keys, zip321, pczt) | Kunci, scanning, transaksi | API rc bisa berubah. Fork Zakura hanya jika spike membuktikan fitur Ironwood yang dibutuhkan tidak ada di upstream, dengan alasan dicatat di `docs/SPIKES.md` (ADR-0010) |
-| ZF FROST (`reddsa` + `frost-rerandomized`, `frostd`, `frost-client`) | Threshold signing | Dukungan Ironwood belum terbukti |
+| ZF FROST (`reddsa` 0.5.2 + `frost-rerandomized` 3.0.0) | Threshold signing in-process di `frosted-operator` (ADR-0013, ADR-0014) | Terbukti di M0.3/M0.4; randomizer dari PCZT lewat API deprecated |
 | Zodl wallet | Wallet bettor utama | Dukungan memo ZIP-321 |
 | NEAR Intents 1Click API | F-14 (COULD) | Tidak dibutuhkan untuk MVP |
 
@@ -523,7 +523,7 @@ flowchart TD
     G1 -->|No| G2[FEE_SHORTFALL: no plan, operator tops up]
     G1 -->|Yes| H[Push plan_hash + full public plan, no addresses]
     H --> I[Coordinator builds PCZT, proves]
-    I --> J[Request FROST signatures via frostd]
+    I --> J[frosted-operator runs FROST 2-of-3 in-process per spend]
     J --> K{2 of 3 signed matching plan_hash?}
     K -->|No, timeout| K1[Alert committee, retry signing round]
     K1 --> J
@@ -789,15 +789,9 @@ flowchart LR
         COORD[payout-coordinator<br/>planner + PCZT + broadcast + push]
         CDB[(coordinator.db<br/>SQLite, encrypted fields)]
         WDB[(escrow wallet DB<br/>zcash_client_sqlite)]
-        FROSTD[frostd<br/>ZF FROST server, localhost]
+        FROSTS[FROST signer<br/>in-process, 3 encrypted share files]
         ZPRIV[own zebrad<br/>JSON-RPC]
         LWD[Zaino<br/>lightwalletd-compatible gRPC]
-    end
-
-    subgraph Committee["Resolver Committee (demo: 3 shares, one person)"]
-        S1[frost-client member 1]
-        S2[frost-client member 2]
-        S3[frost-client member 3]
     end
 
     subgraph Zcash
@@ -820,10 +814,7 @@ flowchart LR
     COORD --> WDB
     COORD --> LWD
     COORD --> ZPRIV
-    COORD --> FROSTD
-    S1 --> FROSTD
-    S2 --> FROSTD
-    S3 --> FROSTD
+    OPCLI --> FROSTS
     COORD -->|HTTPS push signed with COORDINATOR_KEY:<br/>market, resolution, plan, payout status| API
     V --> ZEBRA
     V -->|frosted-verify| API
@@ -838,7 +829,7 @@ flowchart LR
 | `frosted-api` | Rust (axum) | REST + SSE untuk web dan verifier; endpoint ingest yang hanya menerima push bertanda tangan `COORDINATOR_KEY` | Tidak menyimpan rahasia (hanya pubkey coordinator) |
 | `payout-coordinator` | Rust | Escrow key material, envelope decryption, resolver job, payout planning, PCZT, FROST orchestration, broadcast, push ke API. Tidak membuka port masuk selain localhost untuk `frosted-operator` | **Ya** |
 | `frosted-operator` | Rust CLI | Aksi privat: create market, vote resolusi komite, plan, signing, plan `FOLLOW_UP`. Hanya di host coordinator | **Ya** (berjalan di host privat) |
-| `frostd` + `frost-client` | Rust (ZF) | Transport dan penandatanganan FROST | Share FROST hanya di laptop member |
+| FROST signer (modul `frosted-operator`) | Rust (`reddsa` 0.5.2, `frost-rerandomized` 3.0.0) | Ronde FROST 2-of-3 in-process per spend; konfirmasi `plan_hash` per member (ADR-0014) | Share FROST dalam file terenkripsi per member; tidak pernah dipegang `payout-coordinator` |
 | `frosted-web` | TypeScript (Next.js) | UI, Bet Builder (via WASM), My Bets (IndexedDB), Persona | `K_root` dan receipt hanya di perangkat user |
 | `frosted-verify` | Rust CLI | Audit independen | Tidak |
 | `zebrad` | Rust (ZF) | Node, JSON-RPC, broadcast | Tidak |
@@ -894,11 +885,11 @@ flowchart TD
 | `K_root` (Persona) | Bettor | Hanya saat Thaw | Thaw Tag dan komitmen Persona |
 | `COORDINATOR_KEY` (Ed25519) | Payout Coordinator | PK ya (dikonfigurasi di API) | Menandatangani push ke endpoint ingest. Tidak ada kunci admin per member (ADR-0007) |
 
-`[TO VERIFY]` sebelum implementasi:
-1. Konstruksi `orchard::keys::FullViewingKey` dari bytes `ak || nk || rivk` (96 byte) tersedia secara publik di `orchard` 0.15.x.
-2. `ak` dari DKG `reddsa::frost::redpallas` valid sebagai `SpendValidatingKey` (modul redpallas memiliki penanganan `EvenY`, [reddsa source](https://docs.rs/crate/reddsa/latest/source/src/frost/redpallas.rs)).
-3. Pembuatan `UnifiedFullViewingKey` Orchard-only dan turunan `UnifiedIncomingViewingKey` beserta encoding string-nya di `zcash_keys`.
-4. Apakah UFVK untuk Ironwood memakai item Orchard yang sama atau item terpisah. Tipe `IronwoodFvk` ditemukan di test suite crate fork `zakura-client-sqlite` ([source](https://docs.rs/crate/zakura-client-sqlite/0.1.0-rc8/source/src/wallet/rewind_floor_tests.rs)), bukan di upstream; perlu dicek apakah `zcash_client_backend` upstream punya padanannya (ADR-0010).
+Terbukti di M0.3 (`docs/SPIKES.md`, grup stabil `orchard` 0.15.5, `zcash_keys` 0.16.1 feature `unstable-frost`):
+1. `reddsa::frost::redpallas::keys::generate_with_dealer(3, 2, IdentifierList::Default, rng)` sudah menerapkan `EvenY`; `PublicKeyPackage::verifying_key().serialize()` (32 byte) langsung valid sebagai `ak`.
+2. `orchard::keys::FullViewingKey::from_bytes(&[u8; 96])` (`ak ‖ nk ‖ rivk`) publik dan memvalidasi `ak`, `nk`, `rivk`; `nk` = `pallas::Base::random()`, `rivk` = `pallas::Scalar::random()`.
+3. `zcash_keys::keys::UnifiedFullViewingKey::from_orchard_fvk(fvk)` → `.to_unified_incoming_viewing_key()` → `.encode(&params)`; decode dengan `UnifiedIncomingViewingKey::decode(&params, s)?.orchard()`.
+4. Ironwood memakai item UFVK Orchard yang sama; upstream tidak punya item Ironwood terpisah. Outcome Address: `IncomingViewingKey::address_at(j)` (sama dengan `fvk.address_at(j, Scope::External)`).
 
 ### 19.3 Format memo (semua memo Frosted adalah teks ASCII)
 
@@ -997,7 +988,7 @@ Semua string personalization BLAKE2b tepat 16 byte (syarat BLAKE2b).
 | Diversified address | F-01 | Satu Outcome Address per outcome di bawah satu UIVK |
 | Incoming viewing key (publik) | F-03, F-04, F-09, F-12 | Glass Indexer mendekripsi semua output escrow |
 | Note decryption | F-03 | `try_note_decryption(&IronwoodDomain::for_action(action), &prepared_ivk, action)` mengembalikan `(note, recipient, memo)` ([orchard 0.15 tests](https://docs.rs/crate/orchard/0.15.0/source/tests/builder.rs)) |
-| Recipient → outcome | F-03 | Diversifier index dari alamat penerima dibandingkan dengan diversifier index Outcome. `[TO VERIFY]` method untuk mendapatkan diversifier index dari `Address` dengan IVK di `orchard` 0.15. |
+| Recipient → outcome | F-03 | `orchard::keys::IncomingViewingKey::diversifier_index(&Address) -> Option<DiversifierIndex>` dibandingkan dengan `outcome_index`. Dekripsi: `Transaction::read(bytes, branch_id_for_height)` → `tx.ironwood_bundle()` → `try_note_decryption(&IronwoodDomain::for_action(a), &ivk.prepare(), a)`; plaintext note Ironwood versi V3 (`OrchardDomain` hanya V2). Terbukti di M0.2 |
 | Memo 512 byte | F-02, F-01, F-09 | FRST1, FRSTM1, FRSTP1 |
 | ZIP-321 payment URI | F-02, F-09 | QR untuk Zodl |
 | PCZT | F-08 | Payout dengan penandatangan eksternal |
@@ -1061,20 +1052,16 @@ treasury_out    = operator_fee + swept_total + Σ refund_fee_zat − tx_fee
 ```mermaid
 sequenceDiagram
     autonumber
-    participant M1 as Member 1 frost-client
-    participant M2 as Member 2 frost-client
-    participant M3 as Member 3 frost-client
-    participant FD as frostd
+    participant D as trusted dealer (frosted-operator)
     participant OP as frosted-operator (localhost)
     participant C as payout-coordinator
     participant API as frosted-api
     participant Z as zebrad
 
-    Note over M1,M3: One-time setup (demo: one person, 3 shares, or labeled trusted dealer)
-    M1->>FD: DKG round 1 and 2 (redpallas)
-    M2->>FD: DKG round 1 and 2
-    M3->>FD: DKG round 1 and 2
-    FD-->>C: PublicKeyPackage (group key = ak)
+    Note over D,C: One-time setup (demo: one person, labeled trusted dealer; DKG = roadmap)
+    D->>D: reddsa::frost::redpallas::keys::generate_with_dealer(3, 2, ..) (EvenY applied)
+    D->>D: write 3 encrypted share files, one per member
+    D-->>C: PublicKeyPackage (verifying_key().serialize() = ak)
     C->>C: store committee group, ak
 
     Note over C,API: Per market
@@ -1155,7 +1142,7 @@ sequenceDiagram
     end
 ```
 
-`[TO VERIFY]` bahwa `getblock` verbosity 1 di Zebra mengembalikan `valuePools` per blok dengan `chainValueZat` (catatan rilis Zebra menyatakan field ini ada di `getblock`). Fallback: indexer menyimpan snapshot `getblockchaininfo` ketika tip tepat sama dengan `resolve_height`, dan siapa pun bisa memverifikasi ulang dengan node sendiri.
+Terbukti di M0.5: `getblock("<h>", 1)` mengembalikan `valuePools[]` per blok dengan `id`, `chainValueZat` (nilai pool **setelah** blok `h`), dan `valueDeltaZat`. Fallback snapshot tidak diperlukan. Evidence resolusi menyimpan `chainValueZat` blok `resolve_height` dan hash bloknya. Untuk `UPGRADE_ACTIVE`, upgrade yang **tidak terdaftar** di `getblockchaininfo.upgrades` dianggap belum aktif (outcome NO), dan evidence mencatat daftar upgrade yang dilaporkan node (ADR-0016).
 
 ### SD-4 Payout Batch dengan PCZT + FROST
 
@@ -1166,8 +1153,7 @@ sequenceDiagram
     participant C as payout-coordinator
     participant WDB as escrow wallet DB
     participant LWD as Zaino (private host)
-    participant FD as frostd (localhost)
-    participant S as 2 of 3 members
+    participant S as 2 of 3 member shares (in-process)
     participant Z as zebrad (private host)
     participant API as frosted-api
 
@@ -1180,16 +1166,16 @@ sequenceDiagram
     C->>API: POST /v1/ingest/markets/{id}/payout (plan_hash + full public plan, signed)
     C->>LWD: sync escrow account (notes, witnesses)
     C->>WDB: propose transfer to payout addresses + treasury, skip UNECONOMIC_DUST notes
-    C->>WDB: create_pczt_from_proposal
+    C->>WDB: create_pczt_from_proposal (IO Finalizer signs dummy spends)
     C->>C: pczt Prover adds Halo 2 proofs
-    loop for each spend action
-        C->>C: read sighash and alpha from PCZT
-        C->>FD: open signing session(message = sighash, randomizer = alpha, plan_hash)
-        S->>FD: round 1 commitments
+    OP->>C: payout sign <market_id> --plan-hash <h>
+    C->>C: sighash = pczt::roles::signer::Signer::shielded_sighash()
+    loop for each real spend action (spend_auth_sig not yet set)
+        C->>C: alpha = low_level_signer::sign_ironwood_with(..) -> action.spend().alpha()
         S->>S: show plan_hash and summary, member approves
-        S->>FD: round 2 signature shares
-        FD-->>C: shares
-        C->>C: aggregate rerandomized signature, insert into PCZT action
+        S->>S: round 1 commitments, round 2 shares (frost_rerandomized::sign with Randomizer(alpha))
+        C->>C: reddsa::frost::redpallas::rerandomized::aggregate(..)
+        C->>C: Signer::apply_ironwood_signature(i, sig) (verifies against rk)
     end
     C->>C: finalize and extract transaction
     C->>Z: sendrawtransaction
@@ -1201,13 +1187,14 @@ sequenceDiagram
     C->>API: push CONFIRMED (market SETTLED) or rebuild if expired
 ```
 
-Nama fungsi PCZT yang diketahui ada: role `creator`, `io_finalizer`, `prover`, `signer`, `low_level_signer`, `combiner`, `spend_finalizer`, `tx_extractor` di crate `pczt` ([pczt 0.9.1 roles](https://docs.rs/crate/pczt/0.9.1/source/src/roles.rs)), serta `create_pczt_from_proposal` dan `extract_and_store_transaction_from_pczt` di `zcash_client_backend` dengan fitur `pczt`.
-
-`[TO VERIFY]` (spike pertama, lihat Part E):
-1. Cara membaca `sighash` dan `alpha` setiap aksi dari PCZT dan memasukkan `spend_auth_sig` eksternal (kemungkinan lewat `low_level_signer`). Pola "ambil sighash dan spend auth randomizer dari PCZT, tanda tangani di luar" sudah dipakai `zcash_voting` ([docs.rs](https://docs.rs/crate/zcash_voting)).
-2. **Versi FROST.** FROST v3 mendesain ulang `frost-rerandomized` agar semua peserta ikut menentukan randomizer ([ZecHub](https://zechub.substack.com/p/zcash-shielded-news-vol4-0a5)). Karena `rk` harus diketahui sebelum proof dibuat, MVP memakai varian di mana **randomizer diambil dari PCZT dan diberikan ke signer** (`reddsa` 0.5.x + `frost-rerandomized` 2.x). Risiko bias randomizer oleh coordinator dicatat di threat model.
-3. Penanganan dummy spend dalam PCZT (tanda tangan untuk aksi dummy dibuat oleh signer role dari kunci dummy di PCZT, bukan oleh FROST).
-4. Biaya signing: jumlah sesi FROST = jumlah spend escrow (satu per note yang dibelanjakan). Ukur durasi per sesi dan cek apakah `frostd` bisa menandatangani banyak pesan dalam satu sesi (M0.4).
+API PCZT dan FROST yang terbukti di M0.4 (`docs/SPIKES.md`, grup librustzcash pre-release rev `eb38d7a`, ADR-0015):
+- Sighash: `pczt::roles::signer::Signer::new(pczt)?.shielded_sighash() -> [u8; 32]`.
+- `alpha` per aksi: `pczt::roles::low_level_signer::Signer::new(pczt).sign_ironwood_with(..)` lalu `action.spend().alpha()`.
+- Sisip tanda tangan eksternal: `Signer::apply_ironwood_signature(index, orchard::primitives::redpallas::Signature::from([u8; 64]))`; memverifikasi terhadap `rk`.
+- Dummy spend sudah ditandatangani IO Finalizer saat PCZT dibuat; signer melewati aksi yang `spend_auth_sig()` sudah terisi.
+- FROST v3 dengan randomizer eksternal: `frost_rerandomized::sign(signing_package, nonces, key_package, Randomizer)` + `RandomizedParams::from_randomizer(..)` + `reddsa::frost::redpallas::rerandomized::aggregate(..)` (API deprecated, dibungkus satu modul; ADR-0013). Risiko bias randomizer dicatat di T-7.
+- Biaya: satu sesi FROST per spend nyata, 2–7 ms per sesi in-process; fee ZIP 317 = `5000 × max(2, actions)` zat (terukur 10.000 zat untuk 2 aksi).
+- `zcash-devtool pczt update-with-signature` belum mendukung Ironwood; coordinator menyisipkan tanda tangan sendiri.
 
 ### SD-5 Persona registration dan Thaw
 
@@ -1568,7 +1555,7 @@ API menghitung ulang `rules_hash` dan `plan_hash` dari body; push yang tidak coc
 | `resolution propose\|confirm\|withdraw <market_id> [--outcome i] [--evidence-url u] --member <id>` | Vote Committee-Resolved Market | `MARKET_NOT_FOUND` |
 | `payout plan <market_id>` | Buat plan `STANDARD` | `MARKET_NOT_RESOLVED`, `PLAN_ALREADY_EXISTS`, `FEE_SHORTFALL` |
 | `payout follow-up <market_id>` | Buat plan `FOLLOW_UP` untuk note setelah `plan_cutoff_height` | `MARKET_NOT_RESOLVED`, `FEE_SHORTFALL` |
-| `payout sign <market_id> --plan-hash <h>` | Mulai sesi FROST lewat `frostd` (localhost) | `MARKET_NOT_RESOLVED` |
+| `payout sign <market_id> --plan-hash <h>` | Menjalankan ronde FROST 2-of-3 in-process per spend; menampilkan `plan_hash` + ringkasan dan meminta konfirmasi per member (ADR-0014) | `MARKET_NOT_RESOLVED` |
 | `payout status <market_id>` | Status plan, tx, dan sesi signing | `MARKET_NOT_FOUND` |
 
 Roadmap (bukan MVP): opsi pull, di mana member dari pihak berbeda mengirim vote bertanda tangan ke API dan coordinator mengambilnya lewat GET keluar.
@@ -1648,8 +1635,8 @@ Roadmap (bukan MVP): opsi pull, di mana member dari pihak berbeda mengirim vote 
 
 | `resolution_type` | `resolution_params` | Outcomes |
 | --- | --- | --- |
-| `POOL_THRESHOLD` | `pool ∈ {transparent, sapling, orchard, ironwood, lockbox}` (`[TO VERIFY]` V-20 ID persis), `comparator ∈ {gte, lt}`, `threshold_zat` | Tepat `["YES","NO"]` |
-| `UPGRADE_ACTIVE` | `upgrade_name` (contoh `"NU7"`, `[TO VERIFY]` V-20) | Tepat `["YES","NO"]` |
+| `POOL_THRESHOLD` | `pool ∈ {transparent, sprout, sapling, orchard, ironwood, lockbox}` (id persis dari `valuePools`, terbukti di M0.5), `comparator ∈ {gte, lt}`, `threshold_zat` | Tepat `["YES","NO"]` |
+| `UPGRADE_ACTIVE` | `upgrade_name` sesuai `getblockchaininfo.upgrades[].name` (contoh `"NU6.3"`, `"NU7"`); tidak terdaftar = belum aktif (ADR-0016) | Tepat `["YES","NO"]` |
 | `COMMITTEE` | `criteria` (teks), `evidence_source` (teks), `dispute_window_blocks` (default `DISPUTE_WINDOW_BLOCKS`), `void_after_blocks` (default `VOID_AFTER_BLOCKS`) | 2–4 outcome |
 
 `kind` di `GET /v1/markets`: `chain_verified` = `POOL_THRESHOLD` atau `UPGRADE_ACTIVE`; `committee` = `COMMITTEE`.
@@ -1663,6 +1650,8 @@ Roadmap (bukan MVP): opsi pull, di mana member dari pihak berbeda mengirim vote 
 | `frosted-verify` CLI | `frosted-verify market <id>`, `pools <id>`, `resolution <id>`, `thaw <k_root>`, `envelope-proof <file>`, `all <id>`; flag `--node <rpc_url>`, `--api <url>` | verifier, bettor |
 | `frosted-operator` CLI | Lihat §22.2 | operator, committee (host coordinator) |
 | Zebra JSON-RPC (dipakai) | `getbestblockheightandhash`, `getblock`, `getrawtransaction`, `getblockchaininfo`, `sendrawtransaction` | indexer, coordinator |
+
+**Batas antar-grup crate (ADR-0015):** komponen dengan grup librustzcash stabil (indexer, verifier, `zcash-glass` feature `zcash`) dan grup pre-release (coordinator, operator) hanya bertukar data dalam bentuk bytes/string (UFVK/UIVK ter-encode, tx hex, PCZT bytes, JSON), tidak pernah lewat tipe Rust dari crate librustzcash.
 
 ## 23. State management & background jobs
 
@@ -1839,7 +1828,7 @@ Catatan: nilai berbasis blok (`ANNOUNCE_TIMEOUT_BLOCKS`, `DISPUTE_WINDOW_BLOCKS`
 | T-18 | Spam dust | Banyak note kecil ke Outcome Address untuk membebani sweep, fee, dan signing | `MIN_BET_ZAT`; note ≤ `SWEEP_THRESHOLD_ZAT` tidak pernah dibelanjakan (tanpa sesi FROST); note yang disapu membiayai spend-nya sendiri; `FEE_SHORTFALL` fail-closed sehingga spam tidak bisa memotong pemenang (ADR-0003, ADR-0004) | Rendah |
 | T-19 | Penyalinan memo / Thaw Tag | Memo terbaca via UIVK; payload disalin ke bet lain untuk mengotori reputasi Persona | Thaw Tag v2 mengikat market, outcome, jumlah, `env_epk`; salinan persis tetap membayar ke receiver Persona; tag kembar → hanya kemunculan pertama, sisanya `DUPLICATE_TAG` (ADR-0002) | Rendah |
 | T-20 | `COORDINATOR_KEY` bocor | Push palsu ke API | API menghitung ulang `rules_hash` dan `plan_hash`; `rules_hash` terkunci on-chain; verifier independen menghitung ulang dari chain | Rendah (data publik bisa dicek ulang) |
-| T-21 | Serangan jaringan ke host privat | Port masuk ke coordinator atau `frostd` | Coordinator push-only; `frostd` dan `frosted-operator` hanya di localhost (ADR-0007) | Rendah |
+| T-21 | Serangan jaringan ke host privat | Port masuk ke coordinator | Coordinator push-only; signing FROST in-process dan `frosted-operator` hanya di localhost; tidak ada server signing (ADR-0007) | Rendah |
 
 ### 24.3 Metadata yang **tetap** bocor (harus ditulis di How It Works)
 
@@ -1863,14 +1852,14 @@ Versi di bawah adalah versi yang **diketahui ada** saat riset. Claude Code wajib
 | Node | `zebrad` | ≥ 6.2.x (dukungan NU6.3 Ironwood); gunakan 7.x jika NU7 sudah aktif `[TO VERIFY]` | Satu-satunya implementasi konsensus utama; `getblock` membawa `valuePools` termasuk Ironwood |
 | Node alternatif | Zakura | 5.x (`zakura-rpc` 5.0.0) | Fork Zebra yang lebih cepat sync; RPC kompatibel |
 | gRPC wallet indexer | Zaino (`zainod`) atau server lightwalletd-compatible | `[TO VERIFY]` versi dengan dukungan `ironwood_actions` (`zaino-proto` memiliki field ini) | Dibutuhkan `zcash_client_backend` untuk sinkronisasi escrow |
-| Zcash core | `orchard` | 0.15.x | `IronwoodDomain`, note decryption |
-| | `zcash_primitives` | 0.29.x | Parsing transaksi v6 |
+| Zcash core (grup stabil: indexer, verifier, `zcash-glass` feature `zcash`) | `orchard` | 0.15.5 | `IronwoodDomain`, note decryption (M0.2); grup pre-release memakai 0.16.0 |
+| | `zcash_primitives` | 0.30.1 (stabil); 0.31.0-pre.2 di grup pre-release | Parsing transaksi v6, `ironwood_bundle()` |
 | | `zcash_protocol` | 0.10.x | Parameter jaringan |
-| | `zcash_keys` | 0.15.x / 0.16.x | UFVK/UIVK, alamat |
+| | `zcash_keys` | 0.16.1, features `orchard`, `unstable-frost` | UFVK/UIVK dari FVK FROST, alamat (M0.3) |
 | | `zcash_address` | 0.13.x | Parsing Unified Address |
-| | `zcash_note_encryption` | sesuai kelompok orchard | `try_note_decryption` |
-| | `zcash_client_backend` | ≥ 0.24.0-rc.1, fitur `orchard`, `pczt`, `lightwalletd-tonic`, `sync` | Wallet escrow view-only, PCZT |
-| | `zcash_client_sqlite` | ≥ 0.22.0-rc.1 | Penyimpanan wallet escrow |
+| | `zcash_note_encryption` | 0.4.2 (grup stabil) | `try_note_decryption` |
+| Wallet escrow (grup pre-release: coordinator, operator; ADR-0015) | `zcash_client_backend` | 0.25.0-pre.2 (librustzcash git rev `eb38d7a`), fitur `orchard`, `pczt`, `lightwalletd-tonic`, `sync` | Wallet escrow view-only, PCZT Ironwood (M0.4) |
+| | `zcash_client_sqlite` | 0.23.0-pre.2 (rev `eb38d7a`) | Penyimpanan wallet escrow |
 | | `pczt` | 0.10.0-pre.2 (git rev `eb38d7a`) untuk coordinator; lihat ADR-0015 | Role PCZT; spend Ironwood hanya terbukti di grup pre-release (M0.4) |
 | | `zip321` | ≥ 0.9.0-rc.1 | URI pembayaran + memo base64 |
 | FROST | `reddsa` | 0.5.2 dengan fitur `frost` (0.6.x membuang feature ini) | Ciphersuite `redpallas` (ZIP 312); terbukti di M0.3/M0.4 |
@@ -1925,7 +1914,7 @@ frosted/
 │   └── public/
 ├── infra/
 │   ├── docker-compose.yml        # zebrad, zaino, indexer, api, web, caddy
-│   ├── docker-compose.private.yml# payout-coordinator, frostd, zebrad, zaino (host terpisah, tanpa port masuk)
+│   ├── docker-compose.private.yml# payout-coordinator, zebrad, zaino (host terpisah, tanpa port masuk)
 │   ├── zebra/
 │   │   ├── regtest.toml
 │   │   ├── testnet.toml
@@ -1944,7 +1933,7 @@ frosted/
     ├── dev-up.sh                 # Jalankan stack regtest
     ├── seed-demo.sh              # Buat market demo + bet uji
     ├── export-snapshot.sh        # Ekspor respons API publik satu market SETTLED ke JSON (snapshot mode)
-    └── committee/                # Panduan & skrip untuk laptop member (frost-client)
+    └── committee/                # Panduan trusted dealer + signing in-process per member (ADR-0014)
 ```
 
 ## 27. Development environment
@@ -2142,7 +2131,7 @@ Aturan umum untuk Claude Code:
 | M8.1 J-5 `chain_resolver` untuk `POOL_THRESHOLD` dan `UPGRADE_ACTIVE` | Test regtest dengan ambang yang pasti YES dan pasti NO |
 | M8.2 Planner (`frosted-operator payout plan`): buka envelope, hitung plan dengan `zcash-glass::payout` pada `plan_cutoff_height`, sapuan, cek `FEE_SHORTFALL`, `plan_hash`, plan publik | Plan sama dengan perhitungan `frosted-verify` (tanpa alamat); fee kurang → plan tidak dibuat |
 | M8.3 Builder PCZT (proposal → PCZT → proof) | PCZT valid untuk semua output plan (termasuk Treasury); note `UNECONOMIC_DUST` tidak dibelanjakan; pecah jika > `MAX_ACTIONS_PER_TX` |
-| M8.4 FROST orchestration via `frostd` (localhost); signer melihat `plan_hash` | 2-of-3 signature teragregasi per aksi |
+| M8.4 FROST 2-of-3 in-process di `frosted-operator` (API M0.4, ADR-0013/0014); signer melihat `plan_hash` | 2-of-3 signature teragregasi per aksi dan lolos `apply_ironwood_signature` |
 | M8.5 Extract + broadcast + J-10 monitor + rebuild saat expired | Payout terkonfirmasi di regtest; wallet pemenang menerima note dengan jumlah benar |
 | M8.6 S-05 Resolution & Payout + S-11 status read-only + `frosted-operator payout status` | Progres signing tampil sebagai sesi selesai/total |
 | M8.8 Plan `FOLLOW_UP` manual (`frosted-operator payout follow-up`) | Note setelah `plan_cutoff_height` dibayar/disapu lewat plan baru dengan `plan_hash` sendiri |
@@ -2200,11 +2189,17 @@ Aturan umum untuk Claude Code:
 | Unit | `zcash-glass` (params invariant, memo, envelope + proof, thaw v2, odds, payout, hash JCS), validasi API, komponen web | `cargo test`, `proptest`, `vitest` |
 | Test vector | File JSON di `docs/test-vectors/` dipakai bersama oleh Rust dan WASM | Test membaca file yang sama |
 | Integrasi (regtest) | Indexer + API + coordinator + zebrad + zaino; bettor disimulasikan dengan `zcash-devtool` atau skrip Rust yang membangun tx | Skrip `scripts/dev-up.sh` + `cargo test --features it` |
-| FROST | DKG trusted dealer di CI, 3 signer lokal, signing PCZT regtest | `frost-client` / crate langsung |
+| FROST | Trusted dealer di CI, 3 share lokal, signing PCZT regtest in-process | `reddsa` 0.5.2 / `frost-rerandomized` 3.0.0 langsung |
 | End-to-end | Web → QR URI → tx regtest → odds berubah → resolusi → payout | Playwright (URI disalin dari halaman, dikirim oleh skrip wallet) |
 | Uji privasi | Pastikan API tidak pernah mengembalikan `txid` bet, alamat, isi envelope, atau `env_esk`; log tanpa IP; coordinator tidak membuka port selain localhost | Test snapshot respons + grep log + cek port |
 | Uji serangan | Spam dust (tidak ada sesi FROST, pemenang tidak terpotong), salinan memo/tag (`DUPLICATE_TAG`), FRSTM1 palsu, push bertanda tangan salah | Test integrasi regtest |
 | Uji manual | Zodl di testnet/mainnet mikro | Checklist di `docs/SPIKES.md` |
+
+**Catatan regtest dari spike (`docs/SPIKES.md` §M0.1–M0.4), wajib diikuti test integrasi:**
+- Coinbase baru bisa dibelanjakan setelah 100 blok; pendanaan wallet uji mengikuti `scripts/regtest-wallet.sh setup` (coinbase ke faucet → miner kembali ke default → matangkan → shield).
+- Zaino bisa tertinggal sesaat setelah `generate`; test menunggu tip Zaino = tip zebrad, lalu memverifikasi tinggi wallet sebelum membangun tx.
+- Activation height wallet dan tool selalu diturunkan dari `getblockchaininfo` (ADR-0016).
+- Light wallet baru melihat memo setelah `enhance` (mengambil transaksi penuh).
 
 **Menguji transaksi Zcash dengan aman:**
 1. Semua logika dikembangkan di **regtest** (dana tidak bernilai, blok bisa dibuat sesuai kebutuhan).
@@ -2238,11 +2233,10 @@ flowchart LR
         end
         subgraph Private_stack["Compose privat (tanpa port masuk)"]
             OPC[frosted-operator] --> COORDC[payout-coordinator]
-            COORDC --> FD[frostd localhost]
+            OPC --> FS[FROST signer in-process]
             COORDC --> ZT2[testnet RPC: endpoint publik<br/>atau node lokal]
             COORDC --> ZP[lightwalletd-compatible:<br/>publik atau Zaino lokal]
             ZP --> ZT2
-            M1[frost-client x3<br/>demo: satu orang] --> FD
         end
         COORDC -->|"HTTPS push, signed COORDINATOR_KEY"| APIC
     end
@@ -2254,7 +2248,7 @@ flowchart LR
 
 Langkah:
 1. Laptop, sisi publik: `docker compose -f infra/docker-compose.yml up -d`, diarahkan ke endpoint testnet publik yang lolos V-31 (M12.0). Fallback: node testnet lokal di SSD eksternal (sync semalaman, §27.5).
-2. Laptop, sisi privat: `docker compose -f infra/docker-compose.private.yml up -d` sebagai project Compose terpisah dengan DB terpisah. Tidak ada port masuk; coordinator mendorong data ke `API_INGEST_URL`. `frostd` dan `frosted-operator` hanya di localhost. Pada demo laptop, zebrad sisi publik dan privat boleh satu node yang sama; ini dicatat di "Real vs simulated".
+2. Laptop, sisi privat: `docker compose -f infra/docker-compose.private.yml up -d` sebagai project Compose terpisah dengan DB terpisah. Tidak ada port masuk; coordinator mendorong data ke `API_INGEST_URL`. `frosted-operator` (termasuk signing FROST in-process) hanya di localhost. Pada demo laptop, zebrad sisi publik dan privat boleh satu node yang sama; ini dicatat di "Real vs simulated".
 3. Committee: jalankan DKG sekali (atau trusted dealer untuk demo, dengan label jelas). Pada demo, ketiga share dipegang satu orang; tulis di tabel "Real vs simulated" (ADR-0008).
 4. `scripts/seed-demo.sh` membuat market demo.
 5. Setelah satu market `SETTLED`: `scripts/export-snapshot.sh <market_id>` mengekspor respons endpoint **publik** saja (`/markets`, `/markets/{id}`, `/odds`, `/bets`, `/resolution`, `/payout`, `/verify`, `/leaderboard`, Persona yang sudah di-thaw) ke JSON. Tidak ada data `coordinator.db`, txid bet, alamat, atau `env_esk`. Hasilnya di-deploy ke Vercel dengan `NEXT_PUBLIC_SNAPSHOT_MODE=true`.
@@ -2377,43 +2371,43 @@ Aturan resmi Zecathon ada di balik login, jadi checklist ini disusun dari pola s
 
 ## 36. Open questions & `[TO VERIFY]` (konsolidasi)
 
-| # | Item | Bagian | Diselesaikan di |
-| --- | --- | --- | --- |
-| V-1 | Kirim ke receiver Orchard pasca-NU6.3 menghasilkan note Ironwood | §19.1, A-1 | M0.2 |
-| V-2 | Zodl meneruskan memo dari URI ZIP-321; tersedia di testnet | A-2, §27 | M0.6 |
-| V-3 | `reddsa::frost::redpallas` bisa menandatangani spend Ironwood | A-4, SD-4 | M0.4 |
-| V-4 | Konstruksi FVK dari `ak‖nk‖rivk`; validitas `ak` dari DKG | §19.2 | M0.3 |
-| V-5 | API UFVK/UIVK Orchard-only dan encoding UIVK di `zcash_keys`; apakah Ironwood memakai item UFVK terpisah | §19.2 | M0.3 |
-| V-6 | Method untuk diversifier index dari alamat penerima di `orchard` 0.15 | §19.4 | M0.2 |
-| V-7 | `getblock(h, 1)` memuat `valuePools.chainValueZat` per blok | A-6, SD-3 | M0.5 |
-| V-8 | Cara membaca sighash/alpha dan menyisipkan `spend_auth_sig` di PCZT; penanganan dummy spend | SD-4 | M0.4 |
-| V-9 | Kompatibilitas `reddsa` 0.5.x dengan `frost-rerandomized` 2.x vs FROST v3 | §25, T-7 | M0.4 |
-| V-10 | Accessor bundle Ironwood di `zcash_primitives` 0.29 untuk parsing tx v6 | §19.4 | M0.2 |
-| V-11 | Dukungan Ironwood di Zaino/gRPC untuk sync wallet escrow | §25, §34 | M0.4 (DoD mencakup sync lewat Zaino) |
-| V-12 | ~~Transaksi shielded bernilai 0 untuk announcement~~ | US-02 | Tidak relevan lagi: announcement harus > `SWEEP_THRESHOLD_ZAT` (ADR-0009) |
-| V-13 | Konfigurasi regtest Zebra: activation height NU6.3, internal miner, port RPC dan Zaino | §27 | M0.1 |
-| V-14 | URL faucet TAZ yang aktif | §27 | Sebelum demo testnet |
-| V-15 | Status aktivasi mainnet NU7 (target 5 Nov 2026) | §5, §25 | Sebelum demo |
-| V-16 | Kemampuan NEAR Intents 1Click mengirim ke tujuan Zcash dengan memo | F-14 | M13.2 |
-| V-17 | Kriteria juri, batas video, dan aturan submission Zecathon | §8, §33 | Login ke situs |
-| V-18 | Versi terbaru crate pendukung (axum, sqlx, dalek, RustCrypto, Next.js, idb, qrcode) | §25 | M1 |
-| V-19 | Bukti kasus doxxing/copy-trading whale untuk slide masalah | §2 | Sebelum pitch |
-| V-20 | ID pool di `valuePools` (`transparent/sapling/orchard/ironwood/lockbox`) dan nama upgrade (`"NU7"`) di `getblockchaininfo` | §19.4, §22.3 | M0.5 |
-| V-21 | `zcash-devtool` mendukung Ironwood dan bisa mengirim note bermemo ke UA Orchard-only | §27.1 | M0.1 |
-| V-22 | Fallback witness lewat `z_gettreestate` + scanning sendiri | §34 | M0.4 (jika sync Zaino gagal) |
-| V-23 | Cek ulang submission Zecathon publik: belum ada prediction market berbasis Zcash | §7 | Sebelum submit |
-| V-24 | Crate JCS (RFC 8785) yang sesuai standar dan bisa dikompilasi ke WASM | §25 | M2.8 |
-| V-25 | Zodl mengizinkan jumlah dari URI ZIP-321 diedit sebelum kirim (memengaruhi Thaw Tag v2) | §19.3, US-04 | M0.6 |
-| V-26 | Tinggi aktivasi Ironwood di testnet (4.134.000) | §19.1, §27.2 | Sebelum demo testnet |
-| V-27 | A-5: `getblockchaininfo` di node live memuat `valuePools.ironwood` dan `upgrades` | A-5 | M0.1 dan M0.5 (regtest); live deferred to M12 (M12.0) |
-| V-28 | A-7: fee ZIP 317 untuk aksi Ironwood = 5.000 zat per logical action | A-7, §23.4 | M0.4 |
-| V-29 | Kebutuhan disk dan waktu sync node testnet terkini (fallback lokal) | §27.5 | M12.0 (hanya jika fallback dipakai) |
-| V-30 | Opsi akses mainnet tanpa node penuh di laptop: Zakura dengan pruning/snapshot, atau endpoint publik (dan dampaknya ke ADR-0007) | §27.3, M13.4 | Sebelum M13.4 (opsional) |
-| V-31 | Endpoint testnet publik menyediakan `getrawtransaction` (tx penuh), `getblock(h, 1)` dengan `valuePools`, `getblockchaininfo` dengan `valuePools`/`upgrades`, `sendrawtransaction`, serta lightwalletd-compatible dengan data Ironwood; batas rate cukup untuk indexer | §27.3, M12.0 | M12.0 |
-| Q-1 | ~~Siapa 3 Committee Member untuk demo?~~ Terjawab: satu developer memegang ketiga share (ADR-0008) | §6 | — |
-| Q-2 | Apakah F-13 (publikasi UFVK) diaktifkan default setelah settlement? | F-13 | Tim |
-| Q-3 | Threshold decryption untuk envelope pasca-hackathon? | T-6 | Roadmap |
-| Q-4 | Vote komite multi-pihak lewat API (opsi pull, coordinator mengambil vote bertanda tangan member) | ADR-0007 | Roadmap |
+| # | Item | Bagian | Diselesaikan di | Status |
+| --- | --- | --- | --- | --- |
+| V-1 | Kirim ke receiver Orchard pasca-NU6.3 menghasilkan note Ironwood | §19.1, A-1 | M0.2 | **Terjawab** (SPIKES §M0.2) |
+| V-2 | Zodl meneruskan memo dari URI ZIP-321; tersedia di testnet | A-2, §27 | M0.6 | **DEFERRED ke M6** (separuh regtest PASS, SPIKES §M0.6) |
+| V-3 | `reddsa::frost::redpallas` bisa menandatangani spend Ironwood | A-4, SD-4 | M0.4 | **Terjawab** (SPIKES §M0.4) |
+| V-4 | Konstruksi FVK dari `ak‖nk‖rivk`; validitas `ak` dari DKG | §19.2 | M0.3 | **Terjawab** (SPIKES §M0.3) |
+| V-5 | API UFVK/UIVK Orchard-only dan encoding UIVK di `zcash_keys`; apakah Ironwood memakai item UFVK terpisah | §19.2 | M0.3 | **Terjawab**: item Orchard yang sama (SPIKES §M0.3) |
+| V-6 | Method untuk diversifier index dari alamat penerima di `orchard` 0.15 | §19.4 | M0.2 | **Terjawab**: `IncomingViewingKey::diversifier_index` (SPIKES §M0.2) |
+| V-7 | `getblock(h, 1)` memuat `valuePools.chainValueZat` per blok | A-6, SD-3 | M0.5 | **Terjawab** (SPIKES §M0.5) |
+| V-8 | Cara membaca sighash/alpha dan menyisipkan `spend_auth_sig` di PCZT; penanganan dummy spend | SD-4 | M0.4 | **Terjawab** (SPIKES §M0.4) |
+| V-9 | Kompatibilitas `reddsa` 0.5.x dengan `frost-rerandomized` 2.x vs FROST v3 | §25, T-7 | M0.4 | **Terjawab**: FROST v3; ADR-0013, ADR-0014 |
+| V-10 | Accessor bundle Ironwood di `zcash_primitives` 0.29 untuk parsing tx v6 | §19.4 | M0.2 | **Terjawab**: `Transaction::ironwood_bundle()` (SPIKES §M0.2) |
+| V-11 | Dukungan Ironwood di Zaino/gRPC untuk sync wallet escrow | §25, §34 | M0.4 (DoD mencakup sync lewat Zaino) | **Terjawab**: Zaino 0.10.1 (SPIKES §M0.4) |
+| V-12 | ~~Transaksi shielded bernilai 0 untuk announcement~~ | US-02 | Tidak relevan lagi: announcement harus > `SWEEP_THRESHOLD_ZAT` (ADR-0009) | — |
+| V-13 | Konfigurasi regtest Zebra: activation height NU6.3, internal miner, port RPC dan Zaino | §27 | M0.1 | **Terjawab** (SPIKES §M0.1) |
+| V-14 | URL faucet TAZ yang aktif | §27 | Sebelum demo testnet | Faucet ditemukan, belum diverifikasi; dibutuhkan di M6/M12 |
+| V-15 | Status aktivasi mainnet NU7 (target 5 Nov 2026) | §5, §25 | Sebelum demo | — |
+| V-16 | Kemampuan NEAR Intents 1Click mengirim ke tujuan Zcash dengan memo | F-14 | M13.2 | — |
+| V-17 | Kriteria juri, batas video, dan aturan submission Zecathon | §8, §33 | Login ke situs | — |
+| V-18 | Versi terbaru crate pendukung (axum, sqlx, dalek, RustCrypto, Next.js, idb, qrcode) | §25 | M1 | **Terjawab** untuk M1 (SPIKES §M0.1); dicek ulang per change |
+| V-19 | Bukti kasus doxxing/copy-trading whale untuk slide masalah | §2 | Sebelum pitch | — |
+| V-20 | ID pool di `valuePools` (`transparent/sapling/orchard/ironwood/lockbox`) dan nama upgrade (`"NU7"`) di `getblockchaininfo` | §19.4, §22.3 | M0.5 | **Terjawab** (SPIKES §M0.5) |
+| V-21 | `zcash-devtool` mendukung Ironwood dan bisa mengirim note bermemo ke UA Orchard-only | §27.1 | M0.1 | **Terjawab** (SPIKES §M0.1) |
+| V-22 | Fallback witness lewat `z_gettreestate` + scanning sendiri | §34 | M0.4 (jika sync Zaino gagal) | **Tidak diperlukan**: sync Zaino berhasil (SPIKES §M0.4) |
+| V-23 | Cek ulang submission Zecathon publik: belum ada prediction market berbasis Zcash | §7 | Sebelum submit | — |
+| V-24 | Crate JCS (RFC 8785) yang sesuai standar dan bisa dikompilasi ke WASM | §25 | M2.8 | **Terjawab**: JCS minimal sendiri, lulus contoh RFC 8785 untuk subset (change `add-glass-core`) |
+| V-25 | Zodl mengizinkan jumlah dari URI ZIP-321 diedit sebelum kirim (memengaruhi Thaw Tag v2) | §19.3, US-04 | M0.6 | **DEFERRED ke M6** |
+| V-26 | Tinggi aktivasi Ironwood di testnet (4.134.000) | §19.1, §27.2 | Sebelum demo testnet | **Terjawab**: 4.134.000 dari source Zebra v6.4.2 (SPIKES §M0.6) |
+| V-27 | A-5: `getblockchaininfo` di node live memuat `valuePools.ironwood` dan `upgrades` | A-5 | M0.1 dan M0.5 (regtest); live deferred to M12 (M12.0) | Regtest **terjawab**; live deferred to M12 |
+| V-28 | A-7: fee ZIP 317 untuk aksi Ironwood = 5.000 zat per logical action | A-7, §23.4 | M0.4 | **Terjawab**: 10.000 zat untuk 2 aksi (SPIKES §M0.4) |
+| V-29 | Kebutuhan disk dan waktu sync node testnet terkini (fallback lokal) | §27.5 | M12.0 (hanya jika fallback dipakai) | — |
+| V-30 | Opsi akses mainnet tanpa node penuh di laptop: Zakura dengan pruning/snapshot, atau endpoint publik (dan dampaknya ke ADR-0007) | §27.3, M13.4 | Sebelum M13.4 (opsional) | — |
+| V-31 | Endpoint testnet publik menyediakan `getrawtransaction` (tx penuh), `getblock(h, 1)` dengan `valuePools`, `getblockchaininfo` dengan `valuePools`/`upgrades`, `sendrawtransaction`, serta lightwalletd-compatible dengan data Ironwood; batas rate cukup untuk indexer | §27.3, M12.0 | M12.0 | — |
+| Q-1 | ~~Siapa 3 Committee Member untuk demo?~~ Terjawab: satu developer memegang ketiga share (ADR-0008) | §6 | — | — |
+| Q-2 | Apakah F-13 (publikasi UFVK) diaktifkan default setelah settlement? | F-13 | Tim | — |
+| Q-3 | Threshold decryption untuk envelope pasca-hackathon? | T-6 | Roadmap | — |
+| Q-4 | Vote komite multi-pihak lewat API (opsi pull, coordinator mengambil vote bertanda tangan member) | ADR-0007 | Roadmap | — |
 
 ## 37. Reference links
 
