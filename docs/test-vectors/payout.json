@@ -1,0 +1,237 @@
+{
+  "expected": {
+    "plan": {
+      "items": [
+        {
+          "amount_zat": 79714285,
+          "bet_fingerprint": "0000000000000008",
+          "kind": "WIN",
+          "note_ref": "0000000010000001",
+          "receiver_commitment": "feae836a94d623647067b7dc1188f12c6451c5ea38bf3c198598a68ec01ff5ca"
+        },
+        {
+          "amount_zat": 318857142,
+          "bet_fingerprint": "0000000000000011",
+          "kind": "WIN",
+          "note_ref": "00000000a000000a",
+          "receiver_commitment": "2b554c9143c919bff570f78dda30619bc6298206e774c4023b3ca4cfc38f1a58"
+        },
+        {
+          "amount_zat": 191314285,
+          "bet_fingerprint": "0000000000000012",
+          "kind": "WIN",
+          "note_ref": "00000000b000000b",
+          "receiver_commitment": "1874aa0a2888147a643ef02dbea821c5151c3542fa65a43550808f5c7214f7ae"
+        },
+        {
+          "amount_zat": 239142857,
+          "bet_fingerprint": "0000000000000013",
+          "kind": "WIN",
+          "note_ref": "00000000c000000c",
+          "receiver_commitment": "a39e33a5c11d8a0bf229c35c12ccc323f7d801dea2f0d3599e5012a3fc96d48c"
+        },
+        {
+          "amount_zat": 239142857,
+          "bet_fingerprint": "0000000000000014",
+          "kind": "WIN",
+          "note_ref": "00000000d000000d",
+          "receiver_commitment": "ea377cae2f89ff8ea71fd0fb445a4c7531de0fc0a6d10f7cf4030d34848a84ae"
+        },
+        {
+          "amount_zat": 159428571,
+          "bet_fingerprint": "0000000000000015",
+          "kind": "WIN",
+          "note_ref": "00000000e000000e",
+          "receiver_commitment": "d57d7ad5841b5341c4b9bdff2c44566723dce9089ac5829495f6f2e765ee2387"
+        },
+        {
+          "amount_zat": 19995000,
+          "bet_fingerprint": "0000000000000025",
+          "kind": "REFUND",
+          "note_ref": "00000001e000001e",
+          "receiver_commitment": "d421290c1bb442ef9a09c713958fe1c64470c091f3652b38e06420c7116f20a6"
+        },
+        {
+          "amount_zat": 10000,
+          "bet_fingerprint": "0000000000000026",
+          "kind": "SWEEP",
+          "note_ref": "00000001f000001f",
+          "receiver_commitment": null
+        }
+      ],
+      "market_id": "a1f3c0de9b7e4f21a0b1c2d3e4f50617",
+      "operator_fee_zat": 12400003,
+      "plan_cutoff_height": 1000,
+      "plan_kind": "STANDARD",
+      "result": 0
+    },
+    "plan_hash": "b4e3a79ca0232c2b3874b018ed57799f058d7fce88abac9d568fb2441403ff99",
+    "treasury_out_zat": 12360003,
+    "tx_fee_zat": 55000
+  },
+  "input": {
+    "fee_bps": 100,
+    "fee_model": {
+      "grace_actions": 2,
+      "marginal_fee_zat": 5000,
+      "max_actions_per_tx": 50
+    },
+    "market_id": "a1f3c0de9b7e4f21a0b1c2d3e4f50617",
+    "notes": [
+      {
+        "amount_zat": 50000000,
+        "bet_fingerprint": "0000000000000008",
+        "block_height": 100,
+        "envelope": {
+          "bet_salt": "0202020202020202",
+          "receiver": "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+        },
+        "is_announcement": false,
+        "note_ref": "0000000010000001",
+        "outcome_index": 0,
+        "status": "COUNTED"
+      },
+      {
+        "amount_zat": 200000000,
+        "bet_fingerprint": "0000000000000011",
+        "block_height": 100,
+        "envelope": {
+          "bet_salt": "0b0b0b0b0b0b0b0b",
+          "receiver": "0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a"
+        },
+        "is_announcement": false,
+        "note_ref": "00000000a000000a",
+        "outcome_index": 0,
+        "status": "COUNTED"
+      },
+      {
+        "amount_zat": 120000000,
+        "bet_fingerprint": "0000000000000012",
+        "block_height": 100,
+        "envelope": {
+          "bet_salt": "0c0c0c0c0c0c0c0c",
+          "receiver": "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
+        },
+        "is_announcement": false,
+        "note_ref": "00000000b000000b",
+        "outcome_index": 0,
+        "status": "COUNTED"
+      },
+      {
+        "amount_zat": 150000000,
+        "bet_fingerprint": "0000000000000013",
+        "block_height": 100,
+        "envelope": {
+          "bet_salt": "0d0d0d0d0d0d0d0d",
+          "receiver": "0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c"
+        },
+        "is_announcement": false,
+        "note_ref": "00000000c000000c",
+        "outcome_index": 0,
+        "status": "COUNTED"
+      },
+      {
+        "amount_zat": 150000000,
+        "bet_fingerprint": "0000000000000014",
+        "block_height": 100,
+        "envelope": {
+          "bet_salt": "0e0e0e0e0e0e0e0e",
+          "receiver": "0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d"
+        },
+        "is_announcement": false,
+        "note_ref": "00000000d000000d",
+        "outcome_index": 0,
+        "status": "COUNTED"
+      },
+      {
+        "amount_zat": 100000000,
+        "bet_fingerprint": "0000000000000015",
+        "block_height": 100,
+        "envelope": {
+          "bet_salt": "0f0f0f0f0f0f0f0f",
+          "receiver": "0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e"
+        },
+        "is_announcement": false,
+        "note_ref": "00000000e000000e",
+        "outcome_index": 0,
+        "status": "COUNTED"
+      },
+      {
+        "amount_zat": 200000000,
+        "bet_fingerprint": "000000000000001b",
+        "block_height": 100,
+        "envelope": {
+          "bet_salt": "1515151515151515",
+          "receiver": "14141414141414141414141414141414141414141414141414141414141414141414141414141414141414"
+        },
+        "is_announcement": false,
+        "note_ref": "0000000140000014",
+        "outcome_index": 1,
+        "status": "COUNTED"
+      },
+      {
+        "amount_zat": 170000000,
+        "bet_fingerprint": "000000000000001c",
+        "block_height": 100,
+        "envelope": {
+          "bet_salt": "1616161616161616",
+          "receiver": "15151515151515151515151515151515151515151515151515151515151515151515151515151515151515"
+        },
+        "is_announcement": false,
+        "note_ref": "0000000150000015",
+        "outcome_index": 1,
+        "status": "COUNTED"
+      },
+      {
+        "amount_zat": 100000000,
+        "bet_fingerprint": "000000000000001d",
+        "block_height": 100,
+        "envelope": {
+          "bet_salt": "1717171717171717",
+          "receiver": "16161616161616161616161616161616161616161616161616161616161616161616161616161616161616"
+        },
+        "is_announcement": false,
+        "note_ref": "0000000160000016",
+        "outcome_index": 1,
+        "status": "COUNTED"
+      },
+      {
+        "amount_zat": 20000000,
+        "bet_fingerprint": "0000000000000025",
+        "block_height": 100,
+        "envelope": {
+          "bet_salt": "1f1f1f1f1f1f1f1f",
+          "receiver": "1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e"
+        },
+        "is_announcement": false,
+        "note_ref": "00000001e000001e",
+        "outcome_index": 0,
+        "status": "LATE"
+      },
+      {
+        "amount_zat": 10000,
+        "bet_fingerprint": "0000000000000026",
+        "block_height": 100,
+        "envelope": null,
+        "is_announcement": true,
+        "note_ref": "00000001f000001f",
+        "outcome_index": 0,
+        "status": "INVALID_MEMO"
+      },
+      {
+        "amount_zat": 1,
+        "bet_fingerprint": "0000000000000027",
+        "block_height": 100,
+        "envelope": null,
+        "is_announcement": false,
+        "note_ref": "0000000200000020",
+        "outcome_index": null,
+        "status": "UNECONOMIC_DUST"
+      }
+    ],
+    "plan_cutoff_height": 1000,
+    "plan_kind": "STANDARD",
+    "refund_fee_zat": 5000,
+    "result": 0
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "frst1": [
+    {
+      "bet_fingerprint": "8214e414f311ffea",
+      "memo_len": 237,
+      "memo_text": "FRST1:AQGhoaGhoaGhoaGhoaGhoaGh_E4jI8Nq6Mh7_WOan_haMhsmx-BmglGivQ50ol_zqDcPqmhO0ohnuX9Kai3uXfjOl052twGOPyKhxM8meFcPIDMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM2uBG2GBP9pho_5C8ALmYZ5UQN45fMO9MGA89EYSbv378WUyc7xx6d78WUTYm1nfR1wjL3fe9ks8ZKybAlsM_HPFw2I",
+      "name": "tagged",
+      "payload": "0101a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1fc4e2323c36ae8c87bfd639a9ff85a321b26c7e0668251a2bd0e74a25ff3a8370faa684ed28867b97f4a6a2dee5df8ce974e76b7018e3f22a1c4cf2678570f203333333333333333333333333333333333333333333333336b811b61813fda61a3fe42f002e6619e5440de397cc3bd30603cf446126efdfbf1653273bc71e9defc5944d89b59df475c232f77def64b3c64ac9b025b0cfc73c5c362"
+    },
+    {
+      "bet_fingerprint": "bbcaebbba4888caa",
+      "memo_len": 237,
+      "memo_text": "FRST1:AQChoaGhoaGhoaGhoaGhoaGhAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPqmhO0ohnuX9Kai3uXfjOl052twGOPyKhxM8meFcPIDMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM2uBG2GBP9pho_5C8ALmYZ5UQN45fMO9MGA89EYSbv378WUyc7xx6d78WUTYm1nfR1wjL3fe9ks8ZKybAlsM_HPFw2I",
+      "name": "untagged",
+      "payload": "0100a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a100000000000000000000000000000000000000000000000000000000000000000faa684ed28867b97f4a6a2dee5df8ce974e76b7018e3f22a1c4cf2678570f203333333333333333333333333333333333333333333333336b811b61813fda61a3fe42f002e6619e5440de397cc3bd30603cf446126efdfbf1653273bc71e9defc5944d89b59df475c232f77def64b3c64ac9b025b0cfc73c5c362"
+    }
+  ],
+  "frstm1": {
+    "memo_text": "FRSTM1:9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f",
+    "rules_hash": "9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f"
+  },
+  "frstp1": {
+    "memo_text": "FRSTP1:AeuMilMMa01PNUEOg_6_T5dAhp2FhtpayVNVaXdTb8Ia",
+    "persona_commitment": "eb8c8a530c6b4d4f35410e83febf4f9740869d8586da5ac953556977536fc21a"
+  }
+}

@@ -7,4 +7,24 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[features]
+default = []
+# Reserved for functionality that needs Zcash libraries (scan in M2.7, UA parsing in M3.2).
+# Intentionally empty: the default build must not depend on orchard/zcash_*/zip321.
+zcash = []
+
 [dependencies]
+base64 = "0.23.1"
+blake2b_simd = "1.0.5"
+# No getrandom: randomness is supplied by the caller (SealRandomness), so the core builds for wasm32.
+chacha20poly1305 = { version = "0.11.0", default-features = false, features = ["alloc"] }
+hex = "0.4"
+hkdf = "0.13.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+sha2 = "0.11.1"
+thiserror = "2.0.21"
+x25519-dalek = { version = "3.0.0", features = ["static_secrets"] }
+
+[dev-dependencies]
+proptest = "1.12.0"

@@ -1,0 +1,28 @@
+{
+  "k_root": "5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a",
+  "persona_commitment": "eb8c8a530c6b4d4f35410e83febf4f9740869d8586da5ac953556977536fc21a",
+  "persona_id": "eb8c8a530c6b4d4f35410e83febf4f97",
+  "tags": [
+    {
+      "amount_zat": 50000000,
+      "env_epk": "0202020202020202020202020202020202020202020202020202020202020202",
+      "market_id": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+      "outcome_index": 0,
+      "thaw_tag": "08d4fcdf888d93baa78050584751c3572020a4668c1e8caaca77f23fcfba1d23"
+    },
+    {
+      "amount_zat": 50000000,
+      "env_epk": "0202020202020202020202020202020202020202020202020202020202020202",
+      "market_id": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+      "outcome_index": 1,
+      "thaw_tag": "b52cdd30c9d12ccab66f540e2aac457a172eceaf7f0a8a53972247783f8b3eca"
+    },
+    {
+      "amount_zat": 49000000,
+      "env_epk": "0202020202020202020202020202020202020202020202020202020202020202",
+      "market_id": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1",
+      "outcome_index": 0,
+      "thaw_tag": "b0c927b3ee2c5afaed26b6759a99976929fc809c112c58e00740e9051dd8bb15"
+    }
+  ]
+}

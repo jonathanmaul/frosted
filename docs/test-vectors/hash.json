@@ -1,0 +1,86 @@
+{
+  "jcs": [
+    {
+      "expected": "{\"a\":{},\"b\":[null,true,false,{\"a\":[2,-3],\"z\":1}],\"c\":[]}",
+      "input": "{\"b\":[null,true,false,{\"z\":1,\"a\":[2,-3]}],\"a\":{},\"c\":[]}"
+    },
+    {
+      "expected": "\"€$\\u000f\\nA'B\\\"\\\\\\\\\\\"/\"",
+      "input": "\"\\u20ac$\\u000F\\u000aA'\\u0042\\u0022\\u005c\\\\\\\"\\/\""
+    }
+  ],
+  "market_definition": {
+    "announce_timeout_blocks": 100,
+    "birthday_height": 4519000,
+    "close_height": 4521000,
+    "envelope_pk": "AAAA",
+    "fee_bps": 100,
+    "market_id": "a1f3c0de9b7e4f21a0b1c2d3e4f50617",
+    "min_bet_zat": 1000000,
+    "min_confirmations": 3,
+    "network": "testnet",
+    "outcomes": [
+      {
+        "address": "utest1yes",
+        "label": "YES",
+        "outcome_index": 0
+      },
+      {
+        "address": "utest1no",
+        "label": "NO",
+        "outcome_index": 1
+      }
+    ],
+    "params_version": 1,
+    "question": "Apakah pool Ironwood ≥ 5.000.000 ZEC di blok H? 🧊",
+    "refund_fee_zat": 5000,
+    "resolution_params": {
+      "comparator": "gte",
+      "pool": "ironwood",
+      "threshold_zat": 500000000000000
+    },
+    "resolution_type": "POOL_THRESHOLD",
+    "resolve_height": 4521100,
+    "sweep_threshold_zat": 5000,
+    "treasury_address": "utest1treasury",
+    "uivk": "uivktest1example",
+    "version": 1
+  },
+  "market_definition_jcs": "{\"announce_timeout_blocks\":100,\"birthday_height\":4519000,\"close_height\":4521000,\"envelope_pk\":\"AAAA\",\"fee_bps\":100,\"market_id\":\"a1f3c0de9b7e4f21a0b1c2d3e4f50617\",\"min_bet_zat\":1000000,\"min_confirmations\":3,\"network\":\"testnet\",\"outcomes\":[{\"address\":\"utest1yes\",\"label\":\"YES\",\"outcome_index\":0},{\"address\":\"utest1no\",\"label\":\"NO\",\"outcome_index\":1}],\"params_version\":1,\"question\":\"Apakah pool Ironwood ≥ 5.000.000 ZEC di blok H? 🧊\",\"refund_fee_zat\":5000,\"resolution_params\":{\"comparator\":\"gte\",\"pool\":\"ironwood\",\"threshold_zat\":500000000000000},\"resolution_type\":\"POOL_THRESHOLD\",\"resolve_height\":4521100,\"sweep_threshold_zat\":5000,\"treasury_address\":\"utest1treasury\",\"uivk\":\"uivktest1example\",\"version\":1}",
+  "note_ref": {
+    "action_index": 3,
+    "expected": "9e67235938a0e14b",
+    "txid": "0707070707070707070707070707070707070707070707070707070707070707"
+  },
+  "plan": {
+    "items": [
+      {
+        "amount_zat": 10000,
+        "bet_fingerprint": null,
+        "kind": "SWEEP",
+        "note_ref": "1b2c3d4e5f607182",
+        "receiver_commitment": null
+      },
+      {
+        "amount_zat": 79714285,
+        "bet_fingerprint": "3fa1b2c4d5e6f708",
+        "kind": "WIN",
+        "note_ref": "0a1b2c3d4e5f6071",
+        "receiver_commitment": "feae836a94d623647067b7dc1188f12c6451c5ea38bf3c198598a68ec01ff5ca"
+      }
+    ],
+    "market_id": "a1f3c0de9b7e4f21a0b1c2d3e4f50617",
+    "operator_fee_zat": 12400000,
+    "plan_cutoff_height": 4521110,
+    "plan_kind": "STANDARD",
+    "result": 0
+  },
+  "plan_hash": "aa88440ac708da3b239be0d01234997f1078b976b1c767d5f1d65a211a90f638",
+  "plan_jcs": "{\"items\":[{\"amount_zat\":79714285,\"bet_fingerprint\":\"3fa1b2c4d5e6f708\",\"kind\":\"WIN\",\"note_ref\":\"0a1b2c3d4e5f6071\",\"receiver_commitment\":\"feae836a94d623647067b7dc1188f12c6451c5ea38bf3c198598a68ec01ff5ca\"},{\"amount_zat\":10000,\"bet_fingerprint\":null,\"kind\":\"SWEEP\",\"note_ref\":\"1b2c3d4e5f607182\",\"receiver_commitment\":null}],\"market_id\":\"a1f3c0de9b7e4f21a0b1c2d3e4f50617\",\"operator_fee_zat\":12400000,\"plan_cutoff_height\":4521110,\"plan_kind\":\"STANDARD\",\"result\":0}",
+  "receiver_commitment": {
+    "bet_salt": "0202020202020202",
+    "expected": "feae836a94d623647067b7dc1188f12c6451c5ea38bf3c198598a68ec01ff5ca",
+    "receiver": "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+  },
+  "rules_hash": "3b1dabd03b656efa57dd58063a3e465139337cc6574a41d8a1ba71b12aba50ec"
+}
