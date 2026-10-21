@@ -73,6 +73,8 @@ Sumber layar dan perilaku: `docs/PROJECT_SPEC_FROSTED.md` §16 (screen list), §
   - `Noise` (Animations): tekstur grain latar, opacity ≤ 4%.
   - Semua diubah agar memakai font, warna, dan timing brief ini.
   - Lisensi: MIT + Commons Clause. Boleh dipakai di aplikasi, **tidak boleh** dijual atau diredistribusikan sebagai komponen. File salinan menyimpan notice aslinya dan dikecualikan dari lisensi MIT/Apache proyek (dicatat di README).
+- Dependensi React Bits: `motion` (dipin ke versi yang lolos kebijakan umur rilis minimum pnpm; saat ini 14.3.1). Jangan menambah `minimumReleaseAgeExclude`.
+- Salinan React Bits di `web/components/bits/` tidak diedit langsung (penyesuaian lewat wrapper di `web/components/ui/`) dan dikecualikan dari ESLint karena kode vendor.
 - Gerak hanya untuk event nyata (blok baru, bet terhitung, odds berubah) dan scrollytelling.
 
 ## 8. Copy

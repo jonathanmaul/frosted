@@ -1108,7 +1108,7 @@ sequenceDiagram
     IDX->>IDX: apply validation rules 19.5
     IDX->>DB: insert bet PENDING
     IDX->>DB: promote to COUNTED after MIN_CONFIRMATIONS
-    IDX-->>API: notify (in-process channel)
+    IDX-->>API: append to ordered event table (API reads by seq)
     API-->>U: SSE odds_updated, bet_counted(bet_fingerprint)
     U->>U: match bet_fingerprint, show Your bet is counted
 ```
@@ -1867,9 +1867,9 @@ Versi di bawah adalah versi yang **diketahui ada** saat riset. Claude Code wajib
 | FROST | `reddsa` | 0.5.2 dengan fitur `frost` (0.6.x membuang feature ini) | Ciphersuite `redpallas` (ZIP 312); terbukti di M0.3/M0.4 |
 | | `frost-rerandomized` | 3.0.0 (lewat `reddsa` 0.5.2, FROST v3) | Re-randomized FROST; randomizer dari PCZT lewat API deprecated (ADR-0013) |
 | | ~~`frostd`, `frost-client`~~ | tidak dipakai di MVP | Masih FROST 2.x; signing in-process di `frosted-operator` (ADR-0014) |
-| Kriptografi app | `x25519-dalek` 2.x, `chacha20poly1305` 0.10.x (XChaCha20Poly1305), `hkdf` + `sha2`, `blake2b_simd` 1.x (keyed + personalization), `ed25519-dalek` 2.x (hanya `COORDINATOR_KEY`) | `[TO VERIFY]` versi terbaru | Crate RustCrypto/dalek matang, bisa dikompilasi ke WASM |
+| Kriptografi app | `x25519-dalek` 3.0.0, `chacha20poly1305` 0.10.1 (XChaCha20Poly1305), `hkdf` 0.12.4 + `sha2` 0.10.9, `blake2b_simd` 1.0.5 (keyed + personalization), `ed25519-dalek` (hanya `COORDINATOR_KEY`) | Terkunci di `Cargo.lock`. Versi lebih baru (`chacha20poly1305` 0.11, `hkdf` 0.13, `sha2` 0.11) tidak bisa dipakai bersama `zcash_primitives` 0.30.1, yang mengunci `crypto-common =0.2.0-rc.1` (SPIKES Appendix M4) | Crate RustCrypto/dalek matang, bisa dikompilasi ke WASM |
 | Kanonikalisasi | Implementasi RFC 8785 (JCS), misalnya `serde_jcs` | `[TO VERIFY]` V-24 crate dan kesesuaian dengan RFC 8785 | `rules_hash` dan `plan_hash` harus identik di Rust native dan WASM |
-| Backend | Rust stable, `tokio` 1.x, `axum` 0.8.x, `sqlx` 0.8.x (SQLite), `serde`, `tracing` | `[TO VERIFY]` versi terbaru | Stack Rust standar; satu bahasa dengan librustzcash |
+| Backend | Rust 1.94.0, `tokio` 1.54, `axum` 0.8.x, `sqlx` **0.8.6** (SQLite), `serde`, `tracing` | `sqlx` 0.9 tidak dipakai karena konflik `crypto-common` dengan `zcash_primitives` 0.30.1 (SPIKES Appendix M4) | Stack Rust standar; satu bahasa dengan librustzcash |
 | WASM | `wasm-bindgen`, `wasm-pack` | `[TO VERIFY]` | Satu implementasi format untuk browser dan server |
 | Frontend | Next.js (App Router) + TypeScript + Tailwind CSS | ≥ 15 `[TO VERIFY]` | Cepat dibangun, SSR untuk halaman publik, ekosistem besar |
 | QR | `qrcode` (npm) | `[TO VERIFY]` | Render QR ZIP-321 di klien |

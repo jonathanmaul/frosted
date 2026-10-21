@@ -255,3 +255,18 @@ Perintah yang dipakai: `curl https://crates.io/api/v1/crates/<crate>` (field `ma
 - **Setelah laporan (tugas agen, 6.4):** ambil raw tx dari explorer testnet publik (`testnet.zcashexplorer.app`, baca saja) dan jalankan `s2-ironwood-ivk-decrypt decrypt`; bandingkan memo dengan `.regtest/m06-memo.txt` byte per byte (V-2, A-3).
 - **Bukti:** —
 - **Dampak ke desain:** —
+
+---
+
+## Appendix M4 — API dan temuan dari change `add-glass-indexer`
+
+Diverifikasi dari source crate di registry dan dengan tx regtest (2026-10-21).
+
+- **Branch id per tinggi:** `zcash_protocol::consensus::BranchId::for_height(&params, BlockHeight)` (zcash_protocol 0.10.6, `consensus.rs:811`). Untuk regtest, `params` = `zcash_protocol::local_consensus::LocalNetwork { overwinter, sapling, blossom, heartwood, canopy, nu5, nu6, nu6_1, nu6_2, nu6_3 }` yang diisi dari `getblockchaininfo.upgrades` (ADR-0016). Field `nu7` hanya ada dengan `cfg(zcash_unstable = "nu7")`, jadi NU7 tidak dimodelkan. Dibungkus di `zcash_glass::scan::ScanNetwork`; test: tinggi 5 → `Nu6_2`, tinggi 10 → `Nu6_3`.
+- **Parse dan dekripsi:** `Transaction::read(bytes, branch_id)`, `tx.txid()`, `tx.ironwood_bundle()`, `try_note_decryption(&IronwoodDomain::for_action(a), &ivk.prepare(), a)`, `IncomingViewingKey::diversifier_index(&Address)` (sama dengan M0.2). UIVK: `UnifiedIncomingViewingKey::decode(&params, s)?.orchard()`.
+- **Z-only Guard:** `tx.transparent_bundle().is_some_and(|b| !b.vin.is_empty())` (`zcash_transparent` 0.10.0, `Bundle::vin`). Terbukti dengan tx shield M0.1 `449ddd79…` (true) dan tx escrow M0.3 `dd1f10c2…` (false).
+- **RPC Zebra 6.4.2:** `getbestblockheightandhash` mengembalikan `hash` sebagai **array byte**, bukan hex; follower memakai `getblockcount` + `getblockhash(h)` (hex). `getblock("<h>", 1)` memberi `hash`, `height`, `previousblockhash`, dan `tx` (txid berurutan). `getblockchaininfo.chain` bernilai `"test"` untuk testnet **dan** regtest, jadi jaringan diambil dari `FROSTED_NETWORK`, tidak ditebak.
+- **Reorg:** `invalidateblock(hash)` tersedia di regtest. Zebra **tidak** mengembalikan transaksi dari blok yang di-invalidate ke mempool; wallet pengirim (devtool) menyiarkan ulang tx itu belakangan. Indexer menghapus bet dari blok yang tergantikan, sesuai spec.
+- **Konflik versi crate (penting untuk semua change berikutnya):** `zcash_primitives` 0.30.1 mengunci `crypto-common = "=0.2.0-rc.1"`. Akibatnya generasi RustCrypto yang memakai `crypto-common` 0.2 stabil (`chacha20poly1305` 0.11, `hkdf` 0.13, `sha2` 0.11, `digest` 0.11, dan `sqlx` 0.9 lewat `sqlx-mysql`) **tidak bisa** ada di graf yang sama. Solusi: `zcash-glass` memakai `chacha20poly1305` 0.10.1, `hkdf` 0.12, `sha2` 0.10 (algoritma identik; semua test vector tetap lulus) dan `glass-indexer` memakai `sqlx` 0.8.6. Rust 1.94 tetap dipakai (tidak lagi diwajibkan `sqlx`, tapi di atas MSRV semua crate).
+- **Performa (NFR-F1, regtest):** 20 Market, 17 blok, 4 note: 0,29 s total, **≈ 17 ms/blok**. Blok regtest kecil; ukur ulang pada testnet di M12.
+- **Bukti integrasi:** `scripts/it-indexer.sh` (15 pemeriksaan PASS: ANNOUNCING, announcement sah/palsu, COUNTED setelah 3 konfirmasi, IGNORED_DUST, UNECONOMIC_DUST, UNKNOWN_OUTCOME, INVALID_MEMO, Persona sekali, event, restart, reorg, LATE, VOID karena timeout).
