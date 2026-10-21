@@ -1,0 +1,26 @@
+# Secrets and local state (never commit: ENVELOPE_SK, COORDINATOR_KEY, hot wallet seed, FROST shares)
+.env
+.env.*
+!.env.example
+private/
+data/
+*.key
+*.seed
+*.sk
+*.age
+
+# Build output
+target/
+node_modules/
+.next/
+
+# Local tools and regtest wallets
+.tools/
+.regtest/
+
+# OS
+.DS_Store
+
+# Local-only tooling and planning (solo dev)
+.claude/
+openspec/
