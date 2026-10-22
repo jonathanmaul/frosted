@@ -33,8 +33,11 @@ export function RollingNumber({ value, decimals = 0, separator = "," }: { value:
 
 /** Odds/pool text that decrypts once into readable numbers. */
 export function DecryptedNumber({ text }: { text: string }) {
+  const reduced = useReducedMotion();
+  if (reduced) return <span className="num">{text}</span>;
   return (
     <DecryptedText
+      key={text}
       text={text}
       speed={40}
       maxIterations={12}
@@ -47,23 +50,19 @@ export function DecryptedNumber({ text }: { text: string }) {
   );
 }
 
-const GLYPHS = "▓▒░#%&@$0123456789abcdef";
-
-/** The "bettor" line: always scrambled, never revealed (docs/DESIGN.md §7). */
-export function ScrambledLine({ length = 18 }: { length?: number }) {
+/** The bettor is always redacted. Scramble only on a real odds event (docs/DESIGN.md §7). */
+export function ScrambledLine({ length = 18, eventKey }: { length?: number; eventKey?: string }) {
   const reduced = useReducedMotion();
-  const make = () => Array.from({ length }, () => GLYPHS[Math.floor(Math.random() * GLYPHS.length)]).join("");
-  // Static scrambled glyphs before mount and under reduced motion; never the real value.
   const [text, setText] = useState(() => "░▒▓".repeat(Math.ceil(length / 3)).slice(0, length));
   useEffect(() => {
-    if (reduced) return;
-    const id = window.setInterval(() => setText(make()), 140);
+    if (reduced || eventKey === undefined) return;
+    const glyphs = "▓▒░#%&@$0123456789abcdef";
+    let ticks = 0;
+    const id = window.setInterval(() => {
+      setText(Array.from({ length }, () => glyphs[Math.floor(Math.random() * glyphs.length)]).join(""));
+      if (++ticks === 6) window.clearInterval(id);
+    }, 80);
     return () => window.clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduced, length]);
-  return (
-    <span className="num text-[var(--ice-muted)]" aria-label="bettor hidden">
-      {text}
-    </span>
-  );
+  }, [eventKey, reduced, length]);
+  return <span className="num text-[var(--ice-muted)]" aria-label="bettor hidden"><span aria-hidden="true">{text}</span></span>;
 }

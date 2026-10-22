@@ -1,3 +1,4 @@
+import { DecryptedNumber } from "@/components/ui/Numbers";
 import { formatPercent } from "@/lib/api";
 
 export type OddsSide = { label: string; probability: number | null };
@@ -10,10 +11,10 @@ export function OddsBar({ yes, no }: { yes: OddsSide; no: OddsSide }) {
     <div className="space-y-2">
       <div className="flex justify-between t-5">
         <span>
-          <span className="text-[var(--yes)]">{yes.label}</span> <span className="num">{formatPercent(yes.probability)}</span>
+          <span className="text-[var(--yes)]">{yes.label}</span> <span className="num">{yes.probability === null ? "—" : <DecryptedNumber text={formatPercent(yes.probability)} />}</span>
         </span>
         <span>
-          <span className="num">{formatPercent(no.probability)}</span> <span className="text-[var(--no)]">{no.label}</span>
+          <span className="num">{no.probability === null ? "—" : <DecryptedNumber text={formatPercent(no.probability)} />}</span> <span className="text-[var(--no)]">{no.label}</span>
         </span>
       </div>
       <div
@@ -21,8 +22,8 @@ export function OddsBar({ yes, no }: { yes: OddsSide; no: OddsSide }) {
         role="img"
         aria-label={`${yes.label} ${formatPercent(yes.probability)}, ${no.label} ${formatPercent(no.probability)}`}
       >
-        <div className={known ? "bg-[var(--yes)]" : "bg-[var(--surface)]"} style={{ width: `${yesShare}%` }} />
-        <div className={known ? "bg-[var(--no)]" : "bg-[var(--surface)]"} style={{ width: `${100 - yesShare}%` }} />
+        <div className={`transition-[width] duration-500 ${known ? "bg-[var(--yes)]" : "bg-[var(--surface)]"}`} style={{ width: `${yesShare}%` }} />
+        <div className={`transition-[width] duration-500 ${known ? "bg-[var(--no)]" : "bg-[var(--surface)]"}`} style={{ width: `${100 - yesShare}%` }} />
       </div>
     </div>
   );

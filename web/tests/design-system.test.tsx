@@ -1,11 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { OddsBar } from "@/components/ui/OddsBar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { formatPercent, formatZec } from "@/lib/api";
 import { LEAKED_METADATA } from "@/lib/content/how";
+
+vi.mock("@/lib/motion", () => ({ useReducedMotion: () => true }));
 
 const css = readFileSync("app/globals.css", "utf8");
 const token = (name: string) => css.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})`))![1];

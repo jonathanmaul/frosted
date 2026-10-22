@@ -1,14 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="Frosted prism with odds bars">
-  <rect width="400" height="500" fill="#070B12"/>
-  <g fill="#DCEBFF" opacity="0.18">
-    <rect x="70" y="170" width="18" height="70" rx="9"/><rect x="110" y="150" width="18" height="70" rx="9"/>
-    <rect x="270" y="160" width="18" height="70" rx="9"/><rect x="310" y="180" width="18" height="70" rx="9"/>
-    <rect x="150" y="300" width="18" height="70" rx="9"/><rect x="240" y="310" width="18" height="70" rx="9"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 580" fill="none">
+  <defs>
+    <linearGradient id="front" x1="170" y1="100" x2="460" y2="470" gradientUnits="userSpaceOnUse"><stop stop-color="#DCEBFF" stop-opacity=".26"/><stop offset=".22" stop-color="#8FA8C8" stop-opacity=".08"/><stop offset=".68" stop-color="#B4D2FF" stop-opacity=".13"/><stop offset="1" stop-color="#DCEBFF" stop-opacity=".3"/></linearGradient>
+    <linearGradient id="edge" x1="160" y1="90" x2="480" y2="460" gradientUnits="userSpaceOnUse"><stop stop-color="#DCEBFF" stop-opacity=".65"/><stop offset=".45" stop-color="#8FA8C8" stop-opacity=".16"/><stop offset="1" stop-color="#DCEBFF" stop-opacity=".55"/></linearGradient>
+    <linearGradient id="side" x1="440" y1="145" x2="490" y2="200" gradientUnits="userSpaceOnUse"><stop stop-color="#DCEBFF" stop-opacity=".22"/><stop offset="1" stop-color="#8FA8C8" stop-opacity=".04"/></linearGradient>
+    <linearGradient id="bar" x1="250" y1="230" x2="300" y2="400" gradientUnits="userSpaceOnUse"><stop stop-color="#B4C8DF" stop-opacity=".7"/><stop offset="1" stop-color="#8FA8C8" stop-opacity=".22"/></linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="frost" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="3" seed="12"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".13"/></feComponentTransfer><feBlend in="SourceGraphic" mode="screen"/></filter>
+    <clipPath id="face"><path d="M195 135 414 105Q422 104 425 113L469 434Q470 442 462 443L244 473Q236 474 235 466L188 145Q187 137 195 135Z"/></clipPath>
+  </defs>
+  <g filter="url(#blur)" fill="#8FA8C8" opacity=".3">
+    <rect x="123" y="210" width="24" height="105" rx="12"/><rect x="169" y="170" width="25" height="116" rx="12"/>
+    <rect x="224" y="197" width="23" height="98" rx="12"/><rect x="292" y="162" width="25" height="126" rx="12"/>
+    <rect x="365" y="202" width="23" height="115" rx="12"/><rect x="439" y="190" width="26" height="128" rx="13"/><rect x="493" y="235" width="23" height="112" rx="12"/>
   </g>
-  <g stroke="rgba(180,210,255,0.35)" stroke-width="1" fill="rgba(220,235,255,0.06)">
-    <path d="M130 120 L270 120 L300 150 L300 390 L160 390 L130 360 Z"/>
-    <path d="M130 120 L160 150 L300 150 M160 150 L160 390"/>
+  <g transform="rotate(-5 320 290)">
+    <path d="m195 135 45-49 219-30q8-1 10 8l45 320q1 7-5 11l-47 48-218 30Z" fill="#B4D2FF" fill-opacity=".025" stroke="url(#edge)"/>
+    <path d="m195 135 45-49 219-30  -39 50Z" fill="#DCEBFF" fill-opacity=".12" stroke="url(#edge)"/>
+    <path d="m420 106 40-49 54 327-45 53Z" fill="url(#side)" stroke="url(#edge)"/>
+    <g clip-path="url(#face)">
+      <path d="M195 135 420 105 469 442 237 474Z" fill="#070B12" fill-opacity=".3"/>
+      <g opacity=".66" transform="matrix(1 -.14 .14 1 -31 55)">
+        <path d="M251 238h47v154h-47z" fill="url(#bar)" stroke="#DCEBFF" stroke-opacity=".2"/>
+        <path d="m298 238 14-14v154l-14 14Z" fill="#8FA8C8" fill-opacity=".3"/>
+        <path d="m251 238 14-14h47l-14 14Z" fill="#DCEBFF" fill-opacity=".3"/>
+        <path d="M338 238h47v154h-47z" fill="url(#bar)" stroke="#DCEBFF" stroke-opacity=".2"/>
+        <path d="m385 238 14-14v154l-14 14Z" fill="#8FA8C8" fill-opacity=".3"/>
+        <path d="m338 238 14-14h47l-14 14Z" fill="#DCEBFF" fill-opacity=".3"/>
+      </g>
+      <path d="M195 135 420 105 469 442 237 474Z" fill="url(#front)"/>
+      <path d="M195 135 420 105 469 442 237 474Z" filter="url(#frost)" opacity=".27"/>
+      <path d="m204 159 213-29m-211 36 212-29m-175 300 214-29m-212 37 213-29" stroke="#DCEBFF" stroke-opacity=".25"/>
+      <path d="m211 180 31 224m-26-227 31 224" stroke="#DCEBFF" stroke-opacity=".13"/>
+    </g>
+    <path d="M195 135 414 105Q422 104 425 113L469 434Q470 442 462 443L244 473Q236 474 235 466L188 145Q187 137 195 135Z" fill="url(#front)" fill-opacity=".3" stroke="url(#edge)" stroke-width="1.4"/>
+    <path d="m193 148 45 314m-41-314 45 314" stroke="#DCEBFF" stroke-opacity=".35"/>
+    <path d="m240 86 46 328 228-30M286 414l-47 56" stroke="#8FA8C8" stroke-opacity=".16"/>
   </g>
-  <rect x="190" y="290" width="26" height="90" fill="#8FA8C8" opacity="0.7"/>
-  <rect x="232" y="290" width="26" height="90" fill="#8FA8C8" opacity="0.7"/>
+  <g stroke="#8FA8C8" stroke-opacity=".35"><path d="M176 508h315M176 503v10m315-10v10"/><path d="M149 126v329m-5-329h10m-10 329h10"/></g>
 </svg>

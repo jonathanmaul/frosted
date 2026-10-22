@@ -40,7 +40,7 @@ Sumber layar dan perilaku: `docs/PROJECT_SPEC_FROSTED.md` §16 (screen list), §
 
 - Grid 12 kolom, rata kiri, asimetris. Garis grid hairline 1px (`--border`) boleh terlihat di landing.
 - Section bernomor `01 / 02 / 03` dalam mono kecil.
-- Hero: teks di kolom 1–6, rata bawah; objek 3D di kolom 7–12. **Bukan** hero di tengah.
+- Aturan awal hero: teks di kolom 1–6, rata bawah; objek 3D di kolom 7–12. **Bukan** hero di tengah. **Digantikan khusus pembuka landing oleh permintaan pengguna berikutnya (ADR-0017): tulisan di tengah layar, langsung masuk Through the Frost saat scroll.** Aturan layout halaman lain tetap berlaku.
 - Header: logo teks `FROSTED` + ticker tinggi blok (mono) yang berdetak saat blok baru.
 
 ## 5. Permukaan
@@ -50,7 +50,7 @@ Sumber layar dan perilaku: `docs/PROJECT_SPEC_FROSTED.md` §16 (screen list), §
 
 ## 6. Hero 3D landing (S-01 bagian atas)
 
-- Prosedural, tanpa file model eksternal.
+- Prosedural, tanpa file model eksternal. Permintaan pengguna berikutnya mengizinkan `.glb` lokal: generator milik proyek menghasilkan `web/public/models/frost-ledger.glb`; tidak memakai model unduhan atau layanan aset eksternal.
 - Prisma/kubus kaca beku dengan `MeshTransmissionMaterial` dari `@react-three/drei` (terverifikasi ada di drei 10.7.9: props `transmission`, `thickness`, `roughness`, `chromaticAberration`, `samples`, `resolution`, `backside`), berputar pelan.
 - Di dalamnya: bar odds YES/NO market unggulan dari `GET /v1/markets`, bergerak saat SSE `odds_updated`.
 - Di belakang kaca: 5–8 siluet kapsul buram yang bergerak pelan (penaruh anonim).
@@ -104,3 +104,41 @@ Sumber layar dan perilaku: `docs/PROJECT_SPEC_FROSTED.md` §16 (screen list), §
 ## 11. Komponen dasar
 
 `GlassCard` (hanya untuk Bet Builder), `OddsBar`, `StatusBadge`, `MonoNumber`, `Button` (`primary` = accent, `ghost`), plus layout dan navigasi. Halaman lain memakai komponen ini, bukan membuat versi sendiri.
+
+## 12. Implementasi landing dan rujukan tetap
+
+- Setiap perubahan UI berikutnya wajib membaca dan merujuk `docs/DESIGN.md`; aturan ini juga dicantumkan di `web/AGENTS.md`.
+- Komposisi landing terbaru: tulisan pembuka di tengah viewport, satu patung es di belakangnya, wordmark dan ticker minimal di atas. Scroll langsung memasuki Through the Frost. Tiap bab muncul bergantian dalam scene yang sama, tanpa hero pemasaran dua kolom (ADR-0017).
+- Mobile: pembuka → perjalanan yang lebih singkat → market. Fallback menampilkan pembuka lalu semua langkah. Penjelasan tidak membutuhkan scroll animation atau WebGL agar dapat dibaca.
+- Model dibuat dari geometri Three.js, pencahayaan studio prosedural, dan material transmission; tanpa model, HDRI, font, atau tekstur remote. Geometri patung disimpan dalam GLB lokal hasil generator. Fallback WebP lokal hasil render model yang sama menyimpan bentuk spesimen tanpa mengarang odds.
+- Frost kursor berupa patch lokal pada roughness shader, bukan membuka seluruh kaca. Siluet memakai blur yang dibakar ke tekstur, sehingga tidak pernah menjadi tajam.
+- Pengecualian gerak ambient hanya rotasi lambat spesimen dan gerak lambat siluet sesuai §6. Grain statis; baris bettor hanya teracak singkat saat event odds/pool. Tidak ada animasi dekoratif berulang lainnya.
+- Rendering 3D berhenti ketika spesimen di luar viewport. Perubahan preferensi reduced-motion langsung kembali ke gambar statis. Error WebGL atau context loss juga kembali ke fallback.
+- Font Latin dibundle, termasuk italic Instrument Serif. Skala: display responsif 48–96px, judul bagian 48px, UI besar 20px, body 16px, mono kecil 13px. Tidak menambah tingkat ukuran baru.
+- Nilai yang tidak tersedia ditampilkan sebagai `—`; tidak membuat angka pasar atau ticker palsu. Daftar lengkap/filter market tetap untuk change layar bettor berikutnya; landing menampilkan satu market unggulan dari API.
+- Navigasi halaman biasa mencakup Markets, Leaderboard, My Bets, Persona, How it works. Pembuka immersive hanya menampilkan wordmark, ticker, dan skip ke market; tautan mekanisme tersedia setelah masuk. Skip link, focus keyboard, dan footer trust/privacy tetap tersedia.
+- S-12 menyertakan diagram, publik/privat, batasan trust, semua 10 item metadata §24.3, dan FAQ legal. Klaim visual tidak menggantikan disclosure coordinator, komite demo, atau Thaw.
+
+Rujukan API yang diverifikasi: [drei MeshTransmissionMaterial](https://drei.docs.pmnd.rs/shaders/mesh-transmission-material), deklarasi paket terpasang `@react-three/drei/core/MeshTransmissionMaterial.d.ts`, [React Bits DecryptedText](https://reactbits.dev/text-animations/decrypted-text), [CountUp](https://reactbits.dev/text-animations/count-up), [Counter](https://reactbits.dev/components/counter), [Noise](https://reactbits.dev/animations/noise). API salinan lokal diperiksa sebelum dipakai melalui wrapper.
+
+## 13. Through the Frost (ADR-0017)
+
+Perubahan arah ini diminta pengguna: scroll terasa memasuki ruang ledger melalui kaca. Pengguna kemudian memperjelas bahwa pembuka harus berupa tulisan di tengah layar, bukan hero pemasaran. Permintaan terbaru ini menggantikan komposisi hero awal.
+
+- Perjalanan dimulai dari pembuka di tengah layar; Canvas sudah memenuhi viewport sejak awal. Tidak ada mount ulang atau pengunduhan aset model baru.
+- Urutan kamera: mendekati kaca → melewati frost → lembar ledger dan bar odds → siluet tetap buram → tiga elemen payout merapat. Gerak kamera dan perpindahan bab sepenuhnya mengikuti scroll dan dapat dibalik.
+- Pin desktop berlangsung 4,4 tinggi viewport; versi compact 3. Layar dengan tinggi di bawah 600px, reduced-motion, perangkat lemah, dan kegagalan WebGL menampilkan narasi normal tanpa pin.
+- Empat bab tetap persis bet masuk / odds terlihat / pengirim buram / payout. Copy memakai crossfade pendek dan perpindahan vertikal kecil berdasarkan progress, tanpa animasi loop.
+- Tersedia tombol bab yang bisa dipakai keyboard, status bab aktif, indikator progress hairline, dan tautan “Skip to markets”. Bab yang tidak terlihat diberi `inert` dan `aria-hidden`.
+- Ruang di dalam kaca memakai lembar tipis prosedural, garis grid, dan teks mono. Tidak menambah partikel, glow, musik, video, blob, atau warna baru. Siluet tetap tekstur blur permanen.
+- DPR maksimum 1,25 dan environment lokal sekali render. Posisi kamera disimpan di ref dan diperbarui di render loop, bukan React state setiap frame.
+- Pin dibersihkan saat viewport atau preferensi gerak berubah. Fallback tidak menyembunyikan satu pun langkah. Navigasi anchor tetap bekerja setelah lazy enhancement menambah ruang pin.
+- Saat keluar dari pin, Lenis tetap memproses input dengan `smoothWheel: false`, sehingga momentum lama dibatalkan sebelum browser menggulir secara native. Jangan mem-bypass handler lewat `virtualScroll: () => false`: animasi lama dapat menarik halaman ke belakang. Smoothing aktif kembali saat masuk ke perjalanan.
+
+API scroll diperiksa di deklarasi GSAP terpasang dan [ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/); pembaruan kamera mengikuti [React Three Fiber hooks](https://r3f.docs.pmnd.rs/api/hooks).
+
+### Patung GLB lokal
+
+`web/public/models/frost-ledger.glb` (sekitar 61 KB sebelum kompresi transport) dibuat dengan `node scripts/generate-frost-model.mjs` dari direktori `web`. Geometri original mencakup badan es ber-bevel dengan outline asimetris, facet rim, tiga folio tersuspensi, goresan kalibrasi, dan fissure tipis. Tidak ada identitas, angka pasar contoh, atau tekstur eksternal di aset.
+
+Material runtime menambahkan mikro-frost prosedural, transmission, clearcoat, dan pencahayaan studio lokal. Mesh `IceShell` adalah titik penggantian material; odds dinamis tetap geometri runtime dengan label dan persentase. Generator meng-assert header GLB 2.0, panjang file, mesh utama, ketiadaan buffer eksternal, dan batas 500 KB.
