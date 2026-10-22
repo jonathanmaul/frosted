@@ -39,3 +39,15 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
       - run: pnpm build
+
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: rustup show active-toolchain
+      - uses: Swatinem/rust-cache@v2
+      - uses: browser-actions/setup-chrome@v2
+      - run: cargo install wasm-pack --version 0.15.0 --locked
+      - run: cargo build -p zcash-glass-wasm --target wasm32-unknown-unknown
+      - run: wasm-pack test --headless --chrome crates/zcash-glass-wasm
+      - run: wasm-pack build crates/zcash-glass-wasm --target web --release

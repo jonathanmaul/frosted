@@ -72,6 +72,72 @@ async fn emit(
     Ok(())
 }
 
+/// Registers a published market and schedules its historical scan in the caller's transaction.
+/// The API includes replay bookkeeping in this same transaction, so retries never rewind twice.
+pub async fn register_market(
+    tx: &mut Transaction<'_, Sqlite>,
+    definition_json: &str,
+) -> Result<String> {
+    let def: MarketDefinition =
+        serde_json::from_str(definition_json).context("invalid market_definition")?;
+    let hash = rules_hash(&def).context("rules_hash")?;
+    sqlx::query(
+            "INSERT INTO market (market_id, definition_json, rules_hash, uivk, network, birthday_height,
+               close_height, resolve_height, min_confirmations, announce_timeout_blocks, status, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ANNOUNCING', ?)",
+        )
+        .bind(&def.market_id)
+        .bind(definition_json)
+        .bind(hex::encode(hash))
+        .bind(&def.uivk)
+        .bind(&def.network)
+        .bind(def.birthday_height)
+        .bind(def.close_height)
+        .bind(def.resolve_height)
+        .bind(def.min_confirmations)
+        .bind(def.announce_timeout_blocks)
+        .bind(now())
+        .execute(&mut **tx)
+        .await?;
+    for o in &def.outcomes {
+        sqlx::query(
+            "INSERT INTO outcome (market_id, outcome_index, label, address) VALUES (?, ?, ?, ?)",
+        )
+        .bind(&def.market_id)
+        .bind(o.outcome_index)
+        .bind(&o.label)
+        .bind(&o.address)
+        .execute(&mut **tx)
+        .await?;
+    }
+    rewind(tx, def.birthday_height.saturating_sub(1)).await?;
+    Ok(def.market_id)
+}
+
+async fn rewind(tx: &mut Transaction<'_, Sqlite>, height: u32) -> Result<()> {
+    sqlx::query("DELETE FROM bet WHERE block_height > ?")
+        .bind(height)
+        .execute(&mut **tx)
+        .await?;
+    sqlx::query("DELETE FROM event WHERE block_height > ?")
+        .bind(height)
+        .execute(&mut **tx)
+        .await?;
+    sqlx::query("DELETE FROM persona WHERE registered_height > ?")
+        .bind(height)
+        .execute(&mut **tx)
+        .await?;
+    sqlx::query("UPDATE market SET announce_height = NULL, announce_note_ref = NULL WHERE announce_height > ?")
+            .bind(height)
+            .execute(&mut **tx)
+            .await?;
+    sqlx::query("DELETE FROM block WHERE height > ?")
+        .bind(height)
+        .execute(&mut **tx)
+        .await?;
+    Ok(())
+}
+
 impl Indexer {
     pub async fn open(db_path: &str, rpc_url: &str, network: &str) -> Result<Self> {
         let opts = SqliteConnectOptions::new()
@@ -98,41 +164,10 @@ impl Indexer {
     /// Stores a Market from its published `market_definition` (strict JSON). Used by tests and by
     /// the ingest endpoint (M5). Blocks at or after its birthday are rescanned.
     pub async fn add_market(&self, definition_json: &str) -> Result<String> {
-        let def: MarketDefinition =
-            serde_json::from_str(definition_json).context("invalid market_definition")?;
-        let hash = rules_hash(&def).context("rules_hash")?;
         let mut tx = self.pool.begin().await?;
-        sqlx::query(
-            "INSERT INTO market (market_id, definition_json, rules_hash, uivk, network, birthday_height,
-               close_height, resolve_height, min_confirmations, announce_timeout_blocks, status, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ANNOUNCING', ?)",
-        )
-        .bind(&def.market_id)
-        .bind(definition_json)
-        .bind(hex::encode(hash))
-        .bind(&def.uivk)
-        .bind(&def.network)
-        .bind(def.birthday_height)
-        .bind(def.close_height)
-        .bind(def.resolve_height)
-        .bind(def.min_confirmations)
-        .bind(def.announce_timeout_blocks)
-        .bind(now())
-        .execute(&mut *tx)
-        .await?;
-        for o in &def.outcomes {
-            sqlx::query("INSERT INTO outcome (market_id, outcome_index, label, address) VALUES (?, ?, ?, ?)")
-                .bind(&def.market_id)
-                .bind(o.outcome_index)
-                .bind(&o.label)
-                .bind(&o.address)
-                .execute(&mut *tx)
-                .await?;
-        }
+        let id = register_market(&mut tx, definition_json).await?;
         tx.commit().await?;
-        self.rewind_to(def.birthday_height.saturating_sub(1))
-            .await?;
-        Ok(def.market_id)
+        Ok(id)
     }
 
     /// Sets the Persona Registry (single row) and rescans from its birthday.
@@ -188,26 +223,7 @@ impl Indexer {
     /// Deletes everything derived from blocks above `height` (reorg or rescan).
     async fn rewind_to(&self, height: u32) -> Result<()> {
         let mut tx = self.pool.begin().await?;
-        sqlx::query("DELETE FROM bet WHERE block_height > ?")
-            .bind(height)
-            .execute(&mut *tx)
-            .await?;
-        sqlx::query("DELETE FROM event WHERE block_height > ?")
-            .bind(height)
-            .execute(&mut *tx)
-            .await?;
-        sqlx::query("DELETE FROM persona WHERE registered_height > ?")
-            .bind(height)
-            .execute(&mut *tx)
-            .await?;
-        sqlx::query("UPDATE market SET announce_height = NULL, announce_note_ref = NULL WHERE announce_height > ?")
-            .bind(height)
-            .execute(&mut *tx)
-            .await?;
-        sqlx::query("DELETE FROM block WHERE height > ?")
-            .bind(height)
-            .execute(&mut *tx)
-            .await?;
+        rewind(&mut tx, height).await?;
         tx.commit().await?;
         Ok(())
     }

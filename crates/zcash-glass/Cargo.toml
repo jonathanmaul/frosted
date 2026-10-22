@@ -12,7 +12,8 @@ default = []
 # Functionality that needs Zcash libraries (scan in M2.7, UA parsing in M3.2). Off by default:
 # the default build must not depend on orchard/zcash_*/zip321. Stable crate group (ADR-0015),
 # proven in docs/SPIKES.md §M0.2.
-zcash = ["dep:orchard", "dep:zcash_keys", "dep:zcash_note_encryption", "dep:zcash_primitives", "dep:zcash_protocol"]
+payout-address = ["dep:zcash_address", "dep:zcash_protocol"]
+zcash = ["payout-address", "dep:orchard", "dep:zcash_keys", "dep:zcash_note_encryption", "dep:zcash_primitives", "dep:zcash_protocol"]
 
 [dependencies]
 base64 = "0.23.1"
@@ -38,3 +39,7 @@ zcash_protocol = { version = "0.10.6", features = ["local-consensus"], optional 
 [dev-dependencies]
 orchard = "0.15.5"
 proptest = "1.12.0"
+
+[dependencies.zcash_address]
+version = "=0.13.0"
+optional = true

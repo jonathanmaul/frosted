@@ -270,3 +270,62 @@ Diverifikasi dari source crate di registry dan dengan tx regtest (2026-10-21).
 - **Konflik versi crate (penting untuk semua change berikutnya):** `zcash_primitives` 0.30.1 mengunci `crypto-common = "=0.2.0-rc.1"`. Akibatnya generasi RustCrypto yang memakai `crypto-common` 0.2 stabil (`chacha20poly1305` 0.11, `hkdf` 0.13, `sha2` 0.11, `digest` 0.11, dan `sqlx` 0.9 lewat `sqlx-mysql`) **tidak bisa** ada di graf yang sama. Solusi: `zcash-glass` memakai `chacha20poly1305` 0.10.1, `hkdf` 0.12, `sha2` 0.10 (algoritma identik; semua test vector tetap lulus) dan `glass-indexer` memakai `sqlx` 0.8.6. Rust 1.94 tetap dipakai (tidak lagi diwajibkan `sqlx`, tapi di atas MSRV semua crate).
 - **Performa (NFR-F1, regtest):** 20 Market, 17 blok, 4 note: 0,29 s total, **≈ 17 ms/blok**. Blok regtest kecil; ukur ulang pada testnet di M12.
 - **Bukti integrasi:** `scripts/it-indexer.sh` (15 pemeriksaan PASS: ANNOUNCING, announcement sah/palsu, COUNTED setelah 3 konfirmasi, IGNORED_DUST, UNECONOMIC_DUST, UNKNOWN_OUTCOME, INVALID_MEMO, Persona sekali, event, restart, reorg, LATE, VOID karena timeout).
+
+
+## Lampiran M3 — Browser Bet Builder / Unified Address
+
+Source `zcash_address` **0.13.0** diperiksa langsung dari registry Cargo:
+`src/kind/unified.rs:384–455` menyediakan `unified::Encoding::decode(&str)` →
+`(zcash_protocol::consensus::NetworkType, unified::Address)`, lalu
+`unified::Container::items()` / `items_as_parsed()` membuka receiver. Enum
+`src/kind/unified/address.rs:12–16` memuat `Receiver::Orchard([u8; 43])`.
+Fallback `zcash_keys::address::UnifiedAddress::orchard()` tidak diperlukan.
+Parser menolak network yang berbeda; mainnet, testnet, dan regtest memiliki
+HRP berbeda. UA rusak atau tanpa Orchard memakai `PAYOUT_ADDRESS_NO_ORCHARD`.
+
+Feature kecil `payout-address` mengaktifkan parser; feature `zcash` juga
+mengaktifkannya agar API native tetap sesuai desain. Binding WASM memakai
+`payout-address` saja untuk menghindari dependensi scanning/transaction yang
+bukan kebutuhan browser. Default core tetap tidak mengaktifkan crate Zcash.
+
+`zcash-glass-wasm` memakai wasm-bindgen **0.2.129**, serde-wasm-bindgen **0.6.5**,
+dan getrandom **0.3.4**; fitur `wasm_js` hanya di target wasm32. Core menerima
+randomness dari pemanggil. Fungsi JS tidak melakukan fetch atau menyimpan data;
+`env_esk`, `bet_salt`, dan `k_root` hanya kembali ke pemanggil.
+
+Verifikasi native: 3 test membandingkan payload lengkap dengan
+`docs/test-vectors/envelope.json`, mengurai URI memakai zip321 **0.9.0**,
+memverifikasi tag/persona, commitment, proof, dan kasus input ditolak.
+URI menggunakan pembagian/modulo integer zatoshi, tanpa floating point.
+
+Paket: dari `web`, jalankan `pnpm build:wasm` (membutuhkan `wasm-pack` **0.15.0**).
+Output `web/lib/wasm/pkg` dan salinan runtime `web/public/wasm` diabaikan Git.
+Loader `/wasm/zcash_glass_wasm.js` dan WASM relatifnya memakai origin aplikasi.
+Halaman `/wasm-test` menerima JSON input uji dan hanya menampilkan status serta
+fingerprint; memo mentah dan material receipt tidak dimasukkan ke DOM.
+Fixture CLI `cargo run -p zcash-glass-wasm --example build_bet -- INPUT_JSON`
+menggunakan randomness tetap **hanya untuk pengujian**, bukan untuk bet nyata.
+
+Ukuran bundle M3: `pnpm build:wasm` menghasilkan **267180 byte** WASM dan
+**126086 byte gzip** (wasm-opt + profil `opt-level = "z"`), di bawah 1 MB gzip.
+Build native, wasm32, lint web, Next production build, dan clippy binding lulus.
+
+`wasm-pack test --headless --chrome crates/zcash-glass-wasm` lulus **4/4**
+di Chrome: shared native vector + URI zip321, validasi input, Persona, dan
+semua ekspor JS (WebCrypto, parse UA, receiver commitment, Envelope Proof).
+`cargo test -p zcash-glass --features payout-address address::tests` lulus;
+`cargo tree -p zcash-glass --edges normal --no-default-features` tidak memuat
+`orchard`, `zcash_*` dependency, atau `zip321`. CI memiliki job wasm32 +
+headless Chrome tersendiri. Web test suite lulus **22/22**, termasuk isolasi
+API ticker pada harness `/wasm-test`.
+
+M3.4 browser `/wasm-test` pada origin `http://localhost:3016`: PASS,
+237 memo bytes, 0 runtime exception, seluruh request memakai origin sendiri,
+termasuk modul JS dan binary `/wasm/`. Header ticker tidak polling API pada
+halaman harness; polling kembali aktif saat navigasi ke halaman biasa.
+
+M3 end-to-end: `scripts/it-wasm.sh` menghasilkan URI dari binding Rust,
+membayarnya via `zcash-devtool wallet pay` di regtest, dan membandingkan memo
+yang diterima byte per byte. PASS, **237 byte**, SHA-256
+`9519d825aa4cab883321db1ce9884ed2c6bfba7fe28d29a539777cca95c40c3c`.
+Txid pengujian lokal: `7463fb5790f6d777af06c41a23c571c9bf698eb9dd8faa3f676d83a0c44955b7`.

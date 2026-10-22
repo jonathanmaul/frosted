@@ -5,6 +5,8 @@
 //! The default build has no dependency on `orchard`, `zcash_*` or `zip321`; Orchard receivers are
 //! opaque 43-byte values here. Chain scanning lives behind the `zcash` feature (`scan`).
 
+#[cfg(feature = "payout-address")]
+pub mod address;
 pub mod envelope;
 pub mod hash;
 pub mod memo;

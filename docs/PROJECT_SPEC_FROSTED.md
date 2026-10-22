@@ -1511,6 +1511,7 @@ Data mengalir satu arah: coordinator mendorong field publik ke API (ADR-0007). `
 | --- | --- |
 | `AMOUNT_BELOW_MIN` | amount < `MIN_BET_ZAT` |
 | `PAYOUT_ADDRESS_NO_ORCHARD` | Payout UA tidak punya receiver Orchard |
+| `PAYOUT_ADDRESS_WRONG_NETWORK` | Payout UA memakai jaringan berbeda dari `market_definition.network` |
 | `MEMO_TOO_LARGE` | FRST1 memo > 512 byte (guard) |
 | `AMOUNT_MISMATCH` | Jumlah note on-chain ≠ `amount_zat` di receipt (peringatan, bukan error builder) |
 
@@ -1540,6 +1541,8 @@ Data mengalir satu arah: coordinator mendorong field publik ke API (ADR-0007). `
 ### 22.2 Endpoint ingest (hanya dari `payout-coordinator`) dan `frosted-operator`
 
 Coordinator tidak menerima koneksi masuk. Semua data sisi privat yang publik masuk ke API lewat push yang ditandatangani (ADR-0007). Push idempoten per `(market_id, jenis, versi)`.
+
+Untuk ingest HTTP, `versi = hex(SHA-256(body))` dari byte body yang juga dilindungi tanda tangan. Ini versi berbasis isi, bukan field/header baru. Retry dengan body identik mengembalikan respons tersimpan tanpa menulis ulang; perubahan isi resolution/payout menjadi versi baru. Definisi market tetap immutable untuk `market_id` yang sama. Kontrak ini disetujui saat implementasi M5.
 
 | Method | Path | Request | Response | Errors |
 | --- | --- | --- | --- | --- |
@@ -1631,6 +1634,17 @@ Roadmap (bukan MVP): opsi pull, di mana member dari pihak berbeda mengirim vote 
               "payout_zat": 79714285, "counted_in_reputation": true,
               "exclusion": null } ],          // null | "PRE_REGISTRATION" | "DUPLICATE_TAG"
   "stats": { "settled": 14, "won": 10, "win_rate": 0.714, "roi": 0.38 } }
+
+// Persona (kontrak minimal M5; disetujui saat implementasi)
+{ "persona_id": "...", "commitment": "<32-byte hex>", "registered_height": 4480100,
+  "status": "REGISTERED", "alias": null, "thawed_at": null }
+// Hanya jika status = THAWED, tambahkan k_root_b64 (base64url tanpa padding).
+// K_root tidak pernah muncul pada respons Persona yang belum di-thaw.
+
+// LeaderboardEntry (dari stats THAW_REPORT publik, bukan angka perkiraan)
+{ "persona_id": "...", "alias": "orion", "registered_height": 4480100,
+  "settled": 14, "won": 10, "win_rate": 0.714, "roi": 0.38 }
+// Hanya Persona THAWED dengan THAW_REPORT yang sudah dihitung. Tanpa laporan, entries = [].
 ```
 
 **Parameter resolusi yang valid:**
