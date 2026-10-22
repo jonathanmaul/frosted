@@ -128,6 +128,7 @@ Perubahan arah ini diminta pengguna: scroll terasa memasuki ruang ledger melalui
 - Perjalanan dimulai dari pembuka di tengah layar; Canvas sudah memenuhi viewport sejak awal. Tidak ada mount ulang atau pengunduhan aset model baru.
 - Urutan kamera: mendekati kaca → melewati frost → lembar ledger dan bar odds → siluet tetap buram → tiga elemen payout merapat. Gerak kamera dan perpindahan bab sepenuhnya mengikuti scroll dan dapat dibalik.
 - Pin desktop berlangsung 4,4 tinggi viewport; versi compact 3. Layar dengan tinggi di bawah 600px, reduced-motion, perangkat lemah, dan kegagalan WebGL menampilkan narasi normal tanpa pin.
+- Komposisi bab terbaru mengikuti masukan pengguna: scene penuh tanpa panel kiri atau pemisah vertikal. Kamera mengikuti sumbu tengah dengan parallax kecil; subjek utama berada di area atas, caption rata tengah di bawah. Scrim gelap vertikal yang halus melindungi kontras caption; ini bukan glow atau gradient blob.
 - Empat bab tetap persis bet masuk / odds terlihat / pengirim buram / payout. Copy memakai crossfade pendek dan perpindahan vertikal kecil berdasarkan progress, tanpa animasi loop.
 - Tersedia tombol bab yang bisa dipakai keyboard, status bab aktif, indikator progress hairline, dan tautan “Skip to markets”. Bab yang tidak terlihat diberi `inert` dan `aria-hidden`.
 - Ruang di dalam kaca memakai lembar tipis prosedural, garis grid, dan teks mono. Tidak menambah partikel, glow, musik, video, blob, atau warna baru. Siluet tetap tekstur blur permanen.

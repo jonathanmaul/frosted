@@ -4,10 +4,10 @@ type Point = readonly [number, number, number];
 const SHOTS: { at: number; position: Point; target: Point }[] = [
   { at: 0, position: [0, 0.1, 6.5], target: [0, 0, 0] },
   { at: 0.16, position: [0, 0.08, 1.6], target: [0, 0, -4] },
-  { at: 0.32, position: [-0.6, 0.3, -3.8], target: [-1.3, 0, -10] },
-  { at: 0.52, position: [0.8, 0.45, -9], target: [-0.9, 0.1, -16] },
-  { at: 0.73, position: [-0.45, 0.2, -15], target: [-1.2, 0, -22] },
-  { at: 0.9, position: [0.1, 0.7, -20.5], target: [-0.7, 0, -27] },
+  { at: 0.32, position: [-0.25, 0.3, -3.8], target: [0, -0.35, -10] },
+  { at: 0.52, position: [0.25, 0.45, -9], target: [0, -0.4, -16] },
+  { at: 0.73, position: [-0.2, 0.2, -15], target: [0, -0.35, -22] },
+  { at: 0.9, position: [0.1, 0.7, -20.5], target: [0, -0.35, -27] },
   { at: 1, position: [0, 1.2, -28], target: [0, 0, -36] },
 ];
 

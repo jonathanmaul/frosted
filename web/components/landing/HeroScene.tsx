@@ -137,7 +137,7 @@ function JourneyCamera({ journey }: Pick<SceneProps, "journey">) {
     const { position, target } = journeyFrame(p);
     const compact = size.width < 640;
     const approach = compact ? 3 * (1 - THREE.MathUtils.smoothstep(p, 0, 0.18)) : 0;
-    const lift = compact ? 0.65 * THREE.MathUtils.smoothstep(p, 0.14, 0.32) : 0;
+    const lift = compact ? 0.15 * THREE.MathUtils.smoothstep(p, 0.14, 0.32) : 0;
     camera.position.set(position[0], position[1], position[2] + approach);
     camera.lookAt(target[0], target[1] - lift, target[2]);
   });
@@ -178,8 +178,8 @@ function LedgerWorld({ yes, no, journey }: Pick<SceneProps, "yes" | "no" | "jour
     <gridHelper args={[70, 35, "#8FA8C8", "#263346"]} position={[0, -2.1, -18]} material-transparent material-opacity={0.18} />
     {[0, 1, 2, 3].map((row) => <group key={row} position={[0, 0, -4 - row * 5.5]}>
       {[-1, 1].map((side) => <group key={side} position={[side * 3.7, 0.2, 0]} rotation={[0, side * -0.3, side * 0.035]}>
-        <mesh><boxGeometry args={[2.8, 3.9, 0.035]} /><meshPhysicalMaterial color="#8FA8C8" metalness={0.2} roughness={0.28} transparent opacity={0.055} /><Edges color="#8FA8C8" transparent opacity={0.28} /></mesh>
-        <mesh position={[0, 1.1, 0.03]}><planeGeometry args={[2.55, 0.64]} /><meshBasicMaterial map={label} transparent opacity={0.65} depthWrite={false} /></mesh>
+        <mesh><boxGeometry args={[2.8, 3.9, 0.035]} /><meshPhysicalMaterial color="#8FA8C8" metalness={0.2} roughness={0.28} transparent opacity={0.055} /><Edges color="#8FA8C8" transparent opacity={0.18} /></mesh>
+        <mesh position={[0, 1.1, 0.03]}><planeGeometry args={[2.55, 0.64]} /><meshBasicMaterial map={label} transparent opacity={0.4} depthWrite={false} /></mesh>
         {[0, 1, 2, 3, 4, 5].map((line) => <group key={line} position={[0, 0.3 - line * 0.31, 0.04]}>
           <mesh><boxGeometry args={[2.4, 0.008, 0.008]} /><meshBasicMaterial color="#8FA8C8" transparent opacity={0.25} /></mesh>
           <mesh position={[-0.55, 0.12, 0]}><boxGeometry args={[0.85, 0.035, 0.008]} /><meshBasicMaterial color="#DCEBFF" transparent opacity={0.13 + line * 0.025} /></mesh>
@@ -187,8 +187,8 @@ function LedgerWorld({ yes, no, journey }: Pick<SceneProps, "yes" | "no" | "jour
       </group>)}
       <mesh position={[0, 2.25, 0]}><boxGeometry args={[10.2, 0.012, 0.012]} /><meshBasicMaterial color="#8FA8C8" transparent opacity={0.22} /></mesh>
     </group>)}
-    <group ref={publicOdds} position={[0.2, 0.3, -12]} scale={1.15}><OddsBars yes={yes} no={no} step={0} /></group>
-    <group ref={payout} position={[1, 0, -25]}>{[0, 1, 2].map((i) => <group key={i} position={[(i - 1) * 1.55, 0, 0]}>
+    <group ref={publicOdds} position={[0, 0.55, -12]} scale={0.9}><OddsBars yes={yes} no={no} step={0} /></group>
+    <group ref={payout} position={[0, 0.3, -25]}>{[0, 1, 2].map((i) => <group key={i} position={[(i - 1) * 1.55, 0, 0]}>
       <mesh geometry={cutGlass} scale={[0.36, 0.4, 0.2]}><meshPhysicalMaterial color="#DCEBFF" metalness={0.15} roughness={0.12} transmission={0.5} thickness={0.16} clearcoat={1} transparent opacity={0.55} /><Edges color="#DCEBFF" transparent opacity={0.45} /></mesh>
       <mesh position={[0, 0.05, 0.07]}><planeGeometry args={[0.52, 0.13]} /><meshBasicMaterial map={label} transparent /></mesh>
     </group>)}</group>
