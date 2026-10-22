@@ -40,6 +40,18 @@ jobs:
       - run: pnpm test
       - run: pnpm build
 
+  wallet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: rustup show active-toolchain
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: wallet-helper
+      - run: cargo fmt --manifest-path wallet-helper/Cargo.toml --check
+      - run: cargo clippy --locked --manifest-path wallet-helper/Cargo.toml --all-targets -- -D warnings
+      - run: cargo test --locked --manifest-path wallet-helper/Cargo.toml
+
   wasm:
     runs-on: ubuntu-latest
     steps:

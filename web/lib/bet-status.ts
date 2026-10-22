@@ -1,0 +1,22 @@
+// docs/PROJECT_SPEC_FROSTED.md §23.2a. Status copy is independent of color.
+export const BET_EXPLANATIONS: Record<string, string> = {
+  WAITING: "We have not seen your transaction yet.",
+  PENDING: "Your bet is in a block and waiting for confirmations.",
+  COUNTED: "Your bet is counted in the pool.",
+  WON: "You won. Payout will be sent after committee signing.",
+  PAID: "Payout confirmed to your payout address.",
+  LOST: "This outcome did not win.",
+  LATE: "Your bet arrived after the market closed; it will be refunded.",
+  REJECTED_TRANSPARENT: "Sent from a transparent address. Not counted; it will be refunded, but the link is already public on-chain.",
+  REFUND_QUEUED: "A refund (minus the refund fee) is included in the payout plan.",
+  REFUNDED: "Refund confirmed.",
+  IGNORED_DUST: "Below the minimum bet. Not counted and not refunded.",
+  UNECONOMIC_DUST: "Smaller than the network fee to move it. Not counted, not refunded.",
+  UNKNOWN_OUTCOME: "Sent to an address that is not an outcome of this market. Not counted, not refunded.",
+  INVALID_MEMO: "The memo could not be read, so there is no payout address. Not counted, not refunded.",
+  UNCLAIMABLE: "The coordinator says your envelope could not be opened. If that is wrong, export an Envelope Proof.",
+  SWEPT: "Moved to the operator treasury as documented.",
+  AMOUNT_MISMATCH: "The amount sent differs from the sealed amount, so this bet is not linked to your Persona.",
+  UNAVAILABLE: "Public history is unavailable or incomplete. Your receipt remains saved locally.",
+  AMBIGUOUS: "More than one note matches this fingerprint. Export your receipt and inspect the public history.",
+};

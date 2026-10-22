@@ -21,6 +21,18 @@ class MockEventSource {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("useFeaturedOdds", () => {
+  it("fetches current odds when the API emits only its height cursor", async () => {
+    const market = { market_id: "a", status: "OPEN", pool_total_zat: 100, odds: [] };
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => ({ ok: true, json: async () => url.endsWith("/odds")
+      ? { pool_total_zat: 200, outcomes: [{ outcome_index: 0, probability: .8 }, { outcome_index: 1, probability: .2 }] }
+      : { markets: [market] } })));
+    vi.stubGlobal("EventSource", MockEventSource);
+    const { result } = renderHook(() => useFeaturedOdds());
+    await waitFor(() => expect(result.current.market?.market_id).toBe("a"));
+    act(() => MockEventSource.last!.emit("odds_updated", { at_height: 10 }));
+    await waitFor(() => expect(result.current.yes).toBe(.8));
+    expect(result.current.poolZat).toBe(200);
+  });
   it("shows — when the API is unreachable", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
     const { result } = renderHook(() => useFeaturedOdds());

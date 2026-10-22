@@ -329,3 +329,42 @@ body:has(.frost-experience) .site-nav { min-height: 88px; flex-wrap: nowrap; }
 .market-route-links { display: flex; flex-wrap: wrap; gap: 24px; padding-top: 28px; color: var(--ice-muted); }
 .market-route-links a { padding-block: 8px; }
 .market-route-links a:hover { color: var(--ice); }
+
+/* Bettor screens — docs/DESIGN.md: twelve columns, flat rules, glass only for the builder. */
+.bettor-page { padding-block: 56px 80px; }
+.muted { color: var(--ice-muted); }
+.ledger-title { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-block:24px; }
+.ledger-title h1 { max-width:900px; }
+.market-detail-grid { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:48px; margin-top:40px; }
+.market-detail-grid > div { grid-column:span 7; min-width:0; }
+.market-detail-grid > aside { grid-column:span 5; min-width:0; }
+.ledger-panel { border-top:1px solid var(--border); padding-block:28px; }
+.ledger-panel .ledger-title { margin-top:0; }
+.ledger-input { display:block; width:100%; margin-block:8px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-1); background:var(--bg); color:var(--ice); font-size:var(--type-4); }
+.ledger-input:disabled { opacity:.5; }
+.ledger-filters { display:flex; gap:24px; flex-wrap:wrap; margin-block:28px; }
+.ledger-filters label { min-width:200px; }
+.market-row { display:grid; grid-template-columns:6fr 3fr 2fr; gap:32px; align-items:center; padding-block:28px; border-top:1px solid var(--border); }
+.market-row > a { justify-self:end; white-space:nowrap; }
+.market-row-odds { display:flex; flex-wrap:wrap; gap:8px 24px; }
+.market-row-odds > p:last-child { width:100%; }
+.builder { padding:28px; }
+.builder h2 { margin-block:20px; }
+.builder-steps { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-block:24px; color:var(--ice-muted); list-style:none; }
+.builder-steps li { border-top:1px solid var(--border); padding-top:10px; }
+.builder-steps [aria-current] { color:var(--ice); border-top-color:var(--ice); }
+.builder-inputs { display:grid; gap:20px; margin-top:28px; min-width:0; }
+.builder-inputs legend { margin-bottom:20px; }
+.outcome-options { display:flex; gap:28px; flex-wrap:wrap; }
+.outcome-options label { padding-block:12px; }
+.ledger-actions { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+.sealed-bet { display:grid; gap:20px; margin-top:28px; min-width:0; }
+.sealed-bet img { max-width:100%; height:auto; background:white; }
+.ledger-code { white-space:pre-wrap; overflow-wrap:anywhere; margin-block:20px; border:1px solid var(--border); padding:16px; border-radius:var(--radius-1); }
+.ledger-hash { overflow-wrap:anywhere; }
+.anonymous-row { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; padding-block:16px; border-bottom:1px solid var(--border); }
+.outcome-pools { display:grid; gap:12px; margin-top:20px; }
+.outcome-pools > div { display:flex; justify-content:space-between; gap:12px; }
+.receipt-row { border-top:1px solid var(--border); padding-block:28px; overflow-wrap:anywhere; }
+@media(max-width:899px) { .market-detail-grid { gap:28px; } .market-detail-grid > div,.market-detail-grid > aside { grid-column:1/-1; } .market-row { grid-template-columns:1fr 1fr; } .market-row > a { grid-column:1/-1; justify-self:start; } }
+@media(max-width:639px) { .bettor-page { padding-top:36px; } .ledger-title { flex-wrap:wrap; } .builder { padding:20px; } .market-row { grid-template-columns:1fr; gap:20px; } .ledger-filters > label { width:100%; } }

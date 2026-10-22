@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { featuredMarket, fetchMarkets, streamUrl, type MarketSummary } from "@/lib/api";
+import { fetchOdds } from "@/lib/bettor";
 
 export type FeaturedOdds = {
   market: MarketSummary | null;
@@ -30,9 +31,11 @@ export function useFeaturedOdds(): FeaturedOdds {
       const prob = (i: number) => market.odds.find((o) => o.outcome_index === i)?.probability ?? null;
       setState({ market, yes: prob(0), no: prob(1), poolZat: market.pool_total_zat });
       source = new EventSource(streamUrl(market.market_id));
-      source.addEventListener("odds_updated", (e) => {
+      source.addEventListener("odds_updated", async (e) => {
         try {
-          const data = JSON.parse((e as MessageEvent).data) as OddsEvent;
+          const event = JSON.parse((e as MessageEvent).data) as OddsEvent;
+          const data = event.outcomes ? event : await fetchOdds(market.market_id);
+          if (!alive || !data) return;
           const p = (i: number) => data.outcomes?.find((o) => o.outcome_index === i)?.probability ?? null;
           setState((s) => ({ ...s, yes: p(0), no: p(1), poolZat: data.pool_total_zat ?? s.poolZat }));
         } catch {

@@ -13,9 +13,9 @@ export type MarketSummary = {
   odds: OutcomeOdds[];
 };
 
-async function getJson<T>(path: string): Promise<T | null> {
+export async function getJson<T>(path: string): Promise<T | null> {
   try {
-    const res = await fetch(`${API_URL}${path}`, { cache: "no-store" });
+    const res = await fetch(`${API_URL}${path}`, { cache: "no-store", credentials: "omit", signal: AbortSignal.timeout(5000) });
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {

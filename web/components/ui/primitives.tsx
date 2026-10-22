@@ -6,7 +6,7 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import type { ReactNode } from "react";
 
-export function Dialog({ trigger, title, children }: { trigger: ReactNode; title: string; children: ReactNode }) {
+export function Dialog({ trigger, title, description, children }: { trigger: ReactNode; title: string; description?: string; children: ReactNode }) {
   return (
     <DialogPrimitive.Root>
       <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>
@@ -14,6 +14,7 @@ export function Dialog({ trigger, title, children }: { trigger: ReactNode; title
         <DialogPrimitive.Overlay className="fixed inset-0 bg-[var(--bg)]/80" />
         <DialogPrimitive.Content className="fixed left-1/2 top-1/2 w-[min(560px,92vw)] -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-2)] border border-[var(--border)] bg-[var(--bg)] p-6">
           <DialogPrimitive.Title className="t-3 mb-4">{title}</DialogPrimitive.Title>
+          {description && <DialogPrimitive.Description className="t-4 mb-6 text-[var(--ice-muted)]">{description}</DialogPrimitive.Description>}
           {children}
           <DialogPrimitive.Close className="num t-5 mt-6 text-[var(--ice-muted)] underline">Close</DialogPrimitive.Close>
         </DialogPrimitive.Content>

@@ -26,6 +26,8 @@ const LABELS: Record<string, string> = {
   UNCLAIMABLE: "Unclaimable",
   SWEPT: "Swept",
   AMOUNT_MISMATCH: "Amount changed",
+  UNAVAILABLE: "Unavailable",
+  AMBIGUOUS: "Multiple matches",
 };
 
 export function statusLabel(status: string): string {

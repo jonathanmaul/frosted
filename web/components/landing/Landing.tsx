@@ -2,6 +2,7 @@
 
 // Layout, copy, and motion follow docs/DESIGN.md.
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { HeroVisual } from "@/components/landing/HeroVisual";
@@ -22,7 +23,7 @@ const STEPS = [
   { title: "The outcome settles it.", body: "A result is verified. A shielded payout batch moves with 2 of 3 FROST signatures. The coordinator knows payout addresses.", detail: "SETTLEMENT / 2 OF 3 SIGNATURES" },
 ];
 
-export function Landing() {
+export function Landing({ markets }: { markets?: ReactNode }) {
   const odds = useFeaturedOdds();
   const reduced = useReducedMotion();
   const [step, setStep] = useState(0);
@@ -179,6 +180,7 @@ export function Landing() {
           <div className="market-empty"><span className="num t-5">— / —</span><div><h3 className="t-3">No open market available.</h3><p className="t-4 text-[var(--ice-muted)] mt-2">The ledger is quiet. Live markets appear here when the public API is available.</p></div><span className="section-index">AWAITING DATA</span></div>
         )}
         <p className="market-note num t-5">PUBLIC VIEWING KEY / INDEPENDENTLY VERIFIABLE / NO SENDER IDENTITIES</p>
+        {markets}
         <nav className="market-route-links t-5" aria-label="Explore Frosted">{navScreens.filter((screen) => screen.id !== "S-01").map((screen) => <Link key={screen.id} href={screen.href}>{screen.title} <span aria-hidden="true">↗</span></Link>)}</nav>
       </section>
       <section className="closing-note"><p className="section-index">THE FROSTED PRINCIPLE</p><h2 className="t-2">The numbers tell the story.<br /><em>The people don’t have to.</em></h2><Link href="/how" className="text-link t-4">Know what’s public. Know what isn’t. <span aria-hidden="true">↗</span></Link></section>
