@@ -368,3 +368,8 @@ body:has(.frost-experience) .site-nav { min-height: 88px; flex-wrap: nowrap; }
 .receipt-row { border-top:1px solid var(--border); padding-block:28px; overflow-wrap:anywhere; }
 @media(max-width:899px) { .market-detail-grid { gap:28px; } .market-detail-grid > div,.market-detail-grid > aside { grid-column:1/-1; } .market-row { grid-template-columns:1fr 1fr; } .market-row > a { grid-column:1/-1; justify-self:start; } }
 @media(max-width:639px) { .bettor-page { padding-top:36px; } .ledger-title { flex-wrap:wrap; } .builder { padding:20px; } .market-row { grid-template-columns:1fr; gap:20px; } .ledger-filters > label { width:100%; } }
+/* Settlement ledger, docs/DESIGN.md: ice progress, no decorative motion. */
+.settlement-progress { height: 4px; appearance: none; border: 0; background: var(--surface); }
+.settlement-progress::-webkit-progress-bar { background: var(--surface); }
+.settlement-progress::-webkit-progress-value { background: var(--ice); }
+.settlement-progress::-moz-progress-bar { background: var(--ice); }

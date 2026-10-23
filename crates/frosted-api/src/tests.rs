@@ -528,6 +528,59 @@ async fn signed_resolution_payout_and_public_privacy_snapshot() {
     assert_eq!(status, StatusCode::NOT_FOUND);
     assert_eq!(error["error"]["code"], "MARKET_NOT_FOUND");
 }
+
+#[tokio::test]
+async fn settled_bet_projection_preserves_odds_and_survives_follow_up() {
+    let f = fixture().await;
+    let now = crate::auth::now();
+    let resolution = json!({"market_id":ID,"status":"RESOLVED","winning_outcome_index":0,"evidence":null,"votes":[]});
+    assert_eq!(
+        push(
+            &f.app,
+            &format!("/v1/ingest/markets/{ID}/resolution"),
+            &resolution,
+            now,
+            7
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    assert_eq!(
+        get(&f.app, &format!("/v1/markets/{ID}/bets")).await.2["bets"][0]["status"],
+        "WON"
+    );
+    let path = format!("/v1/ingest/markets/{ID}/payout");
+    let mut payout = payout_push();
+    payout["status"] = json!("CONFIRMED");
+    assert_eq!(push(&f.app, &path, &payout, now, 7).await.0, StatusCode::OK);
+    assert_eq!(
+        get(&f.app, &format!("/v1/markets/{ID}/bets")).await.2["bets"][0]["status"],
+        "PAID"
+    );
+    let mut follow = payout_push();
+    follow["plan"]["plan_kind"] = json!("FOLLOW_UP");
+    follow["plan"]["plan_cutoff_height"] = json!(120);
+    follow["plan"]["items"] = json!([]);
+    follow["status"] = json!("BROADCAST");
+    follow["plan_hash"] = json!(hex::encode(
+        zcash_glass::hash::plan_hash(&serde_json::from_value(follow["plan"].clone()).unwrap())
+            .unwrap()
+    ));
+    assert_eq!(push(&f.app, &path, &follow, now, 7).await.0, StatusCode::OK);
+    assert_eq!(
+        get(&f.app, &format!("/v1/markets/{ID}")).await.2["status"],
+        "PAYING"
+    );
+    assert_eq!(
+        get(&f.app, &format!("/v1/markets/{ID}/bets")).await.2["bets"][0]["status"],
+        "PAID"
+    );
+    assert_eq!(
+        get(&f.app, &format!("/v1/markets/{ID}/odds")).await.2["pool_total_zat"],
+        2000000
+    );
+}
 #[tokio::test]
 async fn personas_only_reveal_thawed_roots_and_leaderboard_requires_public_report() {
     use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};

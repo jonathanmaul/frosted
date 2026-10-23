@@ -89,7 +89,7 @@ it("refreshes detail odds on the API's cursor-only SSE event and shows empty poo
   let event: (() => void) | undefined;
   vi.stubGlobal("EventSource", class { onopen = null; onerror = null; addEventListener(name: string, cb: () => void) { if (name === "odds_updated") event = cb; } close() {} });
   const def = { ...market.market_definition, resolution_type: "POOL_THRESHOLD", resolution_params: {}, fee_bps: 100, uivk: "uivktest" };
-  vi.stubGlobal("fetch", vi.fn(async (url: string) => ({ ok: true, json: async () => url.endsWith("/odds") ? { pool_total_zat: 100000000, outcomes: [{ outcome_index: 0, pool_zat: 75000000, probability: .75 }, { outcome_index: 1, pool_zat: 25000000, probability: .25 }] } : url.includes("/bets") ? { bets: [] } : { ...market, market_definition: def } })));
+  vi.stubGlobal("fetch", vi.fn(async (url: string) => ({ ok: true, json: async () => url.endsWith("/payout") || url.endsWith("/resolution") ? null : url.endsWith("/odds") ? { pool_total_zat: 100000000, outcomes: [{ outcome_index: 0, pool_zat: 75000000, probability: .75 }, { outcome_index: 1, pool_zat: 25000000, probability: .25 }] } : url.includes("/bets") ? { bets: [] } : { ...market, market_definition: def } })));
   render(<MarketDetail initialMarket={{ ...market, market_definition: def }} initialOdds={{ at_height: 5, pool_total_zat: 0, outcomes: [], pending_bets: 0 }} initialBets={[]} />);
   expect(screen.getByRole("img").getAttribute("aria-label")).toBe("YES —, NO —");
   await act(async () => { await event!(); }); await waitFor(() => expect(screen.getByRole("img").getAttribute("aria-label")).toBe("YES 75%, NO 25%"));

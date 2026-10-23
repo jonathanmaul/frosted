@@ -1041,6 +1041,7 @@ require tx_fee ≤ fee_budget, else plan fails with FEE_SHORTFALL
 treasury_out    = operator_fee + swept_total + Σ refund_fee_zat − tx_fee
 ```
 - Payout pemenang tidak pernah dipotong fee transaksi. Jika `tx_fee > fee_budget`, plan **tidak dibuat** (`FEE_SHORTFALL`) dan operator menambal dulu (fail-closed).
+- Klarifikasi M8 (disetujui 2026-10-23): estimator mencakup fee transaksi perantara untuk menggabungkan dana pada batch besar. Setiap transaksi tetap memenuhi `MAX_ACTIONS_PER_TX`; perantara tidak mengurangi jumlah pemenang dan seluruh fee tetap dibebankan ke `fee_budget` di atas. Estimasi yang hanya menghitung jumlah note awal tidak cukup bila ada input carry dari transaksi sebelumnya.
 - Validasi saat create market (`MIN_BET_ZAT × fee_bps / 10_000 ≥ MARGINAL_FEE_ZAT`) membuat setiap bet `COUNTED` membiayai spend-nya sendiri, sehingga `FEE_SHORTFALL` seharusnya tidak terjadi; tetap dicek sebagai assertion + test.
 - Karena setiap `refund_j` dan note tersapu > `sweep_threshold_zat` = `MARGINAL_FEE_ZAT`, refund dan sapuan selalu positif.
 - Jika `winning_total = 0` → Market `VOID`.
@@ -1606,6 +1607,9 @@ Roadmap (bukan MVP): opsi pull, di mana member dari pihak berbeda mengirim vote 
   "evidence": { "source": "getblock", "height": 4521100, "block_hash": "00ab...",
                 "pool": "ironwood", "chain_value_zat": 512345678000000 },
   "votes": [] }   // COMMITTEE: [{member_id, action, outcome_index, evidence_url, created_at}]
+// UPGRADE_ACTIVE evidence menambahkan field opsional reported_upgrades:
+// [{"name":"NU6.3","activation_height":4134000}, ...], daftar publik dari node.
+// Disetujui saat implementasi M8; upgrade yang tidak terdaftar tetap outcome NO.
 
 // PayoutPublic  (status = status plan: PLANNED | SIGNING | BROADCAST | CONFIRMED | FAILED)
 { "plan_hash": "4e1a...", "status": "CONFIRMED",

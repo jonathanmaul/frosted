@@ -32,6 +32,12 @@ pub struct Vote {
 }
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct ReportedUpgrade {
+    pub name: String,
+    pub activation_height: u32,
+}
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Evidence {
     pub source: String,
     pub height: u32,
@@ -40,6 +46,8 @@ pub struct Evidence {
     pub pool: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chain_value_zat: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reported_upgrades: Option<Vec<ReportedUpgrade>>,
 }
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -85,4 +93,24 @@ pub struct PayoutPublic {
     pub summary: PayoutSummary,
     pub signing: Signing,
     pub txs: Vec<PayoutTx>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn public_upgrade_evidence_is_optional_and_strict() {
+        let old = json!({"source":"getblock","height":10,"block_hash":"hash"});
+        let parsed: Evidence = serde_json::from_value(old.clone()).unwrap();
+        assert_eq!(serde_json::to_value(parsed).unwrap(), old);
+        let upgraded = json!({"source":"getblockchaininfo","height":10,"block_hash":"hash",
+            "reported_upgrades":[{"name":"NU6.3","activation_height":1}]});
+        let parsed: Evidence = serde_json::from_value(upgraded.clone()).unwrap();
+        assert_eq!(serde_json::to_value(parsed).unwrap(), upgraded);
+        let mut private = upgraded;
+        private["reported_upgrades"][0]["private_key"] = json!("forbidden");
+        assert!(serde_json::from_value::<Evidence>(private).is_err());
+    }
 }

@@ -1,5 +1,9 @@
-import { ScreenPlaceholder } from "@/components/ScreenPlaceholder";
+import { OperatorStatus } from "@/components/bettor/OperatorStatus";
+import { fetchMarkets } from "@/lib/api";
+import { fetchPayout } from "@/lib/bettor";
 
-export default function Page() {
-  return <ScreenPlaceholder id="S-11" title="Operator Status (read-only)" features="F-01, F-07, F-08, F-11" />;
+export default async function Page() {
+  const markets = await fetchMarkets();
+  const rows = markets ? await Promise.all(markets.map(async market => ({ market, payout: await fetchPayout(market.market_id) }))) : null;
+  return <OperatorStatus initialRows={rows} />;
 }

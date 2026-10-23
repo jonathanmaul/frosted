@@ -34,6 +34,7 @@ use zcash_protocol::{
     value::Zatoshis,
 };
 mod cache;
+mod payout;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -50,6 +51,15 @@ struct Request {
     amount_zat: Option<u64>,
     memo: Option<String>,
     tx_hex: Option<String>,
+    #[serde(default)]
+    inputs: Vec<payout::Input>,
+    #[serde(default)]
+    outputs: Vec<payout::Output>,
+    fee_zat: Option<u64>,
+    max_actions: Option<u32>,
+    pczt_b64: Option<String>,
+    #[serde(default)]
+    signatures: Vec<payout::SpendSignature>,
 }
 #[derive(Serialize)]
 struct Response {
@@ -59,6 +69,8 @@ struct Response {
     txid: Option<String>,
     account_uuid: String,
     tx_hex: Option<String>,
+    #[serde(flatten)]
+    payout: payout::ResultFields,
 }
 #[derive(Clone, Copy)]
 struct Network {
@@ -177,7 +189,16 @@ fn connection(snapshot: Option<&str>) -> Result<Connection> {
 }
 async fn run(r: Request) -> Result<Response> {
     ensure!(
-        ["import", "hot_init", "sync", "announce", "broadcast"].contains(&r.op.as_str()),
+        [
+            "import",
+            "hot_init",
+            "sync",
+            "announce",
+            "broadcast",
+            "payout_build",
+            "payout_extract"
+        ]
+        .contains(&r.op.as_str()),
         "invalid operation"
     );
     let p = network(&r).await?;
@@ -208,6 +229,7 @@ async fn run(r: Request) -> Result<Response> {
             txid: Some(txid),
             account_uuid: String::new(),
             tx_hex: None,
+            payout: Default::default(),
         });
     }
     let mut conn = connection(r.snapshot_b64.as_deref())?;
@@ -237,7 +259,7 @@ async fn run(r: Request) -> Result<Response> {
             )?;
         }
     }
-    if r.op == "sync" || r.op == "announce" {
+    if r.op == "sync" || r.op == "announce" || r.op == "payout_build" {
         zcash_client_backend::sync::run(&mut client, &p, &cache::Cache::default(), &mut db, 1000)
             .await?;
     }
@@ -291,7 +313,7 @@ async fn run(r: Request) -> Result<Response> {
             ),
         );
         let policy = if r.network == "regtest" {
-            ConfirmationsPolicy::new_symmetrical(NonZeroU32::new(1).unwrap())
+            ConfirmationsPolicy::new_symmetrical(NonZeroU32::new(1).unwrap(), false)
         } else {
             ConfirmationsPolicy::default()
         };
@@ -339,6 +361,14 @@ async fn run(r: Request) -> Result<Response> {
         tx_hex = Some(hex::encode(&raw.data));
         txid = Some(id.to_string());
     }
+    let mut payout = payout::ResultFields::default();
+    if r.op == "payout_build" {
+        payout = payout::build(&r, &p, &mut db, id)?;
+    } else if r.op == "payout_extract" {
+        let (raw, id) = payout::extract(&r, &mut db)?;
+        tx_hex = Some(raw);
+        txid = Some(id);
+    }
     let balance_zat = db
         .get_wallet_summary(ConfirmationsPolicy::MIN)?
         .map(|s| {
@@ -356,6 +386,7 @@ async fn run(r: Request) -> Result<Response> {
         txid,
         account_uuid: id.expose_uuid().to_string(),
         tx_hex,
+        payout,
     })
 }
 #[tokio::main]

@@ -94,6 +94,27 @@ async fn run() -> Result<Value> {
                 .await?
         }
         ["market", "status", id] => client.get(format!("{url}/markets/{id}")).send().await?,
+        ["payout", "status", id] => {
+            client
+                .get(format!("{url}/markets/{id}/payout"))
+                .send()
+                .await?
+        }
+        ["payout", "plan", id] => {
+            client
+                .post(format!("{url}/markets/{id}/payout"))
+                .send()
+                .await?
+        }
+        ["payout", "follow-up", id] => {
+            client
+                .post(format!("{url}/markets/{id}/payout/follow-up"))
+                .send()
+                .await?
+        }
+        ["payout", "sign", id, "--plan-hash", hash, rest @ ..] => {
+            return sign_payout(&client, &url, id, hash, rest).await;
+        }
         ["hot-wallet", "init"] => client.post(format!("{url}/hot-wallet")).send().await?,
         _ => bail!(
             "usage: frosted-operator secrets init --dir DIR | committee init --share-dir DIR --member-key KEY (three times) | market create --file FILE | market status ID | hot-wallet init"
@@ -120,4 +141,96 @@ async fn main() {
             std::process::exit(1);
         }
     }
+}
+
+async fn sign_payout(
+    client: &reqwest::Client,
+    url: &str,
+    id: &str,
+    hash: &str,
+    args: &[&str],
+) -> Result<Value> {
+    use payout_coordinator::{
+        frost_sign::{self, SigningRequest},
+        keys::Committee,
+    };
+    use std::io::{self, Write};
+    if args.len() != 8
+        || args[0] != "--share"
+        || args[2] != "--member-key"
+        || args[4] != "--share"
+        || args[6] != "--member-key"
+    {
+        bail!(
+            "payout sign ID --plan-hash HASH --share FILE --member-key FILE --share FILE --member-key FILE"
+        )
+    }
+    let response = client
+        .post(format!("{url}/markets/{id}/payout/prepare"))
+        .json(&json!({"plan_hash":hash}))
+        .send()
+        .await?;
+    if !response.status().is_success() {
+        bail!("payout preparation failed HTTP {}", response.status())
+    }
+    let prepared: Value = response.json().await?;
+    if prepared["public"]["plan_hash"] != hash {
+        bail!("PLAN_HASH_MISMATCH")
+    }
+    let committee: Committee = serde_json::from_value(prepared["committee"].clone())?;
+    let mut members = Vec::new();
+    for pair in [(&args[1], &args[3]), (&args[5], &args[7])] {
+        eprintln!("Plan {hash}\n{}", prepared["public"]["summary"]);
+        eprint!(
+            "Member share {}: type the complete plan_hash to approve: ",
+            pair.0
+        );
+        io::stderr().flush()?;
+        let timeout = env::var("SIGNING_SESSION_TIMEOUT_SECS")
+            .ok()
+            .map(|v| v.parse::<u64>())
+            .transpose()?
+            .unwrap_or(payout_coordinator::config::SIGNING_SESSION_TIMEOUT_SECS);
+        if timeout == 0 {
+            bail!("signing timeout must be positive")
+        }
+        let (sender, receiver) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let mut line = String::new();
+            let result = io::stdin().read_line(&mut line).map(|_| line);
+            let _ = sender.send(result);
+        });
+        // The detached stdin thread cannot hold up runtime shutdown after the bounded wait.
+        let answer = tokio::task::spawn_blocking(move || {
+            receiver.recv_timeout(Duration::from_secs(timeout))
+        })
+        .await?
+        .context("signing approval timed out")??;
+        if answer.trim() != hash {
+            bail!("member declined plan")
+        }
+        members.push(frost_sign::load_member(
+            Path::new(pair.0),
+            Path::new(pair.1),
+            &committee,
+        )?);
+    }
+    let mut signatures = Vec::new();
+    for batch in prepared["batches"]
+        .as_array()
+        .context("missing signing batches")?
+    {
+        let requests: Vec<SigningRequest> =
+            serde_json::from_value(batch["signing_requests"].clone())?;
+        signatures.push(frost_sign::sign(&committee, &members, &requests)?);
+    }
+    let response = client
+        .post(format!("{url}/markets/{id}/payout/submit"))
+        .json(&json!({"plan_hash":hash,"signatures":signatures}))
+        .send()
+        .await?;
+    if !response.status().is_success() {
+        bail!("payout submission failed HTTP {}", response.status())
+    }
+    Ok(response.json().await?)
 }

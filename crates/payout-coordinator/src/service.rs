@@ -27,14 +27,29 @@ use tokio::sync::Mutex;
 
 pub struct App {
     pub config: Config,
+    _process_lock: std::fs::File,
     pub pool: SqlitePool,
-    key: Secrets,
-    signer: SigningKey,
-    http: reqwest::Client,
-    operation: Mutex<()>,
+    pub(crate) key: Secrets,
+    pub(crate) signer: SigningKey,
+    pub(crate) http: reqwest::Client,
+    pub(crate) operation: Mutex<()>,
 }
 impl App {
     pub async fn new(config: Config) -> Result<Arc<Self>> {
+        use std::os::unix::fs::OpenOptionsExt;
+        if let Some(parent) = config.db.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        let process_lock = std::fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .mode(0o600)
+            .open(config.db.with_extension("lock"))?;
+        process_lock
+            .try_lock()
+            .context("coordinator database already locked by another process")?;
         let key = config.secrets()?;
         let pool = store::open(&config.db).await?;
         let coordinator = crate::secrets::read_private(&config.coordinator_key)?;
@@ -59,6 +74,7 @@ impl App {
         }
         Ok(Arc::new(Self {
             config,
+            _process_lock: process_lock,
             pool,
             key,
             signer,
@@ -67,10 +83,13 @@ impl App {
         }))
     }
     pub async fn rpc(&self, method: &str) -> Result<Value> {
+        self.rpc_params(method, json!([])).await
+    }
+    pub async fn rpc_params(&self, method: &str, params: Value) -> Result<Value> {
         let response: Value = self
             .http
             .post(&self.config.rpc_url)
-            .json(&json!({"jsonrpc":"2.0","id":1,"method":method,"params":[]}))
+            .json(&json!({"jsonrpc":"2.0","id":1,"method":method,"params":params}))
             .send()
             .await?
             .error_for_status()?
@@ -81,7 +100,7 @@ impl App {
         }
         response.get("result").cloned().context("NODE_UNAVAILABLE")
     }
-    async fn tip(&self) -> Result<u32> {
+    pub(crate) async fn tip(&self) -> Result<u32> {
         self.rpc("getblockcount")
             .await?
             .as_u64()
@@ -154,7 +173,7 @@ impl App {
             json!({"market_definition":serde_json::from_str::<Value>(&row.get::<String,_>("definition_json"))?,"rules_hash":row.get::<String,_>("rules_hash"),"status":row.get::<String,_>("status"),"announce_txid":row.get::<Option<String>,_>("announce_txid"),"announce_height":row.get::<Option<i64>,_>("announce_height"),"balance_zat":row.get::<i64,_>("balance_zat")}),
         )
     }
-    async fn sync_all(&self) -> Result<()> {
+    pub(crate) async fn sync_all(&self) -> Result<()> {
         let rows = sqlx::query("SELECT market_id,definition_json,wallet_enc FROM market")
             .fetch_all(&self.pool)
             .await?;
@@ -341,6 +360,7 @@ impl App {
         for id in ids {
             self.process_market(&id, tip).await?;
         }
+        self.settlement_tick(tip).await?;
         Ok(())
     }
 }
@@ -353,7 +373,15 @@ impl<E: Into<anyhow::Error>> From<E> for Error {
 }
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
-        let message = self.0.to_string();
+        let message = if self
+            .0
+            .downcast_ref::<zcash_glass::payout::PayoutError>()
+            .is_some_and(|e| matches!(e, zcash_glass::payout::PayoutError::FeeShortfall { .. }))
+        {
+            "FEE_SHORTFALL".to_string()
+        } else {
+            self.0.to_string()
+        };
         if matches!(
             message.as_str(),
             "ESCROW_DERIVATION_FAILED" | "ESCROW_IMPORT_FAILED"
@@ -367,7 +395,10 @@ impl IntoResponse for Error {
             | "INVALID_FEE_BPS"
             | "MAINNET_DEMO_LIMIT"
             | "MARKET_NOT_FOUND"
-            | "NODE_UNAVAILABLE" => message.as_str(),
+            | "NODE_UNAVAILABLE"
+            | "MARKET_NOT_RESOLVED"
+            | "PLAN_ALREADY_EXISTS"
+            | "FEE_SHORTFALL" => message.as_str(),
             _ => "INTERNAL",
         };
         let status = match code {
@@ -385,6 +416,10 @@ pub fn router(app: Arc<App>) -> Router {
         .route("/markets", post(create))
         .route("/markets/{id}", get(market))
         .route("/hot-wallet", post(hot))
+        .route("/markets/{id}/payout", get(payout_status).post(payout_plan))
+        .route("/markets/{id}/payout/follow-up", post(payout_follow_up))
+        .route("/markets/{id}/payout/prepare", post(payout_prepare))
+        .route("/markets/{id}/payout/submit", post(payout_submit))
         .with_state(app)
 }
 async fn committee(
@@ -439,4 +474,51 @@ async fn hot(State(app): State<Arc<App>>) -> Result<Json<Value>, Error> {
         .await?
         .context("hot address missing")?;
     Ok(Json(json!({"address":std::str::from_utf8(&address)?})))
+}
+
+async fn payout_status(
+    State(app): State<Arc<App>>,
+    Path(id): Path<String>,
+) -> Result<Json<Value>, Error> {
+    Ok(Json(app.payout_status(&id).await?))
+}
+async fn payout_plan(
+    State(app): State<Arc<App>>,
+    Path(id): Path<String>,
+) -> Result<Json<Value>, Error> {
+    Ok(Json(app.payout_plan(&id, false).await?))
+}
+async fn payout_follow_up(
+    State(app): State<Arc<App>>,
+    Path(id): Path<String>,
+) -> Result<Json<Value>, Error> {
+    Ok(Json(app.payout_plan(&id, true).await?))
+}
+
+async fn payout_prepare(
+    State(app): State<Arc<App>>,
+    Path(id): Path<String>,
+    Json(body): Json<Value>,
+) -> Result<Json<Value>, Error> {
+    Ok(Json(
+        app.payout_prepare(
+            &id,
+            body["plan_hash"].as_str().context("PLAN_HASH_MISMATCH")?,
+        )
+        .await?,
+    ))
+}
+async fn payout_submit(
+    State(app): State<Arc<App>>,
+    Path(id): Path<String>,
+    Json(body): Json<Value>,
+) -> Result<Json<Value>, Error> {
+    Ok(Json(
+        app.payout_submit(
+            &id,
+            body["plan_hash"].as_str().context("PLAN_HASH_MISMATCH")?,
+            &body["signatures"],
+        )
+        .await?,
+    ))
 }

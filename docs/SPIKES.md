@@ -348,3 +348,20 @@ Txid pengujian lokal: `7463fb5790f6d777af06c41a23c571c9bf698eb9dd8faa3f676d83a0c
 - Bet dari WASM asli: fingerprint `32fae071b3b6f9b9`, tx `185e07a857a404c915727535e1766ff66aa9b6e7b06448686d159aa69b8203c1`, amount **2.000.000 zat**, **COUNTED** blok **955**. Tambahan **500.000 zat** berstatus **IGNORED_DUST** blok **958**. Saat tip **961**, odds pool **2.000.000 zat** dan J-7 wallet balance **2.510.000 zat** = bet + dust + announcement **10.000 zat**. Ini diverifikasi dengan asersi terhadap API dan coordinator; bukti lokal `.regtest/m7-run/verification.json`.
 - Announcement disiapkan sekali; snapshot hot wallet dan raw transaction pending tersimpan atomik/terenkripsi sebelum broadcast. Retry menggunakan byte transaksi yang sama. Loopback bind diverifikasi dan non-loopback ditolak unit test; HTTP ingest hanya untuk loopback regtest, remote wajib HTTPS, redirects mati. Timeout announcement tetap diputuskan indexer (uji VOID M4 di `scripts/it-indexer.sh`, perilaku indexer tidak diubah).
 - Verifikasi: root workspace **87 tes** PASS; helper **3 tes** PASS; fmt/clippy `-D warnings` kedua workspace PASS. Regtest ini tidak mencakup operasi testnet/mainnet, signing/payout M8, atau uji wallet Zodl HP.
+
+## Lampiran M8 — Verifikasi API PCZT (2026-10-23)
+
+Source exact `zcash-devtool` `0b3436b` dan librustzcash `eb38d7a373661179dbc083a2fd58b3a6c9b25818` diperiksa sebelum implementasi:
+
+- `src/commands/pczt/create.rs:105`: `propose_transfer`; `:125`: `create_pczt_from_proposal(..., None, BundlePadding::DEFAULT)`.
+- `pczt/prove.rs:194`: `Prover::new`; `:213`: `ProvingKey::build(bundle_version_for_branch(...).circuit_version())`; `:221`/`:227`: `create_orchard_proof` / `create_ironwood_proof`.
+- `pczt/send.rs:52`: `extract_and_store_transaction_from_pczt::<_, ()>(..., Some(SaplingVKs), None)`; `:73`: `get_transaction`; `:81`: broadcast melalui `send_transaction`. Untuk coordinator, extract dan broadcast dipisah agar snapshot dan raw transaction pending terenkripsi committed sebelum broadcast.
+- Pemilihan input payout harus exact notes plan: backend `proposal.rs:463` `Proposal::single_step`, `data_api.rs:1882` `InputSource::get_spendable_note`, dengan payment pools eksplisit dan `TransactionBalance::new` tanpa change tersembunyi. Jalur greedy transfer hot-wallet tidak dipakai untuk menentukan input plan.
+- Integrasi PCZT/payout regtest belum dinyatakan PASS pada tahap verifikasi source ini; hasil runtime dicatat setelah pengujian.
+
+### Checkpoint implementasi M8
+
+- Regtest nyata: market `70319c29081e5b9f6141558bf1d6dab7`, resolve YES pada tinggi 986, plan `3a05802cea670e8cdcce2d377bc19b4cb1b6375ff0f418f8dee55ae6b9a202bf`. Signing FROST 2-of-3, proof, extract dan broadcast berhasil. Payout `6010c3352d90c239429b6ab5b0150d587e1820ae9c694e70bb0aebc867d94513` ditambang pada tinggi 990; wallet penerima menunjukkan output pemenang 2.970.000 zat dan Treasury 25.000 zat secara terpisah.
+- Follow-up satu note ditolak `FEE_SHORTFALL` tanpa menulis plan. Dua note menghasilkan plan baru `840d563e9d8a7cdb8c6ea768f76e97a045a08a38d1c82b0e9b4e9c25364cf396`, refund masing-masing 1.995.000 zat. Transaksi `4bcf486b42fabc29d3726468dd1eed3020d63eb4aa171d523f72e09181c09ddf` sudah broadcast; verifikasi akhir penerimaan refund masih pending pada checkpoint ini.
+- API: 14 tes PASS; web: 37 tes, lint dan TypeScript PASS; helper: 5 tes serta fmt/clippy PASS. Perbaikan terakhir coordinator/core masih memerlukan pemeriksaan akhir. Production build dan review visual M8 belum selesai.
+- Batas verifikasi: pembagian batch >50 aksi dan expiry diuji melalui pengujian native/lifecycle, belum melalui transaksi batch besar atau expiry nyata di chain. Jalur payout saat ini memilih note Ironwood sesuai cakupan scanner.

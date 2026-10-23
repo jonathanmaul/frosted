@@ -11,7 +11,7 @@ use crate::hash::{ItemKind, Plan, PlanItem, PlanKind, PlanResult, receiver_commi
 use crate::params;
 use crate::status::BetStatus;
 
-/// ZIP 317 fee model (`[TO VERIFY]` A-7 / V-28; M0.4 may replace the defaults).
+/// ZIP 317 fee model, including every bounded intermediate funding transaction.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct FeeModel {
     pub marginal_fee_zat: u64,
@@ -131,8 +131,8 @@ pub struct PlanOutcome {
     pub summary: PlanSummary,
 }
 
-/// Fee estimate for spending `spends` notes into `payee_outputs` outputs, plus one Treasury/change
-/// output per transaction when `with_treasury` is set, split so that every transaction stays
+/// Fee estimate for spending `spends` notes into `payee_outputs` outputs, plus one Treasury
+/// output when `with_treasury` is set. Intermediate escrow funding keeps every transaction
 /// within `max_actions_per_tx`. Returns `(tx_fee_zat, tx_count)`.
 pub fn estimate_fee(
     model: &FeeModel,
@@ -144,36 +144,45 @@ pub fn estimate_fee(
         return Ok((0, 0));
     }
     let max = model.max_actions_per_tx.max(2);
-    let extra = u32::from(with_treasury);
-    let mut n: u32 = 1;
-    loop {
-        let outputs = payee_outputs + n * extra;
-        let need = spends.max(outputs).div_ceil(max);
-        if need <= n {
-            break;
-        }
-        n = need;
+    let mut inputs = spends;
+    let mut outputs = payee_outputs
+        .checked_add(u32::from(with_treasury))
+        .ok_or(PayoutError::Overflow)?;
+    let mut fee = 0u64;
+    let mut count = 0u32;
+    // Consolidate exact notes first, then distribute with a shielded carry output between steps.
+    // This supports whole WIN outputs larger than any one initial input chunk.
+    while inputs > max {
+        fee = add(
+            fee,
+            model
+                .marginal_fee_zat
+                .checked_mul(u64::from(max.max(model.grace_actions)))
+                .ok_or(PayoutError::Overflow)?,
+        )?;
+        inputs -= max - 1;
+        count = count.checked_add(1).ok_or(PayoutError::Overflow)?;
     }
-    let mut fee: u64 = 0;
-    for i in 0..n {
-        let s = chunk(spends, n, i);
-        let o = chunk(payee_outputs, n, i) + extra;
-        let actions = u64::from(model.grace_actions.max(s.max(o)));
-        fee = fee
-            .checked_add(
-                model
-                    .marginal_fee_zat
-                    .checked_mul(actions)
-                    .ok_or(PayoutError::Overflow)?,
-            )
-            .ok_or(PayoutError::Overflow)?;
+    while outputs > max {
+        fee = add(
+            fee,
+            model
+                .marginal_fee_zat
+                .checked_mul(u64::from(max.max(inputs).max(model.grace_actions)))
+                .ok_or(PayoutError::Overflow)?,
+        )?;
+        outputs -= max - 1;
+        inputs = 1;
+        count = count.checked_add(1).ok_or(PayoutError::Overflow)?;
     }
-    Ok((fee, n))
-}
-
-/// Size of part `i` when `total` is split into `n` near-equal parts.
-fn chunk(total: u32, n: u32, i: u32) -> u32 {
-    total / n + u32::from(i < total % n)
+    fee = add(
+        fee,
+        model
+            .marginal_fee_zat
+            .checked_mul(u64::from(model.grace_actions.max(inputs).max(outputs)))
+            .ok_or(PayoutError::Overflow)?,
+    )?;
+    Ok((fee, count.checked_add(1).ok_or(PayoutError::Overflow)?))
 }
 
 fn add(a: u64, b: u64) -> Result<u64, PayoutError> {
@@ -285,12 +294,14 @@ pub fn plan(input: &PlanInput) -> Result<PlanOutcome, PayoutError> {
                     amount_zat: amount,
                     receiver_commitment: Some(receiver_commitment(&receiver, &bet_salt)),
                 });
-                outputs.push(PrivateOutput {
-                    note_ref: note.note_ref.clone(),
-                    kind,
-                    receiver,
-                    amount_zat: amount,
-                });
+                if amount > 0 {
+                    outputs.push(PrivateOutput {
+                        note_ref: note.note_ref.clone(),
+                        kind,
+                        receiver,
+                        amount_zat: amount,
+                    });
+                }
                 match kind {
                     ItemKind::Win => summary.winners += 1,
                     _ => summary.refunds += 1,
@@ -535,6 +546,26 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn full_operator_fee_retains_zero_win_items_without_zero_value_payments() {
+        let mut input = input(PlanResult::Outcome(0), example_notes());
+        input.fee_bps = 10_000;
+        let outcome = plan(&input).unwrap();
+        assert_eq!(outcome.summary.winners, 6);
+        assert!(
+            outcome
+                .public
+                .items
+                .iter()
+                .all(|item| item.kind == ItemKind::Win && item.amount_zat == 0)
+        );
+        assert!(outcome.private.outputs.is_empty());
+        assert_eq!(outcome.summary.tx_fee_zat, 9 * 5_000);
+        assert_eq!(
+            outcome.private.treasury_out_zat + outcome.summary.tx_fee_zat,
+            1_240_000_000
+        );
+    }
+    #[test]
     fn late_bet_refund() {
         let mut notes = example_notes();
         let late = note(30, BetStatus::Late, Some(0), 20_000_000);
@@ -653,8 +684,8 @@ pub(crate) mod tests {
     #[test]
     fn transactions_are_split() {
         let (fee, n) = estimate_fee(&FeeModel::default(), 120, 60, true).unwrap();
-        assert_eq!(n, 3);
-        assert_eq!(fee, 3 * 40 * 5_000);
+        assert_eq!(n, 4);
+        assert_eq!(fee, (50 + 50 + 50 + 12) * 5_000);
         let (fee, n) = estimate_fee(&FeeModel::default(), 1, 1, true).unwrap();
         assert_eq!((fee, n), (10_000, 1));
         assert_eq!(

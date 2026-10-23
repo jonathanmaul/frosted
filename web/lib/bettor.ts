@@ -12,11 +12,26 @@ export type Market = { market_definition: MarketDefinition; rules_hash: string; 
 export type Odds = { at_height: number; pool_total_zat: number; pending_bets: number; outcomes: { outcome_index: number; probability: number | null; pool_zat: number; bets: number }[] };
 export type PublicBet = { note_ref: string; bet_fingerprint: string | null; outcome_index: number | null; amount_zat: number; block_height: number; status: string; tagged: boolean };
 export type PlanItem = { note_ref: string; bet_fingerprint: string | null; kind: string; amount_zat: number; receiver_commitment: string | null };
-export type Payout = { status: string; plan: { items: PlanItem[] } };
+export type Resolution = {
+  market_id: string; status: string; winning_outcome_index: number | null;
+  evidence: { source: string; height: number; block_hash: string; pool?: string; chain_value_zat?: number;
+    reported_upgrades?: { name: string; activation_height: number }[] } | null;
+  votes: { member_id: string; action: string; outcome_index: number | null; evidence_url: string | null; created_at: number }[];
+};
+export type Payout = {
+  plan_hash: string; status: string;
+  plan: { market_id: string; plan_kind: string; plan_cutoff_height: number; result: number | "VOID";
+    operator_fee_zat: number; items: PlanItem[] };
+  summary: { winners: number; refunds: number; unclaimable: number; swept: number; uneconomic_dust: number;
+    operator_fee_zat: number; tx_fee_zat: number; distributed_zat: number };
+  signing: { sessions_done: number; sessions_total: number; threshold: number };
+  txs: { txid: string; status: string; confirmed_height: number | null }[];
+};
 export const marketPath = (id: string) => `/markets/${encodeURIComponent(id)}`;
 export const fetchMarket = (id: string) => getJson<Market>(marketPath(id));
 export const fetchOdds = (id: string) => getJson<Odds>(`${marketPath(id)}/odds`);
 export const fetchPayout = (id: string) => getJson<Payout>(`${marketPath(id)}/payout`);
+export const fetchResolution = (id: string) => getJson<Resolution>(`${marketPath(id)}/resolution`);
 export async function fetchBets(id: string): Promise<PublicBet[] | null> {
   const page = await getJson<{ bets: PublicBet[] }>(`${marketPath(id)}/bets?limit=500`);
   return page?.bets ?? null;

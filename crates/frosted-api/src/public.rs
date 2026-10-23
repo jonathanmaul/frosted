@@ -191,8 +191,8 @@ pub(crate) async fn bets(
 ) -> Result<Json<Value>> {
     market(&state, &id).await?;
     let rows = sqlx::query("SELECT note_ref, bet_fingerprint, outcome_index, amount_zat, block_height, status, tagged FROM bet WHERE market_id = ? AND is_announcement = 0 AND (? IS NULL OR block_height > ?) ORDER BY block_height, tx_index, action_index, note_ref LIMIT ?")
-        .bind(id).bind(query.after_height).bind(query.after_height).bind(query.limit.unwrap_or(100).min(500)).fetch_all(&state.read).await?;
-    let bets: Vec<_> = rows
+        .bind(&id).bind(query.after_height).bind(query.after_height).bind(query.limit.unwrap_or(100).min(500)).fetch_all(&state.read).await?;
+    let mut bets: Vec<_> = rows
         .into_iter()
         .map(|r| PublicBet {
             note_ref: r.get(0),
@@ -204,6 +204,64 @@ pub(crate) async fn bets(
             tagged: r.get(6),
         })
         .collect();
+    // Settlement is a public projection; preserve scanner statuses for historical odds/math.
+    let resolution: Option<String> = sqlx::query_scalar(
+        "SELECT body_json FROM api_publication WHERE market_id=? AND kind='resolution'",
+    )
+    .bind(&id)
+    .fetch_optional(&state.read)
+    .await?;
+    let resolution = resolution
+        .map(|body| serde_json::from_str::<crate::types::Resolution>(&body))
+        .transpose()?;
+    let plans: Vec<String> =
+        sqlx::query_scalar("SELECT body_json FROM api_payout_plan WHERE market_id=?")
+            .bind(&id)
+            .fetch_all(&state.read)
+            .await?;
+    let mut settled = std::collections::BTreeMap::new();
+    for body in plans {
+        let plan: crate::types::PayoutPublic = serde_json::from_str(&body)?;
+        if plan.status == "FAILED" {
+            continue;
+        }
+        let confirmed = plan.status == "CONFIRMED";
+        for item in plan.plan.items {
+            let entry = settled
+                .entry(item.note_ref)
+                .or_insert((item.kind, confirmed));
+            if confirmed {
+                *entry = (item.kind, true);
+            }
+        }
+    }
+    for bet in &mut bets {
+        if bet.status == "COUNTED"
+            && let Some(r) = &resolution
+            && r.status == "RESOLVED"
+            && let Some(winner) = r.winning_outcome_index
+        {
+            bet.status = if bet.outcome_index == Some(winner) {
+                "WON"
+            } else {
+                "LOST"
+            }
+            .into();
+        }
+        if let Some((kind, confirmed)) = settled.get(&bet.note_ref) {
+            use zcash_glass::hash::ItemKind;
+            bet.status = match (kind, confirmed) {
+                (ItemKind::Win, true) => "PAID",
+                (ItemKind::Win, false) => "WON",
+                (ItemKind::Refund, true) => "REFUNDED",
+                (ItemKind::Refund, false) => "REFUND_QUEUED",
+                (ItemKind::Unclaimable, false) => "UNCLAIMABLE",
+                (ItemKind::Sweep, false) => bet.status.as_str(),
+                (ItemKind::Unclaimable | ItemKind::Sweep, true) => "SWEPT",
+            }
+            .into();
+        }
+    }
     Ok(Json(json!({"bets":bets})))
 }
 pub(crate) async fn published(state: &AppState, id: &str, kind: &str) -> Result<Value> {

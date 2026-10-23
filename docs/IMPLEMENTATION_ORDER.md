@@ -12,6 +12,7 @@ Untuk setiap perubahan UI, ikuti [DESIGN.md](DESIGN.md).
 | `add-frosted-api` | 9/9 | Selesai |
 | `add-escrow-markets` | 9/9 | Selesai |
 | `add-bettor-web` | 11/12 | Implementasi web selesai; uji Zodl di HP pending |
+| `add-resolution-and-payout` | 8/11 | Implementasi tersedia; verifikasi akhir follow-up, checks dan review visual pending |
 
 Alur regtest yang sudah terbukti: buat escrow → push market → announcement →
 `OPEN` → bet dari WASM/QR → terindeks `COUNTED` → odds SSE dan My Bets terbarui.
@@ -21,7 +22,7 @@ Hasil uji dan batasannya ada di [SPIKES.md](SPIKES.md).
 
 | Urutan | Change | Milestone | Task tersisa | Hasil yang dituju |
 | --- | --- | --- | ---: | --- |
-| 1 | `add-resolution-and-payout` | M8 | 11 | Resolve → plan → FROST 2-of-3 → broadcast → `SETTLED`; payout diterima |
+| 1 | `add-resolution-and-payout` | M8 | 3 | Resolve → plan → FROST 2-of-3 → broadcast → `SETTLED`; payout diterima |
 | 2 | `add-persona-thaw` | M9 | 7 | Persona tersimpan terenkripsi, registrasi, Thaw Report, profil dan leaderboard |
 | 3 | `add-verifier` | M10 | 8 | CLI dan halaman Verify menghitung ulang data publik serta mendeteksi manipulasi |
 | 4 | `add-committee-resolution` | M11 | 5 | Propose/confirm/withdraw, dispute window, resolusi komite atau timeout `VOID` |

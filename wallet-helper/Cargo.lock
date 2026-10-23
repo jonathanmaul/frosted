@@ -830,7 +830,11 @@ dependencies = [
  "anyhow",
  "async-trait",
  "base64 0.22.1",
+ "ff",
  "hex",
+ "nonempty",
+ "orchard",
+ "pczt",
  "rand 0.10.3",
  "reqwest",
  "rusqlite",
@@ -1847,6 +1851,7 @@ source = "git+https://github.com/zcash/librustzcash.git?rev=eb38d7a373661179dbc0
 dependencies = [
  "blake2b_simd",
  "bls12_381",
+ "document-features",
  "ff",
  "getset",
  "jubjub",
@@ -3227,6 +3232,7 @@ checksum = "7cc1186384beb7dd8eedea376413fd654937285ea6c9cfbb928dc3043ea4b606"
 dependencies = [
  "getrandom 0.4.3",
  "js-sys",
+ "serde_core",
  "wasm-bindgen",
 ]
 
@@ -3608,6 +3614,7 @@ dependencies = [
  "async-trait",
  "base64 0.22.1",
  "bech32",
+ "bip32",
  "bls12_381",
  "bs58",
  "byteorder",
@@ -3623,12 +3630,16 @@ dependencies = [
  "nonempty",
  "orchard",
  "pasta_curves",
+ "pczt",
  "percent-encoding",
+ "postcard",
  "prost",
  "rand_core 0.10.1",
  "rayon",
  "sapling-crypto",
+ "secp256k1",
  "secrecy",
+ "serde",
  "shardtree",
  "subtle",
  "time",
@@ -3654,6 +3665,7 @@ name = "zcash_client_sqlite"
 version = "0.23.0-pre.2"
 source = "git+https://github.com/zcash/librustzcash.git?rev=eb38d7a373661179dbc083a2fd58b3a6c9b25818#eb38d7a373661179dbc083a2fd58b3a6c9b25818"
 dependencies = [
+ "bip32",
  "bitflags 2.13.2",
  "bs58",
  "byteorder",
@@ -3676,7 +3688,9 @@ dependencies = [
  "sapling-crypto",
  "schemerz",
  "schemerz-rusqlite",
+ "secp256k1",
  "secrecy",
+ "serde",
  "shardtree",
  "static_assertions",
  "subtle",
@@ -3711,6 +3725,7 @@ version = "0.17.0-pre.2"
 source = "git+https://github.com/zcash/librustzcash.git?rev=eb38d7a373661179dbc083a2fd58b3a6c9b25818#eb38d7a373661179dbc083a2fd58b3a6c9b25818"
 dependencies = [
  "bech32",
+ "bip32",
  "blake2b_simd",
  "bls12_381",
  "bs58",
@@ -3786,6 +3801,7 @@ dependencies = [
  "rand_core 0.10.1",
  "redjubjub",
  "sapling-crypto",
+ "secp256k1",
  "sha2 0.10.9",
  "zcash_encoding",
  "zcash_note_encryption",

@@ -2,12 +2,14 @@ use crate::secrets::Secrets;
 use anyhow::{Context, Result, bail};
 use reqwest::Url;
 use std::{env, net::SocketAddr, path::PathBuf, time::Duration};
+pub use zcash_glass::params::SIGNING_SESSION_TIMEOUT_SECS;
 
 #[derive(Clone)]
 pub struct Config {
     pub bind: SocketAddr,
     pub network: String,
     pub db: PathBuf,
+    pub indexer_db: PathBuf,
     pub secrets_key: PathBuf,
     pub coordinator_key: PathBuf,
     pub envelope_key: PathBuf,
@@ -36,6 +38,7 @@ impl Config {
             bind,
             network,
             db: var("COORDINATOR_DB_PATH", "./private/coordinator.db").into(),
+            indexer_db: var("COORDINATOR_INDEXER_DB_PATH", "./private/indexer.db").into(),
             secrets_key: var("SECRETS_KEY_FILE", "./private/secrets.key").into(),
             coordinator_key: var("COORDINATOR_KEY_FILE", "./private/coordinator.key").into(),
             envelope_key: var("ENVELOPE_SK_FILE", "./private/envelope.sk").into(),

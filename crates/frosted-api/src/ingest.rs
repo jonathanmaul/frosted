@@ -9,7 +9,7 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use sqlx::{Sqlite, Transaction};
 use zcash_glass::hash::{
-    MarketDefinition, ResolutionParams, ResolutionType, plan_hash, rules_hash,
+    MarketDefinition, PlanKind, ResolutionParams, ResolutionType, plan_hash, rules_hash,
 };
 
 use crate::{
@@ -308,11 +308,13 @@ pub(crate) async fn payout(
         return Ok(Json(response));
     }
     publish(&mut tx, &id, "payout", &response).await?;
+    sqlx::query("INSERT INTO api_payout_plan(plan_hash,market_id,body_json) VALUES(?,?,?) ON CONFLICT(plan_hash) DO UPDATE SET body_json=excluded.body_json")
+        .bind(&push.plan_hash).bind(&id).bind(response.to_string()).execute(&mut *tx).await?;
     let status: String = sqlx::query_scalar("SELECT status FROM market WHERE market_id = ?")
         .bind(&id)
         .fetch_one(&mut *tx)
         .await?;
-    if status != "SETTLED" {
+    if status != "SETTLED" || push.plan.plan_kind == PlanKind::FollowUp {
         if push.status == "BROADCAST" {
             set_market_status(&mut tx, &id, "PAYING").await?;
         } else if push.status == "CONFIRMED" {

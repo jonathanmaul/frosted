@@ -2132,6 +2132,8 @@ dependencies = [
  "base64 0.22.1",
  "chacha20poly1305",
  "ed25519-dalek",
+ "frost-rerandomized",
+ "glass-indexer",
  "hex",
  "http-body-util",
  "orchard",

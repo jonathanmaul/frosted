@@ -18,3 +18,13 @@ CREATE TABLE IF NOT EXISTS thaw_report (
     report_json TEXT NOT NULL,
     computed_height INTEGER NOT NULL DEFAULT 0
 );
+
+-- Keep each plan's final state when a FOLLOW_UP becomes the latest publication.
+CREATE TABLE IF NOT EXISTS api_payout_plan (
+    plan_hash TEXT PRIMARY KEY,
+    market_id TEXT NOT NULL REFERENCES market(market_id),
+    body_json TEXT NOT NULL
+);
+INSERT OR IGNORE INTO api_payout_plan(plan_hash,market_id,body_json)
+SELECT json_extract(body_json,'$.plan_hash'),market_id,body_json
+FROM api_publication WHERE kind='payout';

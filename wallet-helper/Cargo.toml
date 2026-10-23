@@ -20,12 +20,16 @@ serde_json = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 tonic = { version = "0.14", features = ["tls-webpki-roots"] }
 zcash_address = "=0.14.0-pre.2"
-zcash_client_backend = { version = "=0.25.0-pre.2", features = ["orchard", "sync", "lightwalletd-tonic-tls-webpki-roots"] }
-zcash_client_sqlite = { version = "=0.23.0-pre.2", features = ["orchard", "unstable"] }
+zcash_client_backend = { version = "=0.25.0-pre.2", features = ["orchard", "sync", "pczt", "lightwalletd-tonic-tls-webpki-roots"] }
+zcash_client_sqlite = { version = "=0.23.0-pre.2", features = ["orchard", "unstable", "transparent-inputs", "serde"] }
 zcash_keys = { version = "=0.17.0-pre.2", features = ["orchard", "sapling", "unstable", "unstable-frost"] }
 zcash_primitives = "=0.31.0-pre.2"
 zcash_proofs = { version = "=0.31.0-pre.2", features = ["bundled-prover"] }
 zcash_protocol = { version = "=0.11.0-pre.1", features = ["local-consensus"] }
+ff = "0.14"
+nonempty = "0.11"
+orchard = "=0.16.0"
+pczt = { version = "=0.10.0-pre.2", features = ["prover", "signer", "io-finalizer", "tx-extractor", "spend-finalizer", "orchard"] }
 zip32 = "0.3"
 zip321 = "=0.10.0-pre.2"
 
