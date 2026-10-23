@@ -1,0 +1,17 @@
+# zainod for the local testnet stack. Shares zebra's network namespace (see docker-compose.testnet.yml).
+backend = "fetch"
+network = "Testnet"
+zebra_db_path = "/app/data/unused-zebra-db"
+
+[grpc_settings]
+listen_address = "0.0.0.0:8137"
+
+[validator_settings]
+validator_jsonrpc_listen_address = "127.0.0.1:18232"
+validator_grpc_listen_address = "127.0.0.1:18230"
+
+[storage.database]
+path = "/app/data/db"
+size = 8
+sync_write_batch_size = 1
+accumulator_rebuild_memory_size = 1

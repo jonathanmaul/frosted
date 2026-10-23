@@ -1,0 +1,12 @@
+# zebrad on Zcash testnet. Reachable only from services inside the same Railway project.
+[network]
+network = "Testnet"
+listen_addr = "0.0.0.0:18233"
+
+[rpc]
+listen_addr = "0.0.0.0:18232"
+enable_cookie_auth = false
+
+[state]
+cache_dir = "/data/zebra"
+ephemeral = false

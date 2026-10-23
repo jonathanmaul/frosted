@@ -1,0 +1,15 @@
+# zebrad on the public Zcash testnet, for local checks before deploying (deploy/RAILWAY.md).
+[network]
+network = "Testnet"
+listen_addr = "0.0.0.0:18233"
+
+[rpc]
+listen_addr = "0.0.0.0:18232"
+enable_cookie_auth = false
+
+[state]
+cache_dir = "/home/zebra/.cache/zebra"
+ephemeral = false
+
+[health]
+enforce_on_test_networks = false

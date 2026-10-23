@@ -1,0 +1,10 @@
+target
+**/target
+.regtest
+web/node_modules
+web/.next*
+.git
+.codex
+.claude
+spikes
+.tools
