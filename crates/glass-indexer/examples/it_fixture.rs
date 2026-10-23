@@ -104,10 +104,11 @@ fn main() -> Result<()> {
             let addr = fvk.address_at(0u32, orchard::keys::Scope::External);
             let ufvk = UnifiedFullViewingKey::from_orchard_fvk(fvk)
                 .map_err(|e| anyhow::anyhow!("{e:?}"))?;
-            let ua = UnifiedAddress::from_receivers(Some(addr), None).context("UA")?;
+            let ua =
+                UnifiedAddress::from_receivers(Some(addr), None, None, None, None).context("UA")?;
             println!(
                 "{} {}",
-                ufvk.to_unified_incoming_viewing_key().encode(&net),
+                ufvk.to_unified_incoming_viewing_key().encode(&net).unwrap(),
                 ua.encode(&net)
             );
         }
@@ -122,7 +123,7 @@ fn main() -> Result<()> {
             for j in 0u32..3 {
                 let addr = fvk.address_at(j, orchard::keys::Scope::External);
                 out.push(
-                    UnifiedAddress::from_receivers(Some(addr), None)
+                    UnifiedAddress::from_receivers(Some(addr), None, None, None, None)
                         .context("UA")?
                         .encode(&net),
                 );
@@ -131,7 +132,7 @@ fn main() -> Result<()> {
                 .map_err(|e| anyhow::anyhow!("{e:?}"))?;
             println!(
                 "{} {}",
-                ufvk.to_unified_incoming_viewing_key().encode(&net),
+                ufvk.to_unified_incoming_viewing_key().encode(&net).unwrap(),
                 out.join(" ")
             );
         }

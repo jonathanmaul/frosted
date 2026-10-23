@@ -21,7 +21,8 @@ pub fn parse_payout_ua(
         "regtest" => NetworkType::Regtest,
         _ => return Err(PayoutAddressError::WrongNetwork),
     };
-    let (actual, address) = Address::decode(ua).map_err(|_| PayoutAddressError::NoOrchard)?;
+    let (actual, _revision, address) =
+        Address::decode(ua).map_err(|_| PayoutAddressError::NoOrchard)?;
     if actual != expected {
         return Err(PayoutAddressError::WrongNetwork);
     }
@@ -40,7 +41,13 @@ mod tests {
     use super::*;
     #[test]
     fn validates_network_and_receiver() {
-        let ua = Address::try_from_items(vec![Receiver::Orchard([7; 43])]).unwrap();
+        let ua = Address::try_from_items(
+            zcash_address::unified::Revision::R0,
+            vec![zcash_address::unified::Uitem::Data(Receiver::Orchard(
+                [7; 43],
+            ))],
+        )
+        .unwrap();
         for (network, name) in [
             (NetworkType::Main, "mainnet"),
             (NetworkType::Test, "testnet"),
@@ -52,7 +59,13 @@ mod tests {
             parse_payout_ua(&ua.encode(&NetworkType::Main), "testnet"),
             Err(PayoutAddressError::WrongNetwork)
         );
-        let sapling = Address::try_from_items(vec![Receiver::Sapling([7; 43])]).unwrap();
+        let sapling = Address::try_from_items(
+            zcash_address::unified::Revision::R0,
+            vec![zcash_address::unified::Uitem::Data(Receiver::Sapling(
+                [7; 43],
+            ))],
+        )
+        .unwrap();
         assert_eq!(
             parse_payout_ua(&sapling.encode(&NetworkType::Test), "testnet"),
             Err(PayoutAddressError::NoOrchard)

@@ -102,6 +102,7 @@ pub fn derive(committee: &Committee, network: &str, outcomes: usize) -> Result<E
                 nu6_1: None,
                 nu6_2: None,
                 nu6_3: Some(BlockHeight::from_u32(1)),
+                nu7: None,
             },
             outcomes,
         ),
@@ -130,7 +131,7 @@ fn derive_for<P: Parameters>(
     let ivk = uivk.orchard().as_ref().context("missing Orchard IVK")?;
     let addresses = (0..outcomes)
         .map(|i| {
-            UnifiedAddress::from_receivers(Some(ivk.address_at(i as u32)), None)
+            UnifiedAddress::from_receivers(Some(ivk.address_at(i as u32)), None, None, None, None)
                 .context("invalid outcome address")
                 .map(|a| a.encode(net))
         })
@@ -138,8 +139,12 @@ fn derive_for<P: Parameters>(
     Ok(EscrowKeys {
         nk,
         rivk,
-        ufvk: ufvk.encode(net),
-        uivk: uivk.encode(net),
+        ufvk: ufvk
+            .encode(net)
+            .map_err(|_| anyhow::anyhow!("invalid UFVK"))?,
+        uivk: uivk
+            .encode(net)
+            .map_err(|_| anyhow::anyhow!("invalid UIVK"))?,
         addresses,
     })
 }
@@ -176,11 +181,15 @@ mod tests {
             nu6_1: None,
             nu6_2: None,
             nu6_3: Some(BlockHeight::from_u32(1)),
+            nu7: None,
         };
         let parsed = zcash_keys::keys::UnifiedIncomingViewingKey::decode(&net, &a.uivk).unwrap();
         for (j, address) in a.addresses.iter().enumerate() {
             let expected = UnifiedAddress::from_receivers(
                 Some(parsed.orchard().as_ref().unwrap().address_at(j as u32)),
+                None,
+                None,
+                None,
                 None,
             )
             .unwrap()

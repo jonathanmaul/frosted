@@ -27,5 +27,5 @@ tokio = { version = "1.54.0", features = ["rt-multi-thread", "macros", "time", "
 zcash-glass = { version = "0.1.0", path = "../zcash-glass", features = ["zcash"] }
 
 [dev-dependencies]
-orchard = "0.15.5"
-zcash_keys = { version = "0.16.1", features = ["orchard", "unstable-frost"] }
+orchard = "0.16.0"
+zcash_keys = { version = "0.17.0-pre.2", features = ["orchard", "unstable-frost"] }

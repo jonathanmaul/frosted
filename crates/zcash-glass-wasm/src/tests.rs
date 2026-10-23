@@ -7,9 +7,12 @@ use zcash_protocol::consensus::NetworkType;
 wasm_bindgen_test_configure!(run_in_browser);
 
 fn ua(raw: [u8; 43]) -> String {
-    Address::try_from_items(vec![Receiver::Orchard(raw)])
-        .unwrap()
-        .encode(&NetworkType::Test)
+    Address::try_from_items(
+        zcash_address::unified::Revision::R0,
+        vec![zcash_address::unified::Uitem::Data(Receiver::Orchard(raw))],
+    )
+    .unwrap()
+    .encode(&NetworkType::Test)
 }
 fn input() -> BuildBet {
     let fixture: serde_json::Value =

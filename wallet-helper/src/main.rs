@@ -202,9 +202,13 @@ async fn run(r: Request) -> Result<Response> {
         "invalid operation"
     );
     let p = network(&r).await?;
-    let endpoint = tonic::transport::Endpoint::from_shared(r.zaino_url.clone())?
+    let mut endpoint = tonic::transport::Endpoint::from_shared(r.zaino_url.clone())?
         .connect_timeout(Duration::from_secs(15))
         .timeout(Duration::from_secs(120));
+    // Public lightwalletd servers (testnet.zec.rocks) are HTTPS only; local Zaino stays plaintext.
+    if r.zaino_url.starts_with("https://") {
+        endpoint = endpoint.tls_config(tonic::transport::ClientTlsConfig::new().with_webpki_roots())?;
+    }
     let mut client = CompactTxStreamerClient::new(endpoint.connect().await?);
     if r.op == "broadcast" {
         let raw = hex::decode(r.tx_hex.as_deref().ok_or(anyhow!("missing transaction"))?)?;

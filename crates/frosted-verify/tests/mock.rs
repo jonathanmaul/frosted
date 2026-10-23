@@ -30,15 +30,22 @@ fn escrow() -> (String, Vec<String>) {
     let fvk = FullViewingKey::from(&SpendingKey::from_bytes([0x44; 32]).unwrap());
     let addrs = (0u32..2)
         .map(|j| {
-            UnifiedAddress::from_receivers(Some(fvk.address_at(j, Scope::External)), None)
-                .unwrap()
-                .encode(&net)
+            UnifiedAddress::from_receivers(
+                Some(fvk.address_at(j, Scope::External)),
+                None,
+                None,
+                None,
+                None,
+            )
+            .unwrap()
+            .encode(&net)
         })
         .collect();
     let uivk = UnifiedFullViewingKey::from_orchard_fvk(fvk)
         .unwrap()
         .to_unified_incoming_viewing_key()
-        .encode(&net);
+        .encode(&net)
+        .unwrap();
     (uivk, addrs)
 }
 

@@ -40,11 +40,12 @@ pub struct ActivationHeights {
     pub nu6_1: Option<u32>,
     pub nu6_2: Option<u32>,
     pub nu6_3: Option<u32>,
+    pub nu7: Option<u32>,
 }
 
 impl ActivationHeights {
     /// Sets the height for an upgrade name as reported in `getblockchaininfo.upgrades[].name`.
-    /// Unknown names (for example `NU7`, which librustzcash does not model here) are ignored.
+    /// Unknown names are ignored.
     pub fn set(&mut self, name: &str, height: u32) {
         let slot = match name {
             "Overwinter" => &mut self.overwinter,
@@ -57,6 +58,7 @@ impl ActivationHeights {
             "NU6.1" => &mut self.nu6_1,
             "NU6.2" => &mut self.nu6_2,
             "NU6.3" => &mut self.nu6_3,
+            "NU7" => &mut self.nu7,
             _ => return,
         };
         *slot = Some(height);
@@ -90,6 +92,7 @@ impl ScanNetwork {
                 nu6_1: h(heights.nu6_1),
                 nu6_2: h(heights.nu6_2),
                 nu6_3: h(heights.nu6_3),
+                nu7: h(heights.nu7),
             })),
             other => Err(ScanError::UnknownNetwork(other.to_string())),
         }
@@ -128,8 +131,8 @@ pub struct MarketViewingKey {
 
 impl MarketViewingKey {
     pub fn from_uivk(network: &ScanNetwork, uivk: &str) -> Result<Self, ScanError> {
-        let uivk =
-            UnifiedIncomingViewingKey::decode(network, uivk).map_err(ScanError::InvalidUivk)?;
+        let uivk = UnifiedIncomingViewingKey::decode(network, uivk)
+            .map_err(|e| ScanError::InvalidUivk(e.to_string()))?;
         let ivk = uivk.orchard().clone().ok_or(ScanError::NoOrchardItem)?;
         let prepared = ivk.prepare();
         Ok(MarketViewingKey { ivk, prepared })
@@ -242,7 +245,7 @@ mod tests {
             h.set(n, 1);
         }
         h.set("NU6.3", 10);
-        h.set("NU7", 2); // ignored: not modeled
+        h.set("NU7", 100);
         h
     }
 
@@ -251,7 +254,9 @@ mod tests {
         let net = ScanNetwork::new("regtest", heights()).unwrap();
         assert_eq!(net.branch_id(5), BranchId::Nu6_2);
         assert_eq!(net.branch_id(10), BranchId::Nu6_3);
-        assert_eq!(net.branch_id(1000), BranchId::Nu6_3);
+        assert_eq!(net.branch_id(99), BranchId::Nu6_3);
+        assert_eq!(net.branch_id(100), BranchId::Nu7);
+        assert_eq!(net.branch_id(1000), BranchId::Nu7);
     }
 
     #[test]

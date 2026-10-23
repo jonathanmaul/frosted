@@ -1001,14 +1001,21 @@ fn verifiable_definition() -> Value {
     let net = ScanNetwork::new("regtest", ActivationHeights::default()).unwrap();
     let fvk = FullViewingKey::from(&SpendingKey::from_bytes([0x44; 32]).unwrap());
     let addr = |j| {
-        UnifiedAddress::from_receivers(Some(fvk.address_at(j, Scope::External)), None)
-            .unwrap()
-            .encode(&net)
+        UnifiedAddress::from_receivers(
+            Some(fvk.address_at(j, Scope::External)),
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap()
+        .encode(&net)
     };
     let uivk = UnifiedFullViewingKey::from_orchard_fvk(fvk.clone())
         .unwrap()
         .to_unified_incoming_viewing_key()
-        .encode(&net);
+        .encode(&net)
+        .unwrap();
     let mut def = definition();
     def["market_id"] = json!(VERIFY_ID);
     def["birthday_height"] = json!(5);
