@@ -7,18 +7,19 @@
 #   scripts/dev.sh status          what runs, on which URL, and the markets
 #   scripts/dev.sh pay <zip321-uri> [--no-mine]   pay a Bet Builder / Persona URI from the faucet, then mine 3 blocks
 #   scripts/dev.sh mine [n]        mine n blocks (default 1)
+#   scripts/dev.sh market <chain|committee> "<question>" <threshold_zat|criteria> [close_in_blocks]   add one market
 #   scripts/dev.sh op <args...>    run frosted-operator against this stack's coordinator
 #   scripts/dev.sh recipient       print the recipient wallet's Orchard address (a payout address for bets)
 #   scripts/dev.sh logs <name>     tail a log: indexer | api | coordinator | web
 #   scripts/dev.sh reset           delete this stack's state (keys, databases, markets); the chain stays
 #
 # Started: zebrad + Zaino (Docker), glass-indexer, frosted-api, payout-coordinator, the web app.
-# First run also creates keys, the 2-of-3 committee, a funded hot wallet and two demo markets.
+# First run also creates keys, the 2-of-3 committee, a funded hot wallet and eight demo markets.
 #
 # Environment (all optional):
 #   DEV_STATE=.regtest/dev   state directory         WEB_MODE=dev|prod   next dev (default) or build + start
-#   API_PORT=8080  COORD_PORT=8090  WEB_PORT=3000    DEV_SEED=0  skip demo markets
-#   DEV_CLOSE_IN=120         blocks until demo markets close (resolve is 5 blocks later)
+#   API_PORT=8080  COORD_PORT=8090  WEB_PORT=3000    DEV_SEED=0  skip demo markets   DEV_MARKETS=8  how many (max 8)   DEV_BETS=0  leave the pools empty
+#   DEV_CLOSE_IN=60          blocks until demo markets close (resolve is 5 blocks later)
 #   WEB_DIST=.next           Next.js build directory (so a prod build never clobbers `next dev`)
 set -euo pipefail
 
@@ -30,7 +31,7 @@ API_PORT="${API_PORT:-8080}"; COORD_PORT="${COORD_PORT:-8090}"; WEB_PORT="${WEB_
 WEB_MODE="${WEB_MODE:-dev}"; WEB_DIST="${WEB_DIST:-.next}"
 NODE_RPC="${ZEBRA_RPC_URL:-http://127.0.0.1:18232}"
 ZAINO_GRPC="${LIGHTWALLETD_GRPC_URL:-http://127.0.0.1:9067}"
-CLOSE_IN="${DEV_CLOSE_IN:-120}"
+CLOSE_IN="${DEV_CLOSE_IN:-60}"
 # Browsers treat localhost and 127.0.0.1 as different origins; the web app and CORS both use localhost.
 API="http://localhost:$API_PORT/v1"; WEB="http://localhost:$WEB_PORT"
 BIN="$ROOT/target/debug"; W="$ROOT/scripts/regtest-wallet.sh"
@@ -163,27 +164,58 @@ create_market() { # json-file -> id. A failed escrow import writes nothing, so r
 
 market_open() { [ "$(api_get "/markets/$1" | json 'd["status"]')" = OPEN ]; }
 
+# market_json <chain|committee> <question> <threshold_zat|criteria> <close_in_blocks> -> JSON on stdout.
+market_json() {
+  local kind="$1" question="$2" param="$3" close_in="$4" t; t="$(tip)"
+  python3 -I - "$kind" "$question" "$param" "$((t + close_in))" <<'PY'
+import json, sys
+kind, question, param, close = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
+m = {"question": question, "outcomes": ["YES", "NO"], "close_height": close, "resolve_height": close + 5, "fee_bps": 100}
+if kind == "chain":
+    m["resolution_type"] = "POOL_THRESHOLD"
+    m["resolution_params"] = {"pool": "ironwood", "comparator": "gte", "threshold_zat": int(param)}
+else:
+    m["resolution_type"] = "COMMITTEE"
+    m["resolution_params"] = {"criteria": param, "evidence_source": "https://example.org/statement", "dispute_window_blocks": 6, "void_after_blocks": 60}
+print(json.dumps(m))
+PY
+}
+
+# The demo set: the first two are the ones scripts and e2e rely on; the rest add variety.
+# Each row is kind|question|threshold_zat or criteria|extra blocks until close.
+DEMO_MARKETS=(
+  "chain|Will the Ironwood pool hold at least 0.00000001 ZEC at the resolve block?|1|0"
+  "committee|Will the committee confirm the demo statement?|Two of three members agree on the outcome after reading the published statement.|0"
+  "chain|Will the Ironwood pool hold at least 0.001 ZEC when this market resolves?|100000|5"
+  "chain|Will the Ironwood pool hold at least 0.01 ZEC when this market resolves?|1000000|10"
+  "chain|Will the Ironwood pool hold at least 0.1 ZEC when this market resolves?|10000000|15"
+  "chain|Will the Ironwood pool hold at least 1 ZEC when this market resolves?|100000000|20"
+  "committee|Will the published roadmap ship its first milestone on time?|Two of three members confirm the milestone is publicly released by the evidence source.|10"
+  "committee|Will the demo incident report be published within the stated window?|Two of three members confirm a report appears at the evidence source before the market resolves.|15"
+)
+
+create_demo_market() { # row -> id. Writes the definition to $STATE/markets/<n>.json
+  local kind question param extra; IFS='|' read -r kind question param extra <<< "$1"
+  mkdir -p "$STATE/markets"
+  local f; f="$STATE/markets/$(date +%s)-$RANDOM.json"
+  market_json "$kind" "$question" "$param" "$((CLOSE_IN + extra))" > "$f"
+  create_market "$f"
+}
+
 seed_markets() {
   [ "${DEV_SEED:-1}" = 1 ] || return 0
   if [ "$(api_get /markets | json 'len(d["markets"])')" -gt 0 ]; then return 0; fi
-  say "creating two demo markets (close in $CLOSE_IN blocks)"
+  local want="${DEV_MARKETS:-8}"
+  [ "$want" -le "${#DEMO_MARKETS[@]}" ] || want="${#DEMO_MARKETS[@]}"
+  say "creating $want demo markets (the first closes in $CLOSE_IN blocks, the others a little later)"
   wait_zaino
-  local t; t="$(tip)"
-  cat > "$STATE/market-chain.json" <<JSON
-{"question":"Will the Ironwood pool hold at least 0.00000001 ZEC at the resolve block?","outcomes":["YES","NO"],"resolution_type":"POOL_THRESHOLD",
- "resolution_params":{"pool":"ironwood","comparator":"gte","threshold_zat":1},"close_height":$((t + CLOSE_IN)),"resolve_height":$((t + CLOSE_IN + 5)),"fee_bps":100}
-JSON
-  cat > "$STATE/market-committee.json" <<JSON
-{"question":"Will the committee confirm the demo statement?","outcomes":["YES","NO"],"resolution_type":"COMMITTEE",
- "resolution_params":{"criteria":"Two of three members agree on the outcome after reading the published statement.","evidence_source":"https://example.org/statement","dispute_window_blocks":6,"void_after_blocks":60},
- "close_height":$((t + CLOSE_IN)),"resolve_height":$((t + CLOSE_IN + 5)),"fee_bps":100}
-JSON
-  local a b
-  a="$(create_market "$STATE/market-chain.json")"; b="$(create_market "$STATE/market-committee.json")"
+  local ids=() i
+  for ((i = 0; i < want; i++)); do ids+=("$(create_demo_market "${DEMO_MARKETS[$i]}")"); done
   # An announcement the helper could not broadcast the first time is retried a few seconds later and
-  # needs a block of its own, so keep mining one block at a time until both markets are open.
+  # needs a block of its own, so keep mining one block at a time until every market is open.
   mine 4
-  for id in "$a" "$b"; do
+  local id
+  for id in "${ids[@]}"; do
     for i in $(seq 1 90); do
       market_open "$id" && break
       [ $((i % 6)) -eq 0 ] && mine 1
@@ -191,7 +223,64 @@ JSON
     done
     market_open "$id" || die "market $id did not open"
   done
-  printf '%s\n%s\n' "$a" "$b" > "$STATE/demo-markets"
+  seed_bets "${ids[@]}"
+  printf '%s\n' "${ids[@]}" > "$STATE/demo-markets"
+}
+
+# seed_bets <market ids...>: pays real WASM-built bets from the faucet so the pools are not empty.
+# Four bets per market, amounts scaled per market. A send mines one block; if the wallet still has
+# no spendable note it waits for confirmations and retries.
+seed_bets() {
+  [ "${DEV_BETS:-1}" = 1 ] || return 0
+  local ua; ua="$("$W" dt wallet -w /work/recipient list-addresses --receiver orchard | sed -n 's/.*\(uregtest1[0-9a-z]*\).*/\1/p' | head -1)"
+  [ -n "$ua" ] || { say "no recipient address, skipping demo bets"; return 0; }
+  cat > "$STATE/bet.mjs" <<'JS'
+import { readFileSync } from "node:fs";
+const [root, marketFile, outcome, amount, ua] = process.argv.slice(2);
+const mod = await import(`${root}/web/public/wasm/zcash_glass_wasm.js`);
+await mod.default({ module_or_path: readFileSync(`${root}/web/public/wasm/zcash_glass_wasm_bg.wasm`) });
+const market = JSON.parse(readFileSync(marketFile, "utf8"));
+const built = mod.build_bet({ market_definition: market.market_definition, outcome_index: Number(outcome), amount_zat: Number(amount), payout_ua: ua });
+console.log(JSON.stringify({ address: market.market_definition.outcomes[Number(outcome)].address, memo: built.memo_text }));
+JS
+  say "placing demo bets so the pools hold real ZEC"
+  local idx=0 id round out amt outcome try
+  for id in "$@"; do api_get "/markets/$id" > "$STATE/seed-$idx.json"; idx=$((idx + 1)); done
+  for round in 0 1 2 3; do
+    idx=0
+    for id in "$@"; do
+      case $round in 0) outcome=0; amt=600000000 ;; 1) outcome=1; amt=300000000 ;; 2) outcome=0; amt=200000000 ;; *) outcome=1; amt=400000000 ;; esac
+      amt=$((amt * (1 + idx % 3)))
+      out="$(node "$STATE/bet.mjs" "$ROOT" "$STATE/seed-$idx.json" "$outcome" "$amt" "$ua" 2>/dev/null)" || { idx=$((idx + 1)); continue; }
+      for try in 1 2 3 4; do
+        "$W" send "$(echo "$out" | json 'd["address"]')" "$amt" "$(echo "$out" | json 'd["memo"]')" >/dev/null 2>&1 && break
+        mine 3
+      done
+      idx=$((idx + 1))
+    done
+    mine 3
+  done
+  mine 4
+}
+
+cmd_market() { # market <chain|committee> "<question>" <threshold_zat|criteria> [close_in_blocks]
+  local kind="${1:-}" question="${2:-}" param="${3:-}" close_in="${4:-$CLOSE_IN}"
+  case "$kind" in chain|committee) ;; *) die "usage: scripts/dev.sh market <chain|committee> \"<question>\" <threshold_zat|criteria> [close_in_blocks]" ;; esac
+  [ -n "$question" ] && [ -n "$param" ] || die "a question and a threshold (chain) or criteria (committee) are required"
+  mkdir -p "$STATE/markets"
+  local f="$STATE/markets/$(date +%s)-$RANDOM.json" id
+  market_json "$kind" "$question" "$param" "$close_in" > "$f"
+  wait_zaino
+  id="$(create_market "$f")"
+  mine 4
+  local i
+  for i in $(seq 1 90); do
+    market_open "$id" && break
+    [ $((i % 6)) -eq 0 ] && mine 1
+    sleep 2
+  done
+  market_open "$id" || die "market $id did not open"
+  echo "$id"
 }
 
 start_web() {
@@ -260,9 +349,10 @@ print(p.path); print(amount); print(memo)
 PY
 )" || die "could not read the payment URI"
   { read -r addr; read -r zat; read -r memo; } <<< "$parsed"
-  "$W" send "$addr" "$zat" "$memo" >/dev/null
+  local txid; txid="$("$W" send "$addr" "$zat" "$memo" | grep -oE '[0-9a-f]{64}' | tail -1)"
   [ "$nomine" = "--no-mine" ] || mine 3
   echo "paid $zat zat to ${addr:0:24}..., tip $(tip)"
+  [ -z "$txid" ] || echo "txid $txid   (inspect: curl -s --data-binary '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"getrawtransaction\",\"params\":[\"$txid\",1]}' $NODE_RPC)"
 }
 
 cmd_status() {
@@ -283,6 +373,7 @@ case "${1:-up}" in
   status) cmd_status ;;
   pay) shift; cmd_pay "${1:-}" "${2:-}" ;;
   mine) mine "${2:-1}"; echo "tip $(tip)" ;;
+  market) shift; cmd_market "$@" ;;
   op) shift; op "$@" ;;
   recipient) "$W" dt wallet -w /work/recipient list-addresses --receiver orchard | sed -n 's/.*\(uregtest1[0-9a-z]*\).*/\1/p' | head -1 ;;
   logs) tail -n 60 -f "$LOGS/${2:?indexer|api|coordinator|web}.log" ;;
