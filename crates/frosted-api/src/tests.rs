@@ -147,6 +147,7 @@ async fn health_market_odds_and_public_response_snapshot() {
         format!("/v1/markets/{ID}/bets"),
         format!("/v1/markets/{ID}/resolution"),
         format!("/v1/markets/{ID}/payout"),
+        format!("/v1/markets/{ID}/payouts"),
         "/v1/personas/registry".into(),
         "/v1/markets?kind=committee".into(),
     ] {
@@ -165,7 +166,15 @@ async fn health_market_odds_and_public_response_snapshot() {
             assert!(!text.contains(private), "{path}: {private}");
         }
     }
-    for suffix in ["", "/odds", "/bets", "/resolution", "/payout", "/stream"] {
+    for suffix in [
+        "",
+        "/odds",
+        "/bets",
+        "/resolution",
+        "/payout",
+        "/payouts",
+        "/stream",
+    ] {
         let (status, _, body) = get(&f.app, &format!("/v1/markets/missing{suffix}")).await;
         assert_eq!(status, StatusCode::NOT_FOUND);
         assert_eq!(body["error"]["code"], "MARKET_NOT_FOUND");
@@ -732,4 +741,441 @@ async fn ingest_rejects_invalid_resolution_parameters_and_nonsequential_outcomes
         .0,
         StatusCode::BAD_REQUEST
     );
+}
+
+const THAW_K: [u8; 32] = [0x5a; 32];
+
+async fn post_json(app: &Router, path: &str, body: &Value) -> (StatusCode, Value) {
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri(path)
+                .header("content-type", "application/json")
+                .body(Body::from(body.to_string()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let status = response.status();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    (status, serde_json::from_slice(&bytes).unwrap())
+}
+/// Inserts a tagged bet whose FRST1 payload carries the Thaw Tag of `key` over its own data.
+async fn tagged_bet(
+    f: &Fixture,
+    key: &[u8; 32],
+    note: &str,
+    outcome: u8,
+    amount: u64,
+    epk: u8,
+    height: u32,
+) {
+    use zcash_glass::memo::{Frst1Header, Frst1Payload};
+    let market: [u8; 16] = hex::decode(ID).unwrap().try_into().unwrap();
+    let tag = zcash_glass::thaw::tag(key, &market, outcome, amount, &[epk; 32]);
+    let header = Frst1Header::new(market, Some(tag));
+    let payload = Frst1Payload {
+        header,
+        env_epk: [epk; 32],
+        env_nonce: [0; 24],
+        env_ciphertext: [0; 67],
+    };
+    sqlx::query("INSERT INTO bet (note_ref,bet_id,market_id,outcome_index,amount_zat,block_height,block_hash,tx_index,action_index,has_transparent_input,status,tagged,thaw_tag,memo_payload,first_seen_at) VALUES (?,?,?,?,?,?,'block',0,0,0,'COUNTED',1,?,?,0)")
+        .bind(note).bind(format!("txid-{note}:0")).bind(ID).bind(outcome as i64).bind(amount as i64).bind(height)
+        .bind(tag.as_slice()).bind(payload.to_bytes().as_slice()).execute(&f.state.write).await.unwrap();
+}
+async fn thaw_fixture() -> Fixture {
+    use zcash_glass::thaw;
+    let f = fixture().await;
+    let commitment = thaw::commitment(&THAW_K);
+    sqlx::query("INSERT INTO persona (persona_id,commitment,registered_height,registered_note_ref) VALUES (?,?,3,'ref')")
+        .bind(thaw::persona_id(&commitment)).bind(commitment.as_slice()).execute(&f.state.write).await.unwrap();
+    tagged_bet(&f, &THAW_K, "aaaaaaaaaaaaaaaa", 0, 2_000_000, 1, 5).await; // wins
+    tagged_bet(&f, &THAW_K, "bbbbbbbbbbbbbbbb", 1, 1_000_000, 2, 6).await; // loses
+    tagged_bet(&f, &THAW_K, "cccccccccccccccc", 0, 1_000_000, 3, 2).await; // before registration
+    tagged_bet(&f, &THAW_K, "dddddddddddddddd", 0, 2_000_000, 1, 7).await; // copy of the first bet
+    tagged_bet(&f, &[0x11; 32], "eeeeeeeeeeeeeeee", 0, 1_000_000, 4, 5).await; // someone else
+    let resolution = json!({"market_id":ID,"status":"RESOLVED","winning_outcome_index":0,"evidence":null,"votes":[]});
+    sqlx::query(
+        "INSERT INTO api_publication (market_id,kind,body_json) VALUES (?, 'resolution', ?)",
+    )
+    .bind(ID)
+    .bind(resolution.to_string())
+    .execute(&f.state.write)
+    .await
+    .unwrap();
+    let mut payout = payout_push();
+    payout["status"] = json!("CONFIRMED");
+    payout["plan"]["items"] = json!([{"note_ref":"aaaaaaaaaaaaaaaa","bet_fingerprint":null,"kind":"WIN","amount_zat":1_980_000,"receiver_commitment":"c0ffee"}]);
+    sqlx::query("INSERT INTO api_payout_plan (plan_hash,market_id,body_json) VALUES ('plan',?,?)")
+        .bind(ID)
+        .bind(payout.to_string())
+        .execute(&f.state.write)
+        .await
+        .unwrap();
+    f
+}
+fn thaw_request(key: &[u8; 32], alias: &str) -> Value {
+    use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
+    json!({"k_root_b64":URL_SAFE_NO_PAD.encode(key),"alias":alias})
+}
+fn thaw_path() -> String {
+    format!(
+        "/v1/personas/{}/thaw",
+        zcash_glass::thaw::persona_id(&zcash_glass::thaw::commitment(&THAW_K))
+    )
+}
+
+#[tokio::test]
+async fn thaw_publishes_wins_losses_and_flags_excluded_bets() {
+    use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
+    let f = thaw_fixture().await;
+    let (status, report) = post_json(&f.app, &thaw_path(), &thaw_request(&THAW_K, "orion")).await;
+    assert_eq!(status, StatusCode::OK, "{report}");
+    assert_eq!(report["alias"], "orion");
+    assert_eq!(report["registered_height"], 3);
+    let bets = report["bets"].as_array().unwrap();
+    let notes: Vec<_> = bets
+        .iter()
+        .map(|b| b["note_ref"].as_str().unwrap())
+        .collect();
+    // Ordered by height; the other Persona's bet is absent.
+    assert_eq!(
+        notes,
+        [
+            "cccccccccccccccc",
+            "aaaaaaaaaaaaaaaa",
+            "bbbbbbbbbbbbbbbb",
+            "dddddddddddddddd"
+        ]
+    );
+    let by = |n: &str| bets.iter().find(|b| b["note_ref"] == n).unwrap();
+    assert_eq!(by("cccccccccccccccc")["exclusion"], "PRE_REGISTRATION");
+    assert_eq!(by("dddddddddddddddd")["exclusion"], "DUPLICATE_TAG");
+    assert_eq!(by("aaaaaaaaaaaaaaaa")["result"], "WON");
+    assert_eq!(by("aaaaaaaaaaaaaaaa")["payout_zat"], 1_980_000);
+    assert_eq!(by("aaaaaaaaaaaaaaaa")["counted_in_reputation"], true);
+    assert_eq!(by("bbbbbbbbbbbbbbbb")["result"], "LOST");
+    assert_eq!(by("bbbbbbbbbbbbbbbb")["counted_in_reputation"], true);
+    assert_eq!(
+        report["stats"],
+        json!({"settled":2,"won":1,"win_rate":0.5,"roi":-0.34})
+    );
+    // The persona is now public with its root and shows up on the leaderboard from the cached report.
+    let id = zcash_glass::thaw::persona_id(&zcash_glass::thaw::commitment(&THAW_K));
+    let (_, _, persona) = get(&f.app, &format!("/v1/personas/{id}")).await;
+    assert_eq!(persona["status"], "THAWED");
+    assert_eq!(persona["k_root_b64"], URL_SAFE_NO_PAD.encode(THAW_K));
+    assert_eq!(
+        get(&f.app, "/v1/leaderboard").await.2,
+        json!({"entries":[{"persona_id":id,"alias":"orion","registered_height":3,"settled":2,"won":1,"win_rate":0.5,"roi":-0.34}]})
+    );
+    let (status, _, again) = get(&f.app, &format!("/v1/personas/{id}/report")).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(again, report);
+    // Nothing private leaks through the report.
+    let text = report.to_string();
+    for private in ["txid-", "memo_payload", "env_epk", "bet_id"] {
+        assert!(!text.contains(private), "{private}");
+    }
+}
+#[tokio::test]
+async fn thaw_rejects_wrong_key_repeat_and_unknown_persona() {
+    let f = thaw_fixture().await;
+    let id = zcash_glass::thaw::persona_id(&zcash_glass::thaw::commitment(&THAW_K));
+    let (status, error) =
+        post_json(&f.app, &thaw_path(), &thaw_request(&[0x01; 32], "orion")).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(error["error"]["code"], "THAW_COMMITMENT_MISMATCH");
+    // A failed thaw publishes nothing.
+    let (_, _, persona) = get(&f.app, &format!("/v1/personas/{id}")).await;
+    assert_eq!(persona["status"], "REGISTERED");
+    assert!(persona.get("k_root_b64").is_none());
+    assert_eq!(
+        get(&f.app, &format!("/v1/personas/{id}/report")).await.0,
+        StatusCode::NOT_FOUND
+    );
+    for bad in ["", "has space", &"x".repeat(33)] {
+        let (status, _) = post_json(&f.app, &thaw_path(), &thaw_request(&THAW_K, bad)).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST, "{bad:?}");
+    }
+    let (status, _) = post_json(
+        &f.app,
+        &thaw_path(),
+        &json!({"k_root_b64":"short","alias":"orion"}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(
+        post_json(&f.app, &thaw_path(), &thaw_request(&THAW_K, "orion"))
+            .await
+            .0,
+        StatusCode::OK
+    );
+    let (status, error) = post_json(&f.app, &thaw_path(), &thaw_request(&THAW_K, "other")).await;
+    assert_eq!(status, StatusCode::CONFLICT);
+    assert_eq!(error["error"]["code"], "PERSONA_ALREADY_THAWED");
+    let (status, error) = post_json(
+        &f.app,
+        "/v1/personas/missing/thaw",
+        &thaw_request(&THAW_K, "orion"),
+    )
+    .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_eq!(error["error"]["code"], "PERSONA_NOT_FOUND");
+}
+#[tokio::test]
+async fn thaw_report_refreshes_when_markets_settle_later() {
+    let f = thaw_fixture().await;
+    // Thaw while the winner's payout is not published yet: the win is not settled.
+    sqlx::query("DELETE FROM api_payout_plan")
+        .execute(&f.state.write)
+        .await
+        .unwrap();
+    let (_, report) = post_json(&f.app, &thaw_path(), &thaw_request(&THAW_K, "orion")).await;
+    assert_eq!(report["stats"]["settled"], 1);
+    assert_eq!(report["stats"]["won"], 0);
+    let mut payout = payout_push();
+    payout["status"] = json!("CONFIRMED");
+    payout["plan"]["items"] = json!([{"note_ref":"aaaaaaaaaaaaaaaa","bet_fingerprint":null,"kind":"WIN","amount_zat":1_980_000,"receiver_commitment":"c0ffee"}]);
+    sqlx::query("INSERT INTO api_payout_plan (plan_hash,market_id,body_json) VALUES ('plan',?,?)")
+        .bind(ID)
+        .bind(payout.to_string())
+        .execute(&f.state.write)
+        .await
+        .unwrap();
+    sqlx::query("INSERT INTO block VALUES (11,'next','block-hash',0)")
+        .execute(&f.state.write)
+        .await
+        .unwrap();
+    crate::refresh_thaw_reports(&f.state).await.unwrap();
+    let id = zcash_glass::thaw::persona_id(&zcash_glass::thaw::commitment(&THAW_K));
+    let (_, _, refreshed) = get(&f.app, &format!("/v1/personas/{id}/report")).await;
+    assert_eq!(
+        refreshed["stats"],
+        json!({"settled":2,"won":1,"win_rate":0.5,"roi":-0.34})
+    );
+}
+
+#[tokio::test]
+async fn payouts_lists_every_plan_oldest_first() {
+    let f = fixture().await;
+    assert_eq!(
+        get(&f.app, &format!("/v1/markets/{ID}/payouts")).await.2,
+        json!({"plans":[]})
+    );
+    let path = format!("/v1/ingest/markets/{ID}/payout");
+    let now = crate::auth::now();
+    let first = payout_push();
+    assert_eq!(push(&f.app, &path, &first, now, 7).await.0, StatusCode::OK);
+    let mut follow = payout_push();
+    follow["plan"]["plan_kind"] = json!("FOLLOW_UP");
+    follow["plan"]["plan_cutoff_height"] = json!(120);
+    follow["plan"]["items"] = json!([]);
+    follow["plan_hash"] = json!(hex::encode(
+        zcash_glass::hash::plan_hash(&serde_json::from_value(follow["plan"].clone()).unwrap())
+            .unwrap()
+    ));
+    assert_eq!(push(&f.app, &path, &follow, now, 7).await.0, StatusCode::OK);
+    let (_, _, body) = get(&f.app, &format!("/v1/markets/{ID}/payouts")).await;
+    let plans = body["plans"].as_array().unwrap();
+    assert_eq!(plans.len(), 2);
+    assert_eq!(plans[0]["plan_hash"], first["plan_hash"]);
+    assert_eq!(plans[1]["plan"]["plan_kind"], "FOLLOW_UP");
+    // `/payout` keeps serving only the latest plan.
+    assert_eq!(
+        get(&f.app, &format!("/v1/markets/{ID}/payout")).await.2["plan_hash"],
+        follow["plan_hash"]
+    );
+}
+
+const VERIFY_ID: &str = "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2";
+
+/// A market whose UIVK and Outcome Addresses are real, so the verifier can scan it.
+fn verifiable_definition() -> Value {
+    use orchard::keys::{FullViewingKey, Scope, SpendingKey};
+    use zcash_glass::scan::{ActivationHeights, ScanNetwork};
+    use zcash_keys::{address::UnifiedAddress, keys::UnifiedFullViewingKey};
+    let net = ScanNetwork::new("regtest", ActivationHeights::default()).unwrap();
+    let fvk = FullViewingKey::from(&SpendingKey::from_bytes([0x44; 32]).unwrap());
+    let addr = |j| {
+        UnifiedAddress::from_receivers(Some(fvk.address_at(j, Scope::External)), None)
+            .unwrap()
+            .encode(&net)
+    };
+    let uivk = UnifiedFullViewingKey::from_orchard_fvk(fvk.clone())
+        .unwrap()
+        .to_unified_incoming_viewing_key()
+        .encode(&net);
+    let mut def = definition();
+    def["market_id"] = json!(VERIFY_ID);
+    def["birthday_height"] = json!(5);
+    def["uivk"] = json!(uivk);
+    def["outcomes"][0]["address"] = json!(addr(0u32));
+    def["outcomes"][1]["address"] = json!(addr(1u32));
+    def
+}
+
+/// zebrad stand-in: an empty chain of 12 blocks. Counts calls so caching can be asserted.
+async fn mock_node(calls: Arc<std::sync::atomic::AtomicUsize>) -> String {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let url = format!("http://{}", listener.local_addr().unwrap());
+    tokio::spawn(async move {
+        axum::serve(
+            listener,
+            Router::new().route(
+                "/",
+                post(move |axum::Json(body): axum::Json<Value>| {
+                    let calls = calls.clone();
+                    async move {
+                        calls.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                        axum::Json(json!({"jsonrpc":"2.0","id":1,"result":match body["method"].as_str().unwrap() {
+                            "getblockcount" => json!(12),
+                            "getblock" => json!({"hash":"blockhash","tx":[]}),
+                            "getblockchaininfo" => json!({"chain":"test","upgrades":{}}),
+                            other => panic!("unexpected RPC {other}"),
+                        }}))
+                    }
+                }),
+            ),
+        )
+        .await
+        .unwrap();
+    });
+    url
+}
+
+#[tokio::test]
+async fn verify_endpoint_runs_the_cli_checks_labels_them_and_caches() {
+    let f = fixture().await;
+    let mut tx = f.state.write.begin().await.unwrap();
+    glass_indexer::indexer::register_market(&mut tx, &verifiable_definition().to_string())
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let mut state = f.state.clone();
+    state.verify = crate::verify::Verifier::new(&mock_node(calls.clone()).await).unwrap();
+    let app = router(state);
+
+    let path = format!("/v1/markets/{VERIFY_ID}/verify");
+    let (status, _, report) = get(&app, &path).await;
+    assert_eq!(status, StatusCode::OK, "{report}");
+    assert_eq!(report["command"], "all");
+    assert_eq!(report["trust"], crate::verify::TRUST_NOTICE);
+    let by = |id: &str| {
+        report["checks"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["id"] == id)
+            .unwrap_or_else(|| panic!("no check {id}: {report}"))["status"]
+            .clone()
+    };
+    assert_eq!(by("rules_hash"), "PASS");
+    assert_eq!(by("addresses"), "PASS");
+    assert_eq!(by("pools"), "PASS");
+    assert_eq!(by("announcement"), "INFO"); // still ANNOUNCING on an empty chain
+    assert_eq!(by("resolution"), "SKIP");
+    assert_eq!(report["ok"], true);
+
+    // A second visitor within the window gets the same report without another chain scan.
+    let before = calls.load(std::sync::atomic::Ordering::SeqCst);
+    assert!(before > 0);
+    assert_eq!(get(&app, &path).await.2, report);
+    assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), before);
+
+    let (status, _, error) = get(&app, "/v1/markets/missing/verify").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert_eq!(error["error"]["code"], "MARKET_NOT_FOUND");
+}
+
+#[tokio::test]
+async fn verify_endpoint_reports_an_unreachable_node_as_unavailable() {
+    let f = fixture().await;
+    let mut tx = f.state.write.begin().await.unwrap();
+    glass_indexer::indexer::register_market(&mut tx, &verifiable_definition().to_string())
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    let mut state = f.state.clone();
+    state.verify = crate::verify::Verifier::new("http://127.0.0.1:1").unwrap();
+    let (status, _, error) = get(&router(state), &format!("/v1/markets/{VERIFY_ID}/verify")).await;
+    assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
+    assert_eq!(error["error"]["code"], "NODE_UNAVAILABLE");
+}
+
+#[tokio::test]
+async fn committee_votes_flow_through_ingest_including_a_withdrawal() {
+    let f = fixture().await;
+    let path = format!("/v1/ingest/markets/{ID}/resolution");
+    let now = crate::auth::now();
+    let vote = |member: &str, action: &str| json!({"member_id":member,"action":action,"outcome_index":0,"evidence_url":"https://example.org/e","created_at":1});
+    let body = |status: &str, winner: Value, votes: Vec<Value>| {
+        json!({"market_id":ID,"status":status,"winning_outcome_index":winner,
+        "evidence":if status == "PROPOSED" { json!({"source":"committee","height":21,"block_hash":"hash"}) } else { Value::Null },"votes":votes})
+    };
+    let market_status =
+        || async { get(&f.app, &format!("/v1/markets/{ID}")).await.2["status"].clone() };
+
+    // The first proposal, still unconfirmed, is public.
+    let pending = body(
+        "AWAITING_RESOLUTION",
+        Value::Null,
+        vec![vote("member-1", "PROPOSE")],
+    );
+    assert_eq!(
+        push(&f.app, &path, &pending, now, 7).await.0,
+        StatusCode::OK
+    );
+    assert_eq!(market_status().await, "AWAITING_RESOLUTION");
+
+    let proposed = body(
+        "PROPOSED",
+        Value::Null,
+        vec![vote("member-1", "PROPOSE"), vote("member-2", "CONFIRM")],
+    );
+    assert_eq!(
+        push(&f.app, &path, &proposed, now, 7).await.0,
+        StatusCode::OK
+    );
+    assert_eq!(market_status().await, "PROPOSED");
+    let (_, _, published) = get(&f.app, &format!("/v1/markets/{ID}/resolution")).await;
+    assert_eq!(published["votes"].as_array().unwrap().len(), 2);
+    assert_eq!(published["evidence"]["height"], 21);
+
+    // Withdrawal: back to AWAITING_RESOLUTION, votes cleared.
+    let withdrawn = body("AWAITING_RESOLUTION", Value::Null, vec![]);
+    assert_eq!(
+        push(&f.app, &path, &withdrawn, now, 7).await.0,
+        StatusCode::OK
+    );
+    assert_eq!(market_status().await, "AWAITING_RESOLUTION");
+    assert_eq!(
+        get(&f.app, &format!("/v1/markets/{ID}/resolution")).await.2["votes"],
+        json!([])
+    );
+
+    let resolved = body(
+        "RESOLVED",
+        json!(0),
+        vec![vote("member-1", "PROPOSE"), vote("member-2", "CONFIRM")],
+    );
+    assert_eq!(
+        push(&f.app, &path, &resolved, now, 7).await.0,
+        StatusCode::OK
+    );
+    assert_eq!(market_status().await, "RESOLVED");
+
+    // Only a decided market names a winner.
+    for status in ["AWAITING_RESOLUTION", "PROPOSED", "VOID"] {
+        let wrong = body(status, json!(1), vec![]);
+        assert_eq!(
+            push(&f.app, &path, &wrong, now, 7).await.0,
+            StatusCode::BAD_REQUEST,
+            "{status}"
+        );
+    }
 }

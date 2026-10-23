@@ -93,6 +93,34 @@ async fn run() -> Result<Value> {
                 .send()
                 .await?
         }
+        ["resolution", "status", id] => {
+            client
+                .get(format!("{url}/markets/{id}/resolution"))
+                .send()
+                .await?
+        }
+        [
+            "resolution",
+            action @ ("propose" | "confirm" | "withdraw"),
+            id,
+            rest @ ..,
+        ] => {
+            let flags = vote_flags(rest)?;
+            let needs_vote = *action != "withdraw";
+            let body = json!({
+                "member": flags.member,
+                "outcome": flags.outcome,
+                "evidence_url": flags.evidence_url,
+            });
+            if needs_vote && (flags.outcome.is_none() || flags.evidence_url.is_none()) {
+                bail!("resolution {action} ID --outcome N --evidence-url URL --member member-N");
+            }
+            client
+                .post(format!("{url}/markets/{id}/resolution/{action}"))
+                .json(&body)
+                .send()
+                .await?
+        }
         ["market", "status", id] => client.get(format!("{url}/markets/{id}")).send().await?,
         ["payout", "status", id] => {
             client
@@ -117,7 +145,7 @@ async fn run() -> Result<Value> {
         }
         ["hot-wallet", "init"] => client.post(format!("{url}/hot-wallet")).send().await?,
         _ => bail!(
-            "usage: frosted-operator secrets init --dir DIR | committee init --share-dir DIR --member-key KEY (three times) | market create --file FILE | market status ID | hot-wallet init"
+            "usage: frosted-operator secrets init --dir DIR | committee init --share-dir DIR --member-key KEY (three times) | market create --file FILE | market status ID | resolution propose|confirm ID --outcome N --evidence-url URL --member member-N | resolution withdraw ID --member member-N | resolution status ID | hot-wallet init"
         ),
     };
     let status = response.status();
@@ -141,6 +169,32 @@ async fn main() {
             std::process::exit(1);
         }
     }
+}
+
+struct VoteFlags {
+    member: String,
+    outcome: Option<u32>,
+    evidence_url: Option<String>,
+}
+/// `--member member-N` plus, for propose and confirm, `--outcome N --evidence-url URL`.
+fn vote_flags(args: &[&str]) -> Result<VoteFlags> {
+    let (mut member, mut outcome, mut evidence_url) = (None, None, None);
+    for pair in args.chunks(2) {
+        let [flag, value] = pair else {
+            bail!("every option needs a value");
+        };
+        match *flag {
+            "--member" => member = Some((*value).to_owned()),
+            "--outcome" => outcome = Some(value.parse().context("--outcome must be a number")?),
+            "--evidence-url" => evidence_url = Some((*value).to_owned()),
+            other => bail!("unknown option {other}"),
+        }
+    }
+    Ok(VoteFlags {
+        member: member.context("--member required (member-1, member-2 or member-3)")?,
+        outcome,
+        evidence_url,
+    })
 }
 
 async fn sign_payout(

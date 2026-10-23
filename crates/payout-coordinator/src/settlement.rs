@@ -11,45 +11,7 @@ use zcash_glass::{
 };
 
 pub fn resolve(def: &MarketDefinition, block: &Value, info: &Value) -> Result<Value> {
-    let hash = block["hash"].as_str().context("NODE_UNAVAILABLE")?;
-    let (yes, evidence) = match &def.resolution_params {
-        ResolutionParams::PoolThreshold(p) => {
-            let value = block["valuePools"]
-                .as_array()
-                .context("NODE_UNAVAILABLE")?
-                .iter()
-                .find(|v| v["id"] == p.pool)
-                .and_then(|v| v["chainValueZat"].as_u64())
-                .context("NODE_UNAVAILABLE")?;
-            let yes = match p.comparator.as_str() {
-                "gte" => value >= p.threshold_zat,
-                "lt" => value < p.threshold_zat,
-                _ => bail!("INVALID_RESOLUTION_PARAMS"),
-            };
-            (
-                yes,
-                json!({"source":"getblock","height":def.resolve_height,"block_hash":hash,"pool":p.pool,"chain_value_zat":value}),
-            )
-        }
-        ResolutionParams::UpgradeActive(p) => {
-            let upgrades = info["upgrades"].as_object().context("NODE_UNAVAILABLE")?;
-            let list=upgrades.values().map(|v|Ok(json!({"name":v["name"].as_str().context("NODE_UNAVAILABLE")?,"activation_height":v["activationheight"].as_u64().context("NODE_UNAVAILABLE")?}))).collect::<Result<Vec<_>>>()?;
-            let yes = list.iter().any(|v| {
-                v["name"] == p.upgrade_name
-                    && v["activation_height"]
-                        .as_u64()
-                        .is_some_and(|h| h <= u64::from(def.resolve_height))
-            });
-            (
-                yes,
-                json!({"source":"getblockchaininfo","height":def.resolve_height,"block_hash":hash,"reported_upgrades":list}),
-            )
-        }
-        _ => bail!("INVALID_RESOLUTION_PARAMS"),
-    };
-    Ok(
-        json!({"market_id":def.market_id,"status":"RESOLVED","winning_outcome_index":if yes{0}else{1},"evidence":evidence,"votes":[]}),
-    )
+    Ok(zcash_glass::resolution::resolve(def, block, info)?)
 }
 fn open_envelope(sk: &[u8; 32], memo: Option<&[u8]>) -> EnvelopeResult {
     let Some(payload) = memo.and_then(|m| zcash_glass::memo::Frst1Payload::from_bytes(m).ok())
@@ -132,10 +94,7 @@ impl App {
                     .as_i64()
                     .context("invalid winner")?;
                 let sum:i64=sqlx::query_scalar("SELECT COALESCE(SUM(amount_zat),0) FROM bet WHERE market_id=? AND status='COUNTED' AND outcome_index=?").bind(&id).bind(winner).fetch_one(idx.pool()).await?;
-                if sum == 0 {
-                    body["status"] = json!("VOID");
-                    body["winning_outcome_index"] = Value::Null;
-                }
+                zcash_glass::resolution::void_if_unbacked(&mut body, sum as u64);
                 let mut transaction = self.pool.begin().await?;
                 sqlx::query("INSERT INTO resolution(market_id,body_json) VALUES(?,?)")
                     .bind(&id)
@@ -150,6 +109,13 @@ impl App {
                 transaction.commit().await?;
             }
         }
+        self.committee_tick(tip, idx.pool()).await?;
+        self.publish_resolutions().await?;
+        self.monitor_payouts(tip).await?;
+        Ok(())
+    }
+    /// Pushes every resolution body that has changed since its last successful push.
+    pub(crate) async fn publish_resolutions(&self) -> Result<()> {
         let pending = sqlx::query("SELECT market_id,body_json FROM resolution WHERE pushed=0")
             .fetch_all(&self.pool)
             .await?;
@@ -162,7 +128,6 @@ impl App {
                 .execute(&self.pool)
                 .await?;
         }
-        self.monitor_payouts(tip).await?;
         Ok(())
     }
     async fn publish(&self, id: &str, kind: &str, body: &[u8]) -> Result<()> {

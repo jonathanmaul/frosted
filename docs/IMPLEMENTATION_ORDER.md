@@ -13,6 +13,9 @@ Untuk setiap perubahan UI, ikuti [DESIGN.md](DESIGN.md).
 | `add-escrow-markets` | 9/9 | Selesai |
 | `add-bettor-web` | 11/12 | Implementasi web selesai; uji Zodl di HP pending |
 | `add-resolution-and-payout` | 8/11 | Implementasi tersedia; verifikasi akhir follow-up, checks dan review visual pending |
+| `add-persona-thaw` | 7/7 | Selesai dan diarsipkan; uji regtest `scripts/it-persona-thaw.sh` lulus (resolusi/payout didorong sebagai coordinator, bukan siklus FROST) |
+| `add-verifier` | 8/8 | Selesai dan diarsipkan; `scripts/it-verify.sh` lulus di regtest. Plan STANDARD dan FOLLOW_UP market M8 direproduksi dari scan node sendiri |
+| `add-committee-resolution` | 5/5 | Selesai; `scripts/it-committee.sh` lulus di regtest (COMMITTEE → RESOLVED → payout FROST → SETTLED, dan VOID tanpa keputusan). Jendela sengketa adalah simulasi: satu orang memegang ketiga share |
 
 Alur regtest yang sudah terbukti: buat escrow → push market → announcement →
 `OPEN` → bet dari WASM/QR → terindeks `COUNTED` → odds SSE dan My Bets terbarui.
@@ -23,9 +26,9 @@ Hasil uji dan batasannya ada di [SPIKES.md](SPIKES.md).
 | Urutan | Change | Milestone | Task tersisa | Hasil yang dituju |
 | --- | --- | --- | ---: | --- |
 | 1 | `add-resolution-and-payout` | M8 | 3 | Resolve → plan → FROST 2-of-3 → broadcast → `SETTLED`; payout diterima |
-| 2 | `add-persona-thaw` | M9 | 7 | Persona tersimpan terenkripsi, registrasi, Thaw Report, profil dan leaderboard |
-| 3 | `add-verifier` | M10 | 8 | CLI dan halaman Verify menghitung ulang data publik serta mendeteksi manipulasi |
-| 4 | `add-committee-resolution` | M11 | 5 | Propose/confirm/withdraw, dispute window, resolusi komite atau timeout `VOID` |
+| 2 | `add-persona-thaw` | M9 | 0 | Persona tersimpan terenkripsi, registrasi, Thaw Report, profil dan leaderboard |
+| 3 | `add-verifier` | M10 | 0 | CLI dan halaman Verify menghitung ulang data publik serta mendeteksi manipulasi |
+| 4 | `add-committee-resolution` | M11 | 0 | Propose/confirm/withdraw, dispute window, resolusi komite atau timeout `VOID` |
 | 5 | `prepare-demo-and-docs` | M12 | 13 | Akses testnet, siklus demo nyata, snapshot read-only, README dan video |
 
 ### 1. Resolusi dan payout lebih dulu

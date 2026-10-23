@@ -7,4 +7,25 @@ rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[lib]
+name = "frosted_verify"
+
+[[bin]]
+name = "frosted-verify"
+path = "src/main.rs"
+
 [dependencies]
+anyhow = "1.0.104"
+base64 = "0.23.1"
+futures = "0.3.34"
+hex = "0.4.3"
+# Plain HTTP only, like the indexer: the verifier talks to your own node (TLS arrives with M12).
+reqwest = { version = "0.13.5", default-features = false, features = ["json"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+tokio = { version = "1.54.0", features = ["rt-multi-thread", "macros", "time", "sync"] }
+zcash-glass = { version = "0.1.0", path = "../zcash-glass", features = ["zcash"] }
+
+[dev-dependencies]
+orchard = "0.15.5"
+zcash_keys = { version = "0.16.1", features = ["orchard", "unstable-frost"] }

@@ -245,12 +245,18 @@ pub(crate) async fn resolution(
     let push: Resolution = serde_json::from_slice(&body)?;
     let market = public::market(&state, &id).await?;
     if push.market_id != id
-        || !matches!(push.status.as_str(), "PROPOSED" | "RESOLVED" | "VOID")
+        || !matches!(
+            push.status.as_str(),
+            "AWAITING_RESOLUTION" | "PROPOSED" | "RESOLVED" | "VOID"
+        )
         || push
             .winning_outcome_index
             .is_some_and(|i| i as usize >= market.market_definition.outcomes.len())
         || (push.status == "RESOLVED" && push.winning_outcome_index.is_none())
-        || (push.status == "VOID" && push.winning_outcome_index.is_some())
+        // Only a decided market names a winner; a withdrawn committee proposal goes back to
+        // AWAITING_RESOLUTION with its votes cleared.
+        || (matches!(push.status.as_str(), "VOID" | "AWAITING_RESOLUTION" | "PROPOSED")
+            && push.winning_outcome_index.is_some())
     {
         return Err(ApiError::bad("Invalid resolution"));
     }

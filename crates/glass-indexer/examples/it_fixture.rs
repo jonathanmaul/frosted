@@ -6,6 +6,8 @@
 //!   it_fixture registry                     regtest UIVK and address of the test Persona Registry
 //!   it_fixture escrow <seed_hex32>          regtest UIVK and outcome addresses 0..2 for a test escrow
 //!   it_fixture frstp1 <k_root_hex>          FRSTP1 memo and persona_id
+//!   it_fixture frst1-tagged <market_id> <k_root_hex> <outcome> <amount_zat> <epk_byte_hex>
+//!                                           FRST1 memo (dummy envelope) carrying Thaw Tag v2 for that bet
 use anyhow::{Context, Result, bail};
 use orchard::keys::{FullViewingKey, SpendingKey};
 use zcash_glass::hash::{
@@ -70,6 +72,24 @@ fn main() -> Result<()> {
             let payload = Frst1Payload {
                 header: Frst1Header::new(id, None),
                 env_epk: [7; 32],
+                env_nonce: [8; 24],
+                env_ciphertext: [9; 67],
+            };
+            println!("{}", encode_frst1(&payload)?);
+        }
+        Some("frst1-tagged") => {
+            let mut id = [0u8; 16];
+            hex::decode_to_slice(arg(1)?, &mut id)?;
+            let mut k = [0u8; 32];
+            hex::decode_to_slice(arg(2)?, &mut k)?;
+            let (outcome, amount): (u8, u64) = (arg(3)?.parse()?, arg(4)?.parse()?);
+            let mut byte = [0u8; 1];
+            hex::decode_to_slice(arg(5)?, &mut byte)?;
+            let env_epk = [byte[0]; 32];
+            let tag = thaw::tag(&k, &id, outcome, amount, &env_epk);
+            let payload = Frst1Payload {
+                header: Frst1Header::new(id, Some(tag)),
+                env_epk,
                 env_nonce: [8; 24],
                 env_ciphertext: [9; 67],
             };

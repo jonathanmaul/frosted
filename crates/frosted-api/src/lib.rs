@@ -6,7 +6,11 @@ mod error;
 mod ingest;
 mod public;
 mod sse;
+mod thaw;
 pub mod types;
+mod verify;
+
+pub use thaw::refresh_all as refresh_thaw_reports;
 
 use std::time::Duration;
 
@@ -29,6 +33,7 @@ pub struct AppState {
     pub(crate) write: SqlitePool,
     pub(crate) config: Config,
     pub(crate) http: reqwest::Client,
+    pub(crate) verify: verify::Verifier,
 }
 impl AppState {
     pub async fn open(config: Config) -> anyhow::Result<Self> {
@@ -49,11 +54,13 @@ impl AppState {
             .connect_with(options.read_only(true))
             .await?;
         let http = config.rpc_client()?;
+        let verify = verify::Verifier::new(&config.zebra_rpc_url)?;
         Ok(Self {
             read,
             write,
             config,
             http,
+            verify,
         })
     }
 }
@@ -61,8 +68,11 @@ impl AppState {
 pub fn router(state: AppState) -> Router {
     let cors = CorsLayer::new()
         .allow_origin(state.config.public_origin.clone())
-        .allow_methods([Method::GET])
-        .allow_headers([header::HeaderName::from_static("last-event-id")]);
+        .allow_methods([Method::GET, Method::POST])
+        .allow_headers([
+            header::HeaderName::from_static("last-event-id"),
+            header::CONTENT_TYPE,
+        ]);
     let public = Router::new()
         .route("/v1/health", get(public::health))
         .route("/v1/chain/tip", get(public::tip))
@@ -72,9 +82,13 @@ pub fn router(state: AppState) -> Router {
         .route("/v1/markets/{id}/bets", get(public::bets))
         .route("/v1/markets/{id}/resolution", get(public::resolution))
         .route("/v1/markets/{id}/payout", get(public::payout))
+        .route("/v1/markets/{id}/payouts", get(public::payouts))
+        .route("/v1/markets/{id}/verify", get(verify::verify))
         .route("/v1/markets/{id}/stream", get(sse::events))
         .route("/v1/personas/registry", get(public::registry))
         .route("/v1/personas/{id}", get(public::persona))
+        .route("/v1/personas/{id}/thaw", post(thaw::thaw))
+        .route("/v1/personas/{id}/report", get(thaw::report))
         .route("/v1/leaderboard", get(public::leaderboard))
         .layer(cors);
     let ingest = Router::new()

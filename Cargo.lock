@@ -996,10 +996,12 @@ dependencies = [
  "axum",
  "base64 0.22.1",
  "ed25519-dalek",
+ "frosted-verify",
  "futures",
  "glass-indexer",
  "hex",
  "http-body-util",
+ "orchard",
  "reqwest",
  "serde",
  "serde_json",
@@ -1012,6 +1014,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "zcash-glass",
+ "zcash_keys",
 ]
 
 [[package]]
@@ -1028,6 +1031,19 @@ dependencies = [
 [[package]]
 name = "frosted-verify"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base64 0.23.1",
+ "futures",
+ "hex",
+ "orchard",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+ "zcash-glass",
+ "zcash_keys",
+]
 
 [[package]]
 name = "fs_extra"

@@ -13,8 +13,10 @@ pub mod memo;
 pub mod odds;
 pub mod params;
 pub mod payout;
+pub mod resolution;
 #[cfg(feature = "zcash")]
 pub mod scan;
+pub mod settle;
 pub mod status;
 pub mod thaw;
 pub mod validate;

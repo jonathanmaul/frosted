@@ -204,65 +204,56 @@ pub(crate) async fn bets(
             tagged: r.get(6),
         })
         .collect();
-    // Settlement is a public projection; preserve scanner statuses for historical odds/math.
-    let resolution: Option<String> = sqlx::query_scalar(
-        "SELECT body_json FROM api_publication WHERE market_id=? AND kind='resolution'",
-    )
-    .bind(&id)
-    .fetch_optional(&state.read)
-    .await?;
-    let resolution = resolution
-        .map(|body| serde_json::from_str::<crate::types::Resolution>(&body))
-        .transpose()?;
-    let plans: Vec<String> =
-        sqlx::query_scalar("SELECT body_json FROM api_payout_plan WHERE market_id=?")
-            .bind(&id)
-            .fetch_all(&state.read)
-            .await?;
-    let mut settled = std::collections::BTreeMap::new();
-    for body in plans {
-        let plan: crate::types::PayoutPublic = serde_json::from_str(&body)?;
-        if plan.status == "FAILED" {
-            continue;
-        }
-        let confirmed = plan.status == "CONFIRMED";
-        for item in plan.plan.items {
-            let entry = settled
-                .entry(item.note_ref)
-                .or_insert((item.kind, confirmed));
-            if confirmed {
-                *entry = (item.kind, true);
-            }
-        }
-    }
+    let settlement = Settlement::load(&state, &id).await?;
     for bet in &mut bets {
-        if bet.status == "COUNTED"
-            && let Some(r) = &resolution
-            && r.status == "RESOLVED"
-            && let Some(winner) = r.winning_outcome_index
-        {
-            bet.status = if bet.outcome_index == Some(winner) {
-                "WON"
-            } else {
-                "LOST"
-            }
-            .into();
-        }
-        if let Some((kind, confirmed)) = settled.get(&bet.note_ref) {
-            use zcash_glass::hash::ItemKind;
-            bet.status = match (kind, confirmed) {
-                (ItemKind::Win, true) => "PAID",
-                (ItemKind::Win, false) => "WON",
-                (ItemKind::Refund, true) => "REFUNDED",
-                (ItemKind::Refund, false) => "REFUND_QUEUED",
-                (ItemKind::Unclaimable, false) => "UNCLAIMABLE",
-                (ItemKind::Sweep, false) => bet.status.as_str(),
-                (ItemKind::Unclaimable | ItemKind::Sweep, true) => "SWEPT",
-            }
-            .into();
-        }
+        bet.status = settlement.project(&bet.status, bet.outcome_index, &bet.note_ref);
     }
     Ok(Json(json!({"bets":bets})))
+}
+
+/// Resolution and payout plans of one market: the public projection of scanner statuses.
+/// Scanner statuses stay untouched in the database for historical odds/math.
+pub(crate) struct Settlement {
+    resolution: Option<crate::types::Resolution>,
+    pub(crate) items: zcash_glass::settle::PlanItems,
+}
+impl Settlement {
+    pub(crate) async fn load(state: &AppState, id: &str) -> Result<Self> {
+        let resolution: Option<String> = sqlx::query_scalar(
+            "SELECT body_json FROM api_publication WHERE market_id=? AND kind='resolution'",
+        )
+        .bind(id)
+        .fetch_optional(&state.read)
+        .await?;
+        let resolution = resolution
+            .map(|body| serde_json::from_str::<crate::types::Resolution>(&body))
+            .transpose()?;
+        let bodies: Vec<String> =
+            sqlx::query_scalar("SELECT body_json FROM api_payout_plan WHERE market_id=?")
+                .bind(id)
+                .fetch_all(&state.read)
+                .await?;
+        let plans = bodies
+            .iter()
+            .map(|body| serde_json::from_str::<crate::types::PayoutPublic>(body))
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        let items = zcash_glass::settle::PlanItems::from_plans(
+            plans.iter().map(|p| (p.status.as_str(), &p.plan)),
+        );
+        Ok(Self { resolution, items })
+    }
+    pub(crate) fn view(&self) -> Option<zcash_glass::settle::ResolutionView<'_>> {
+        self.resolution
+            .as_ref()
+            .map(|r| zcash_glass::settle::ResolutionView {
+                status: &r.status,
+                winning_outcome_index: r.winning_outcome_index,
+            })
+    }
+    /// The status a visitor sees for a bet with scanner status `status`.
+    pub(crate) fn project(&self, status: &str, outcome: Option<u32>, note_ref: &str) -> String {
+        zcash_glass::settle::project_status(status, outcome, note_ref, self.view(), &self.items)
+    }
 }
 pub(crate) async fn published(state: &AppState, id: &str, kind: &str) -> Result<Value> {
     market(state, id).await?;
@@ -289,6 +280,26 @@ pub(crate) async fn payout(
     Path(id): Path<String>,
 ) -> Result<Json<Value>> {
     Ok(Json(published(&state, &id, "payout").await?))
+}
+/// Every plan of the market, oldest first, so a verifier can project settlement the way the API does.
+pub(crate) async fn plans(state: &AppState, id: &str) -> Result<Vec<Value>> {
+    let bodies: Vec<String> = sqlx::query_scalar(
+        "SELECT body_json FROM api_payout_plan WHERE market_id = ? ORDER BY rowid",
+    )
+    .bind(id)
+    .fetch_all(&state.read)
+    .await?;
+    Ok(bodies
+        .iter()
+        .map(|b| serde_json::from_str::<Value>(b))
+        .collect::<std::result::Result<Vec<_>, _>>()?)
+}
+pub(crate) async fn payouts(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<Json<Value>> {
+    market(&state, &id).await?;
+    Ok(Json(json!({"plans": plans(&state, &id).await?})))
 }
 pub(crate) async fn registry(State(state): State<AppState>) -> Result<Json<Value>> {
     let row =

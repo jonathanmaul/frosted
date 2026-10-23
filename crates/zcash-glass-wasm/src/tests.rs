@@ -175,3 +175,30 @@ fn input_for_js() -> serde_json::Value {
     let input = input();
     serde_json::json!({"market_definition":input.market_definition,"outcome_index":input.outcome_index,"amount_zat":input.amount_zat,"payout_ua":input.payout_ua,"k_root":input.k_root})
 }
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn persona_tag_is_thaw_tag_v2_over_the_bet_data() {
+    let built = build_with_randomness(input(), randomness(), [0x55; 8]).unwrap();
+    let payload = memo::decode_frst1(&built.memo_text).unwrap();
+    assert!(payload.header.has_thaw_tag());
+    let expected = thaw::tag(
+        &[0x5a; 32],
+        &[0xa1; 16],
+        0,
+        50_000_000,
+        &envelope::envelope_public_key(&[0x22; 32]),
+    );
+    assert_eq!(payload.header.thaw_tag, expected);
+    // The recomputation Thaw performs from public data accepts it, and rejects another key.
+    let bet = thaw::TaggedBet {
+        market_id: [0xa1; 16],
+        outcome_index: 0,
+        amount_zat: 50_000_000,
+        env_epk: payload.env_epk,
+        has_thaw_tag: true,
+        thaw_tag: payload.header.thaw_tag,
+    };
+    assert!(thaw::matches(&[0x5a; 32], &bet));
+    assert!(!thaw::matches(&[0x5b; 32], &bet));
+}

@@ -172,7 +172,7 @@ mod tests {
                 x
             }),
         };
-        let signatures = sign(&c, &[a.clone(), b], &[request.clone()]).unwrap();
+        let signatures = sign(&c, &[a.clone(), b], std::slice::from_ref(&request)).unwrap();
         assert_eq!(hex::decode(&signatures[0].signature_hex).unwrap().len(), 64);
         assert!(sign(&c, &[a.clone(), a], &[request]).is_err());
     }

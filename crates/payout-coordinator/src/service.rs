@@ -398,6 +398,13 @@ impl IntoResponse for Error {
             | "NODE_UNAVAILABLE"
             | "MARKET_NOT_RESOLVED"
             | "PLAN_ALREADY_EXISTS"
+            | "NOT_COMMITTEE_MARKET"
+            | "COMMITTEE_NOT_OPEN"
+            | "COMMITTEE_INVALID_VOTE"
+            | "COMMITTEE_ALREADY_PROPOSED"
+            | "COMMITTEE_NO_PROPOSAL"
+            | "COMMITTEE_SAME_MEMBER"
+            | "COMMITTEE_MISMATCH"
             | "FEE_SHORTFALL" => message.as_str(),
             _ => "INTERNAL",
         };
@@ -416,6 +423,8 @@ pub fn router(app: Arc<App>) -> Router {
         .route("/markets", post(create))
         .route("/markets/{id}", get(market))
         .route("/hot-wallet", post(hot))
+        .route("/markets/{id}/resolution", get(resolution_status))
+        .route("/markets/{id}/resolution/{action}", post(resolution_vote))
         .route("/markets/{id}/payout", get(payout_status).post(payout_plan))
         .route("/markets/{id}/payout/follow-up", post(payout_follow_up))
         .route("/markets/{id}/payout/prepare", post(payout_prepare))
@@ -476,6 +485,56 @@ async fn hot(State(app): State<Arc<App>>) -> Result<Json<Value>, Error> {
     Ok(Json(json!({"address":std::str::from_utf8(&address)?})))
 }
 
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct VoteBody {
+    member: String,
+    outcome: Option<u32>,
+    evidence_url: Option<String>,
+}
+async fn resolution_status(
+    State(app): State<Arc<App>>,
+    Path(id): Path<String>,
+) -> Result<Json<Value>, Error> {
+    Ok(Json(app.committee_status(&id).await?))
+}
+async fn resolution_vote(
+    State(app): State<Arc<App>>,
+    Path((id, action)): Path<(String, String)>,
+    input: Result<Json<VoteBody>, JsonRejection>,
+) -> Result<Json<Value>, Error> {
+    use crate::committee::Command;
+    let Json(b) = input.map_err(|_| anyhow::anyhow!("COMMITTEE_INVALID_VOTE"))?;
+    let vote = || -> anyhow::Result<(u32, String)> {
+        Ok((
+            b.outcome.context("COMMITTEE_INVALID_VOTE")?,
+            b.evidence_url.clone().context("COMMITTEE_INVALID_VOTE")?,
+        ))
+    };
+    let command = match action.as_str() {
+        "propose" => {
+            let (outcome, evidence_url) = vote()?;
+            Command::Propose {
+                member: b.member.clone(),
+                outcome,
+                evidence_url,
+            }
+        }
+        "confirm" => {
+            let (outcome, evidence_url) = vote()?;
+            Command::Confirm {
+                member: b.member.clone(),
+                outcome,
+                evidence_url,
+            }
+        }
+        "withdraw" => Command::Withdraw {
+            member: b.member.clone(),
+        },
+        _ => return Err(anyhow::anyhow!("COMMITTEE_INVALID_VOTE").into()),
+    };
+    Ok(Json(app.committee_vote(&id, command).await?))
+}
 async fn payout_status(
     State(app): State<Arc<App>>,
     Path(id): Path<String>,
