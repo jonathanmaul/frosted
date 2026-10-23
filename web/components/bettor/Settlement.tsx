@@ -46,6 +46,6 @@ export function Settlement({ definition, resolution, payout, tip = null }: { def
       {payout.txs.length ? payout.txs.map(tx => <div className="mt-4" key={tx.txid}><StatusBadge status={tx.status} /><p className="ledger-hash num t-5 mt-2">{tx.txid}</p>{tx.confirmed_height !== null && <p className="num t-5 mt-2">Confirmed at block {tx.confirmed_height}</p>}</div>) : <p className="t-4 muted mt-3">No payout transaction published.</p>}
     </div> : <p className="t-4 muted mt-5">No public payout plan published.</p>}
     <p className="ledger-code num t-5 mt-6">frosted-verify all {definition.market_id}</p>
-    <a className="text-link t-4" href="/operator">Operator status</a>
+    <a className="text-link t-4" href="/operator">Payout status</a>
   </section>;
 }

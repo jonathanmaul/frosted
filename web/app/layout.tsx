@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <nav className="site-nav" aria-label="Main">
             <Link href="/" className="wordmark" aria-label="Frosted home">FROSTED<span className="wordmark-period" aria-hidden="true">.</span></Link>
             <div className="nav-links">
-              {navScreens.map((s) => <Link key={s.id} href={s.id === "S-01" ? "/#markets" : s.href}>{s.title}</Link>)}
+              {navScreens.map((s) => <Link key={s.id} href={s.href}>{s.title}</Link>)}
             </div>
             <div className="header-ticker"><span className="ticker-indicator" aria-hidden="true" /><BlockTicker /></div>
           </nav>

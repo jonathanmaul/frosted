@@ -255,7 +255,6 @@ em { font-weight: 400; }
 /* Through the Frost — docs/DESIGN.md §13. One scene with captions in the lower frame. */
 .scene-viewport { position: absolute; inset: 0; overflow: hidden; background: var(--bg); }
 .journey-frame { position: relative; }
-.journey-skip { display: inline-block; margin-bottom: 24px; color: var(--ice-muted); }
 .journey-heading > h2 { margin-top: 28px; }
 .journey-heading h2 em { color: var(--ice-muted); }
 .journey-chapters, .journey-progress { display: none; }
@@ -295,7 +294,6 @@ body:has(.frost-experience) .site-nav { min-height: 88px; flex-wrap: nowrap; }
 .landing[data-cinematic] .journey-specimen { z-index: -2; }
 .landing[data-cinematic] .frost-experience .journey-heading { position: absolute; top: 36px; padding: 0; opacity: 0; }
 .landing[data-cinematic] .journey-heading h2 { display: none; }
-.landing[data-cinematic] .frost-experience .journey-skip { position: absolute; top: 36px; right: clamp(20px, 4.45vw, 80px); z-index: 4; pointer-events: auto; font-size: var(--type-5); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
 .landing[data-cinematic] .frost-experience .journey-steps { position: absolute; bottom: 154px; left: 50%; transform: translateX(-50%); width: min(760px, calc(100% - 48px)); max-width: none; height: 240px; }
 .landing[data-cinematic] .story-step { position: absolute; inset: auto 0 0; display: block; min-height: 0; border: 0; padding: 0; width: 100%; text-align: center; }
 .landing[data-cinematic] .story-step:not(:first-child) { visibility: hidden; }
@@ -318,7 +316,6 @@ body:has(.frost-experience) .site-nav { min-height: 88px; flex-wrap: nowrap; }
   .landing[data-cinematic] .journey-frame::before { height: 60%; }
   .landing[data-cinematic] .frost-experience .journey-heading { top: 28px; }
   .landing[data-cinematic] .journey-heading .section-index { letter-spacing: 0; }
-  .landing[data-cinematic] .frost-experience .journey-skip { top: 28px; }
   .landing[data-cinematic] .frost-experience .journey-steps { bottom: 148px; width: calc(100% - 40px); height: 260px; }
   .landing[data-cinematic] .story-step h3 { margin-bottom: 12px; }
   .landing[data-cinematic] .story-step .t-4 { font-size: var(--type-5); }

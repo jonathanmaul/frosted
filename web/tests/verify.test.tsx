@@ -18,8 +18,13 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 describe("S-10 Verify", () => {
   it("shows the exact CLI commands for the market and the offline Envelope Proof instruction", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ market_definition: { question: "Pool target?" } }) })));
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => ({ ok: true, json: async () => String(url).endsWith("/payout")
+      ? { txs: [{ txid: "ab".repeat(32), status: "CONFIRMED", confirmed_height: 77 }] }
+      : { market_definition: { question: "Pool target?", uivk: "uivk-test", outcomes: [{ outcome_index: 0, label: "Yes", address: "uregtest1escrowyes" }] } } })));
     render(await Page({ params: Promise.resolve({ id: ID }) }));
+    expect(screen.getByText("uregtest1escrowyes")).toBeTruthy();
+    expect(screen.getByText(new RegExp("ab".repeat(32)))).toBeTruthy();
+    expect(screen.getByText(/Bet transaction IDs are deliberately not published/)).toBeTruthy();
     expect(screen.getByText(`frosted-verify all ${ID} --node http://127.0.0.1:8232`)).toBeTruthy();
     expect(screen.getByText(`frosted-verify pools ${ID} --node http://127.0.0.1:8232`)).toBeTruthy();
     expect(screen.getByText(/frosted-verify envelope-proof proof\.json/)).toBeTruthy();

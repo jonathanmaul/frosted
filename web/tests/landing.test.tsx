@@ -16,7 +16,7 @@ describe("frozen ledger landing", () => {
     useOdds.mockReturnValue({ market: null, yes: null, no: null, poolZat: null });
     render(<Landing />);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Public odds. Invisible bettors.");
-    expect(screen.getByRole("link", { name: "Skip to markets ↓" }).getAttribute("href")).toBe("#markets");
+    expect(screen.queryByRole("link", { name: /Skip to markets/ })).toBeNull();
     expect(screen.getByText("No open market available.")).toBeTruthy();
     expect(screen.getByText("A bet goes in.")).toBeTruthy();
     expect(screen.getByText("The outcome settles it.")).toBeTruthy();

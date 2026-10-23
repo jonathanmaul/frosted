@@ -26,8 +26,8 @@ export function OperatorStatus({ initialRows }: { initialRows: OperatorRow[] | n
   }, []);
   return <section className="bettor-page">
     <p className="section-index">S-11 / PUBLIC STATUS</p>
-    <h1 className="t-2 my-6">Operator status.</h1>
-    <p className="t-4 muted">Read-only. This demo uses a trusted dealer. Signing approvals happen on the coordinator host.</p>
+    <h1 className="t-2 my-6">Payout status.</h1>
+    <p className="t-4 muted">Zcash has no smart contracts, so nothing pays winners automatically. Instead, three signers must agree: any two of them sign the payout transaction together. This page shows how far each market is, and how many signatures are collected. It is read-only. In this demo one trusted dealer holds all three keys, so the 2-of-3 is a simulation. Signing approvals happen on the coordinator host.</p>
     {rows === null ? <p className="ledger-panel t-4" role="status">Public API unavailable.</p> : !rows.length ? <p className="ledger-panel t-4">No markets published.</p> : rows.map(({ market, payout, committee }) => <article className="ledger-panel" key={market.market_id}>
       <div className="ledger-title"><h2 className="t-3"><Link className="text-link" href={`/markets/${encodeURIComponent(market.market_id)}`}>{market.question}</Link></h2><StatusBadge status={market.status} /></div>
       <p className="num t-5 muted mt-3">{market.market_id}</p>

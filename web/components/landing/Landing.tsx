@@ -151,7 +151,6 @@ export function Landing({ markets }: { markets?: ReactNode }) {
             <a href="#first-chapter" className="enter-frost num t-5" onClick={(event) => { const top = chapterStops.current[0]; if (top !== undefined) { event.preventDefault(); window.scrollTo({ top, behavior: "instant" }); } }}>SCROLL TO ENTER <span aria-hidden="true">↓</span></a>
           </div>
           <div className="journey-heading"><p className="section-index">THROUGH THE FROST</p><h2 id="how-title" className="t-2">Read what stays visible.</h2></div>
-          <a className="journey-skip num t-5" href="#markets">Skip to markets ↓</a>
           <div className="journey-steps" id="first-chapter">
             {STEPS.map((s, i) => (
               <div key={s.title} ref={(el) => { stepRefs.current[i] = el; }} className={`story-step ${step === i + 1 ? "is-current" : ""}`}>
