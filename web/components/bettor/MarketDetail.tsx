@@ -6,7 +6,7 @@ import { Settlement } from "./Settlement";
 import { OddsBar } from "@/components/ui/OddsBar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { MonoNumber } from "@/components/ui/MonoNumber";
-import { streamUrl, formatPercent, formatZec } from "@/lib/api";
+import { fetchTip, streamUrl, formatPercent, formatZec } from "@/lib/api";
 import { fetchMarket, fetchOdds, fetchBets, fetchPayout, fetchResolution, type Market, type Odds, type PublicBet, type Payout, type Resolution } from "@/lib/bettor";
 
 export function MarketDetail({ initialMarket, initialOdds, initialBets, initialResolution = null, initialPayout = null }: { initialMarket: Market; initialOdds: Odds | null; initialBets: PublicBet[] | null; initialResolution?: Resolution | null; initialPayout?: Payout | null }) {
@@ -16,7 +16,18 @@ export function MarketDetail({ initialMarket, initialOdds, initialBets, initialR
   const [connected, setConnected] = useState(false);
   const [resolution, setResolution] = useState(initialResolution);
   const [payout, setPayout] = useState(initialPayout);
+  const [tip, setTip] = useState<number | null>(null);
   const def = market.market_definition;
+  const isCommittee = def.resolution_type === "COMMITTEE";
+  // The committee countdown is in blocks, so it follows the tip while the market is undecided.
+  useEffect(() => {
+    if (!isCommittee) return;
+    let alive = true;
+    const poll = async () => { const h = await fetchTip(); if (alive) setTip(h); };
+    void poll();
+    const id = setInterval(poll, 10_000);
+    return () => { alive = false; clearInterval(id); };
+  }, [isCommittee]);
   useEffect(() => {
     let alive = true, refreshing = false, again = false;
     const refresh = async () => {
@@ -43,7 +54,7 @@ export function MarketDetail({ initialMarket, initialOdds, initialBets, initialR
       <section className="ledger-panel" aria-labelledby="odds-title"><div className="ledger-title"><h2 id="odds-title" className="t-3">Public odds</h2><p className="num t-5 muted" role="status">{connected ? "LIVE" : "RECONNECTING"}</p></div>{sides.length === 2 ? <OddsBar yes={sides[0]} no={sides[1]} /> : sides.map(s => <p className="t-4" key={s.label}>{s.label} <MonoNumber>{formatPercent(s.probability)}</MonoNumber></p>)}<p className="t-3 mt-6"><MonoNumber>{formatZec(odds?.pool_total_zat)}</MonoNumber> ZEC in the pool.</p><dl className="outcome-pools t-5">{def.outcomes.map(o => <div key={o.outcome_index}><dt>{o.label}</dt><dd className="num">{formatZec(odds?.outcomes.find(x => x.outcome_index === o.outcome_index)?.pool_zat)} ZEC</dd></div>)}</dl></section>
       <section className="ledger-panel"><h2 className="t-3">Anonymous feed</h2><p className="t-5 muted mt-2">Amounts. Outcomes. Blocks. No sender identities.</p>{bets?.slice(-20).reverse().map(b => <div className="anonymous-row t-5" key={b.note_ref}><MonoNumber>{formatZec(b.amount_zat)} ZEC</MonoNumber><span>{def.outcomes.find(o => o.outcome_index === b.outcome_index)?.label ?? "Unknown outcome"}</span><MonoNumber>Block {b.block_height.toLocaleString("en-US")}</MonoNumber></div>)}<p className="t-4 muted mt-4">{bets === null ? "Feed unavailable." : !bets.length ? "No bets observed." : ""}</p></section>
       <section className="ledger-panel"><h2 className="t-3">Locked rules</h2><p className="t-4 muted mt-3">{def.resolution_type} · <MonoNumber>{def.fee_bps / 100}%</MonoNumber> operator fee. Locked at announcement block <MonoNumber>{market.announce_height ?? "—"}</MonoNumber>.</p><pre className="ledger-code num t-5">{JSON.stringify(def.resolution_params, null, 2)}</pre><p className="t-5 muted">rules_hash</p><p className="ledger-hash num t-5">{market.rules_hash}</p><details className="mt-5"><summary className="t-4">Full market definition</summary><pre className="ledger-code num t-5">{JSON.stringify(def, null, 2)}</pre></details></section>
-      <Settlement definition={def} resolution={resolution} payout={payout} />
+      <Settlement definition={def} resolution={resolution} payout={payout} tip={tip} />
       <section className="ledger-panel"><h2 className="t-3">Verify yourself</h2><p className="t-4 muted mt-3">The public viewing key reveals escrow notes. It does not reveal their senders.</p><p className="ledger-hash num t-5 mt-4">{def.uivk}</p><Link className="text-link t-4" href={`/verify/${encodeURIComponent(def.market_id)}`}>Verify yourself</Link></section>
     </div><aside><BetBuilder market={market} /></aside></div>
   </article>;

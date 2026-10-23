@@ -1,5 +1,5 @@
-import { ScreenPlaceholder } from "@/components/ScreenPlaceholder";
+import { PersonaPanel } from "@/components/persona/PersonaPanel";
 
 export default function Page() {
-  return <ScreenPlaceholder id="S-06" title="Persona" features="F-09" />;
+  return <PersonaPanel />;
 }

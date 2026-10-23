@@ -1,6 +1,7 @@
 // Public settlement ledger. Flat surfaces and type scale follow docs/DESIGN.md.
 import { MonoNumber } from "@/components/ui/MonoNumber";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { CommitteePanel } from "./CommitteePanel";
 import { exactZec, type MarketDefinition, type Payout, type Resolution } from "@/lib/bettor";
 
 export function SigningProgress({ signing }: { signing: Payout["signing"] }) {
@@ -10,7 +11,7 @@ export function SigningProgress({ signing }: { signing: Payout["signing"] }) {
   </div>;
 }
 
-export function Settlement({ definition, resolution, payout }: { definition: MarketDefinition; resolution: Resolution | null; payout: Payout | null }) {
+export function Settlement({ definition, resolution, payout, tip = null }: { definition: MarketDefinition; resolution: Resolution | null; payout: Payout | null; tip?: number | null }) {
   const evidence = resolution?.evidence;
   const winner = resolution?.winning_outcome_index;
   return <section className="ledger-panel" aria-labelledby="settlement-title">
@@ -27,6 +28,7 @@ export function Settlement({ definition, resolution, payout }: { definition: Mar
         {evidence.reported_upgrades && <details className="mt-3"><summary className="t-4">Upgrades reported by the node</summary><ul className="num t-5 mt-3">{evidence.reported_upgrades.map(u => <li key={u.name}>{u.name} / Activation block {u.activation_height}</li>)}</ul></details>}
       </div>}
     </div> : <p className="t-4 muted mt-4">No public resolution published.</p>}
+    <CommitteePanel definition={definition} resolution={resolution} tip={tip} />
     {payout ? <div className="mt-6">
       <div className="ledger-title"><h3 className="t-3">Public payout plan</h3><StatusBadge status={payout.status} /></div>
       <p className="ledger-hash num t-5 mt-3">plan_hash: {payout.plan_hash}</p>

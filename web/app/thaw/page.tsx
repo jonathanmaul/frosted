@@ -1,5 +1,5 @@
-import { ScreenPlaceholder } from "@/components/ScreenPlaceholder";
+import { ThawPanel } from "@/components/persona/ThawPanel";
 
 export default function Page() {
-  return <ScreenPlaceholder id="S-07" title="Thaw" features="F-09" />;
+  return <ThawPanel />;
 }

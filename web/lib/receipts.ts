@@ -6,12 +6,19 @@ export type BetReceipt = {
   payout_ua: string; bet_salt: string; env_esk: string; tagged: boolean; note_ref: string | null;
   created_at: number; last_status: string; amount_mismatch: boolean;
 };
+/** `K_root` is stored only as AES-GCM ciphertext (lib/persona.ts); the Persona's public data stays readable. */
+export type PersonaRecord = {
+  persona_id: string; frstp1_uri: string; created_at: number;
+  enc: { v: 1; kdf: "PBKDF2-SHA256"; iterations: number; salt: string; iv: string; ct: string };
+};
 interface FrostedDB extends DBSchema {
   bet_receipts: { key: string; value: BetReceipt };
+  personas: { key: string; value: PersonaRecord };
 }
-function database() {
-  return openDB<FrostedDB>("frosted", 1, { upgrade(db) {
+export function database() {
+  return openDB<FrostedDB>("frosted", 2, { upgrade(db) {
     if (!db.objectStoreNames.contains("bet_receipts")) db.createObjectStore("bet_receipts", { keyPath: "bet_fingerprint" });
+    if (!db.objectStoreNames.contains("personas")) db.createObjectStore("personas", { keyPath: "persona_id" });
   } });
 }
 export async function saveReceipt(receipt: BetReceipt) {

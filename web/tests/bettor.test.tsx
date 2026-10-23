@@ -31,8 +31,9 @@ describe("money and public API", () => {
   });
   it("filters status and kind without inventing data", () => {
     render(<Markets initialTip={5} initialMarkets={[{ market_id: "a", question: "A?", status: "OPEN", resolution_type: "COMMITTEE", close_height: 10, pool_total_zat: 0, odds: [] }, { market_id: "b", question: "B?", status: "CLOSED", resolution_type: "POOL_THRESHOLD", close_height: 4, pool_total_zat: 0, odds: [] }]} />);
-    fireEvent.change(screen.getByLabelText("Status"), { target: { value: "OPEN" } }); expect(screen.queryByText("B?")).toBeNull();
-    fireEvent.change(screen.getByLabelText("Kind"), { target: { value: "chain_verified" } }); expect(screen.getByText("No markets match these filters.")).toBeTruthy();
+    fireEvent.click(screen.getByLabelText("Status")); fireEvent.click(screen.getByRole("option", { name: "Open" })); expect(screen.queryByText("B?")).toBeNull();
+    fireEvent.click(screen.getByLabelText("Kind")); fireEvent.click(screen.getByRole("option", { name: "Chain verified" })); expect(screen.getByText("No markets match these filters.")).toBeTruthy();
+    expect(document.querySelector("select")).toBeNull();
   });
 });
 describe("private local receipts", () => {

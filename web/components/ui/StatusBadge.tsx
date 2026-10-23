@@ -35,6 +35,8 @@ const LABELS: Record<string, string> = {
   AMOUNT_MISMATCH: "Amount changed",
   UNAVAILABLE: "Unavailable",
   AMBIGUOUS: "Multiple matches",
+  REGISTERED: "Registered",
+  THAWED: "Thawed",
 };
 
 export function statusLabel(status: string): string {

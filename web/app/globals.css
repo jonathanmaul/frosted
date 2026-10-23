@@ -343,7 +343,7 @@ body:has(.frost-experience) .site-nav { min-height: 88px; flex-wrap: nowrap; }
 .ledger-input { display:block; width:100%; margin-block:8px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-1); background:var(--bg); color:var(--ice); font-size:var(--type-4); }
 .ledger-input:disabled { opacity:.5; }
 .ledger-filters { display:flex; gap:24px; flex-wrap:wrap; margin-block:28px; }
-.ledger-filters label { min-width:200px; }
+.ledger-filters label, .ledger-filters .ui-select { min-width:200px; }
 .market-row { display:grid; grid-template-columns:6fr 3fr 2fr; gap:32px; align-items:center; padding-block:28px; border-top:1px solid var(--border); }
 .market-row > a { justify-self:end; white-space:nowrap; }
 .market-row-odds { display:flex; flex-wrap:wrap; gap:8px 24px; }
@@ -367,7 +367,35 @@ body:has(.frost-experience) .site-nav { min-height: 88px; flex-wrap: nowrap; }
 .outcome-pools > div { display:flex; justify-content:space-between; gap:12px; }
 .receipt-row { border-top:1px solid var(--border); padding-block:28px; overflow-wrap:anywhere; }
 @media(max-width:899px) { .market-detail-grid { gap:28px; } .market-detail-grid > div,.market-detail-grid > aside { grid-column:1/-1; } .market-row { grid-template-columns:1fr 1fr; } .market-row > a { grid-column:1/-1; justify-self:start; } }
-@media(max-width:639px) { .bettor-page { padding-top:36px; } .ledger-title { flex-wrap:wrap; } .builder { padding:20px; } .market-row { grid-template-columns:1fr; gap:20px; } .ledger-filters > label { width:100%; } }
+@media(max-width:639px) { .bettor-page { padding-top:36px; } .ledger-title { flex-wrap:wrap; } .builder { padding:20px; } .market-row { grid-template-columns:1fr; gap:20px; } .ledger-filters > label, .ledger-filters > .ui-select { width:100%; } }
+/* Persona ledger tables (S-07 to S-09): hairlines only, no shadows, radius within the 2-4px cap. */
+.table-scroll { overflow-x:auto; margin-top:24px; }
+.ledger-table { width:100%; min-width:640px; border-collapse:collapse; text-align:left; }
+.ledger-table th { color:var(--ice-muted); font-weight:400; padding:10px 16px 10px 0; border-bottom:1px solid var(--border); white-space:nowrap; }
+.ledger-table td { padding:14px 16px 14px 0; border-bottom:1px solid var(--border); vertical-align:top; overflow-wrap:anywhere; }
+.persona-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:24px; }
+.persona-stats dd { font-size:var(--type-3); margin-top:4px; }
+.badge-10 { display:inline-block; border:1px solid var(--ice-muted); border-radius:var(--radius-1); padding:0 6px; color:var(--ice); }
+@media(max-width:639px) { .persona-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+/* Verify page (S-10): plain text verdicts, hairlines only. */
+.verify-list { list-style:none; margin-top:16px; }
+.verify-row { border-top:1px solid var(--border); padding-block:16px; overflow-wrap:anywhere; }
+.verify-status { color:var(--ice); }
+.verify-diff { display:grid; gap:8px; margin-top:12px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-1); }
+.verify-diff dt { color:var(--ice-muted); }
+/* Custom Select (components/ui/Select.tsx): flat listbox, hairline border, no shadow. */
+.ui-select { position:relative; min-width:200px; }
+.ui-select-label { display:block; }
+.ui-select-button { display:flex; align-items:center; justify-content:space-between; gap:12px; text-align:left; cursor:pointer; }
+.ui-select-button:focus-visible { outline:2px solid var(--ice); outline-offset:2px; }
+.ui-select-caret { color:var(--ice-muted); }
+.ui-select-list { position:absolute; z-index:20; inset-inline:0; top:100%; margin-top:4px; max-height:280px; overflow-y:auto; list-style:none; padding:0;
+  background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-1); }
+.ui-select-option { padding:10px 12px; cursor:pointer; border-bottom:1px solid var(--border); }
+.ui-select-option:last-child { border-bottom:0; }
+.ui-select-option[data-active] { background:var(--surface); }
+.ui-select-option[aria-selected="true"] { color:var(--ice); box-shadow:inset 2px 0 0 var(--ice); }
+.ui-select-option[aria-selected="false"] { color:var(--ice-muted); }
 /* Settlement ledger, docs/DESIGN.md: ice progress, no decorative motion. */
 .settlement-progress { height: 4px; appearance: none; border: 0; background: var(--surface); }
 .settlement-progress::-webkit-progress-bar { background: var(--surface); }

@@ -23,6 +23,21 @@ export async function getJson<T>(path: string): Promise<T | null> {
   }
 }
 
+export type PostResult<T> = { ok: true; data: T } | { ok: false; code: string; message: string };
+
+/** The only write the browser makes to the API (Thaw). Credential-free, JSON in and out. */
+export async function postJson<T>(path: string, body: unknown): Promise<PostResult<T>> {
+  try {
+    const res = await fetch(`${API_URL}${path}`, { method: "POST", credentials: "omit", headers: { "content-type": "application/json" },
+      body: JSON.stringify(body), signal: AbortSignal.timeout(30000) });
+    const json = await res.json().catch(() => null);
+    if (res.ok) return { ok: true, data: json as T };
+    return { ok: false, code: json?.error?.code ?? "INTERNAL", message: json?.error?.message ?? "Request failed." };
+  } catch {
+    return { ok: false, code: "NETWORK", message: "The public API is unreachable." };
+  }
+}
+
 export async function fetchMarkets(): Promise<MarketSummary[] | null> {
   const body = await getJson<{ markets: MarketSummary[] }>("/markets");
   return body ? body.markets : null;
