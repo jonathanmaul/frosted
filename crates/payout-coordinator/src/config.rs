@@ -92,8 +92,9 @@ pub fn validate_ingest_url(url: &Url, network: &str) -> Result<()> {
             || s.parse::<std::net::IpAddr>()
                 .is_ok_and(|ip| ip.is_loopback())
     });
-    if url.scheme() != "https" && !(network == "regtest" && loopback && url.scheme() == "http") {
-        bail!("ingest requires HTTPS (local regtest may use HTTP)");
+    let local_http = matches!(network, "regtest" | "testnet") && loopback && url.scheme() == "http";
+    if url.scheme() != "https" && !local_http {
+        bail!("ingest requires HTTPS (a local regtest or testnet run may use HTTP on loopback)");
     }
     Ok(())
 }
@@ -117,6 +118,20 @@ mod tests {
                 "regtest"
             )
             .is_ok()
+        );
+        assert!(
+            validate_ingest_url(
+                &Url::parse("http://localhost/v1/ingest").unwrap(),
+                "testnet"
+            )
+            .is_ok()
+        );
+        assert!(
+            validate_ingest_url(
+                &Url::parse("http://example.com/v1/ingest").unwrap(),
+                "testnet"
+            )
+            .is_err()
         );
         assert!(
             validate_ingest_url(
