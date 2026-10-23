@@ -28,3 +28,4 @@ openspec/
 # Generated browser WASM package (pnpm build:wasm)
 web/lib/wasm/pkg/
 web/public/wasm/
+.testnet/
