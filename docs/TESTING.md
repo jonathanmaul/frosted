@@ -265,3 +265,32 @@ Chain regtest, wallet `faucet` dan `recipient` tetap ada. Mengosongkan chain tot
 | **Rate limit API** | Belum ada (selain cache `/verify`). Alias Persona belum dijamin unik |
 | **Keamanan CSP** | `script-src` memakai `'unsafe-inline'` (bootstrap Next). Nonce per request belum dibuat |
 | **Dev mode** | CSP `next dev` lebih longgar dan belum diuji; yang diuji adalah build produksi |
+
+## 10. Testnet tanpa node sendiri (status 2026-10-23)
+
+Frosted bisa jalan di testnet publik (NU7) tanpa node lokal: RPC dari endpoint pihak ketiga, dompet ringan lewat `testnet.zec.rocks`.
+
+**Persiapan sekali:**
+1. Endpoint RPC testnet **di chain NU7** (mis. node Chainstack paket gratis). Simpan di `~/.config/frosted/testnet.env` sebagai `ZEBRA_RPC_URL=https://...`, di luar repo. Jangan commit dan jangan tempel di chat.
+2. Dompet demo: `zcash-devtool wallet init --name demo -n test` di `.regtest/testnet-demo` (folder ini diabaikan git), lalu isi dari faucet (mis. faucet.testnet.valargroup.dev, 0,125 TAZ per hari).
+3. Explorer yang benar: https://testnet.zecblock.com (`/tx/<txid>`). `testnet.zcashexplorer.app` berada di chain lama sebelum NU7 dan tidak akan menemukan transaksi kita.
+
+**Perintah (`scripts/testnet.sh`):**
+
+```
+scripts/testnet.sh up                   # kunci, komite, dompet hot; indexer + API + coordinator
+scripts/testnet.sh fund 3000000         # kirim 0,03 TAZ dari dompet demo ke dompet hot
+scripts/testnet.sh market 80            # market chain-verified, tutup sekitar 80 blok
+scripts/testnet.sh bet <market_id> 0 1000000
+scripts/testnet.sh web                  # tampilan web di http://localhost:3100
+scripts/testnet.sh status | logs <nama> | down
+```
+
+State ada di `.testnet/run` (diabaikan git). `down` lalu `up` melanjutkan market yang sudah ada.
+
+**Sudah terbukti di testnet NU7:** pengumuman market, indexer membaca transaksi NU7, bet WASM berstatus COUNTED. **Belum:** resolusi, payout FROST, dan Verify pada market testnet (market `ec81af41…` menunggu blok tutup 4.532.304).
+
+**Catatan:**
+- Blok testnet NU7 seharusnya 25 detik, tetapi pada 2026-10-23 terukur sekitar satu menit; hitung jendela market dengan longgar.
+- Dana yang baru diterima baru bisa dibelanjakan setelah beberapa konfirmasi, jadi `announce` gagal berkali-kali di awal. Itu normal.
+- Log bisa memuat URL RPC; gunakan `scripts/testnet.sh logs`, yang menyamarkannya.
