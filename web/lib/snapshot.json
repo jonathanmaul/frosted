@@ -1,0 +1,2789 @@
+{
+ "captured_at": "2026-10-25T12:37:41.017Z",
+ "tip": 4540245,
+ "responses": {
+  "/markets": {
+   "markets": [
+    {
+     "close_height": 4539807,
+     "market_id": "d5c5682b9462baf256cca8336429258a",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 0.5
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0.5
+      }
+     ],
+     "pool_total_zat": 2000000,
+     "question": "Will the Zcash testnet Ironwood pool hold any ZEC at the resolve block?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "SETTLED"
+    },
+    {
+     "close_height": 4540113,
+     "market_id": "dec55f445905e59dc795a664b82473a8",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 1
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0
+      }
+     ],
+     "pool_total_zat": 6000000,
+     "question": "Will the Ironwood pool hold at least 224,800 TAZ at block 4,540,118?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "SETTLED"
+    },
+    {
+     "close_height": 4540115,
+     "market_id": "99b07cc1fc3682fc2a36820f08b3fd82",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 0
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 1
+      }
+     ],
+     "pool_total_zat": 7000000,
+     "question": "Will the Orchard pool be below 236,900 TAZ at block 4,540,120?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "SETTLED"
+    },
+    {
+     "close_height": 4540117,
+     "market_id": "cacfed05752d422203b769a103f1c534",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 0
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 1
+      }
+     ],
+     "pool_total_zat": 6000000,
+     "question": "Will the Sapling pool hold at least 1.53 million TAZ at block 4,540,122?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "SETTLED"
+    },
+    {
+     "close_height": 4540120,
+     "market_id": "8efc3ac8d987bb88c349aa27fb46ed5b",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 0.2222222222222222
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0.7777777777777778
+      }
+     ],
+     "pool_total_zat": 4500000,
+     "question": "Will the transparent pool be below 15.8 million TAZ at block 4,540,125?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "SETTLED"
+    },
+    {
+     "close_height": 4540122,
+     "market_id": "a608aa10137d160d234aeee45a4c081e",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 0.5833333333333334
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0.4166666666666667
+      }
+     ],
+     "pool_total_zat": 6000000,
+     "question": "Will the lockbox hold at least 176,200 TAZ at block 4,540,127?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "SETTLED"
+    },
+    {
+     "close_height": 4540124,
+     "market_id": "01caf9805e21c324525f476364aa5451",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 1
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0
+      }
+     ],
+     "pool_total_zat": 6000000,
+     "question": "Will NU7 be active at block 4,540,129?",
+     "resolution_type": "UPGRADE_ACTIVE",
+     "status": "SETTLED"
+    },
+    {
+     "close_height": 4540127,
+     "market_id": "6f3b741bb5cdc6c3ddde624f9e1b55d0",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 1
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0
+      }
+     ],
+     "pool_total_zat": 5000000,
+     "question": "Will the Sprout pool hold at least 428,300 TAZ at block 4,540,132?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "SETTLED"
+    },
+    {
+     "close_height": 4540129,
+     "market_id": "3adcc87cb388b8d1d332b7550a7a717e",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 1
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0
+      }
+     ],
+     "pool_total_zat": 6500000,
+     "question": "Will the Ironwood pool be below 224,700 TAZ at block 4,540,134?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "SETTLED"
+    },
+    {
+     "close_height": 4540133,
+     "market_id": "a2293474577fafb82d2ee11d08358f90",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 0
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 1
+      }
+     ],
+     "pool_total_zat": 5000000,
+     "question": "Will the Orchard pool hold at least 237,000 TAZ at block 4,540,138?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "SETTLED"
+    },
+    {
+     "close_height": 4540135,
+     "market_id": "d27a9efb3aff0e1b37fecbca4e86a5f1",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 0.16666666666666666
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0.8333333333333334
+      }
+     ],
+     "pool_total_zat": 6000000,
+     "question": "Will NU6.3 be active at block 4,540,140?",
+     "resolution_type": "UPGRADE_ACTIVE",
+     "status": "SETTLED"
+    },
+    {
+     "close_height": 4541842,
+     "market_id": "4e6e1033021cff9cb1a065c1688f43f9",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 0.26666666666666666
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0.7333333333333333
+      }
+     ],
+     "pool_total_zat": 7500000,
+     "question": "Will the Ironwood pool hold at least 230,000 TAZ at block 4,541,847?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "OPEN"
+    },
+    {
+     "close_height": 4542043,
+     "market_id": "9f79dc0ac399580e979a7d026c5e69a5",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 0.5555555555555556
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0.4444444444444444
+      }
+     ],
+     "pool_total_zat": 4500000,
+     "question": "Will the Orchard pool drop below 230,000 TAZ at block 4,542,048?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "OPEN"
+    },
+    {
+     "close_height": 4542243,
+     "market_id": "6657ac50521db25f7c6e5ccc684b5134",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 0.6363636363636364
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0.36363636363636365
+      }
+     ],
+     "pool_total_zat": 5500000,
+     "question": "Will the Sapling pool hold at least 1.55 million TAZ at block 4,542,248?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "OPEN"
+    },
+    {
+     "close_height": 4542443,
+     "market_id": "75b6ced97706e9347e61007b95dc3455",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 0.7777777777777778
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0.2222222222222222
+      }
+     ],
+     "pool_total_zat": 4500000,
+     "question": "Will the transparent pool drop below 15.5 million TAZ at block 4,542,448?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "OPEN"
+    },
+    {
+     "close_height": 4542646,
+     "market_id": "88cc6937c1f481e7eb8940dd775bebf7",
+     "odds": [
+      {
+       "label": "YES",
+       "outcome_index": 0,
+       "probability": 1
+      },
+      {
+       "label": "NO",
+       "outcome_index": 1,
+       "probability": 0
+      }
+     ],
+     "pool_total_zat": 4500000,
+     "question": "Will the lockbox reach 180,000 TAZ at block 4,542,651?",
+     "resolution_type": "POOL_THRESHOLD",
+     "status": "OPEN"
+    }
+   ]
+  },
+  "/chain/tip": {
+   "hash": "000013427f03f271871af02238f5d635397b1854564cff1532099914f7cc47c3",
+   "height": 4540245
+  },
+  "/leaderboard": {
+   "entries": []
+  },
+  "/personas/registry": null,
+  "/markets/d5c5682b9462baf256cca8336429258a": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "d5c5682b9462baf256cca8336429258a",
+    "question": "Will the Zcash testnet Ironwood pool hold any ZEC at the resolve block?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1xqzcd3fhjnyundctf232lrndq62hux56m2v3wldxf78akfrr49wz42n8rcpgxgk03z6ad3d3hhp447rnc6nw4sgghpd55lja4upj3xth"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest1x4nw69wlxe2kqxzxzkz4azcqykzptg450pe3n27qqsv8putmjsvd8q9309mj6pmlq8kf9awn428djp3ge75kuy4c8y4rtucmsuq6jyxk"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "ironwood",
+     "comparator": "gte",
+     "threshold_zat": 1
+    },
+    "birthday_height": 4539787,
+    "close_height": 4539807,
+    "resolve_height": 4539812,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest1s3fgg9d89n8nrhdhqj2wk4twahca054sujer28l72g5n62hexxz6plfmwmdsq7e32qffaqz4fp4e3x7juktlkwm404spgllvkpgn95r6sypzwej3vhtkshftjnnea0g7j3kq4z9984",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "1ef891d0a6e1b5cf752a457f08f4fe5c886c38093b9fb340fb83dd26b69239e2",
+   "status": "SETTLED",
+   "announce_height": 4539790,
+   "announce_txid": "e9bd7ec97313d75eaafe31060c22438a06122caf0aa66385d96c9e4473df0a45"
+  },
+  "/markets/d5c5682b9462baf256cca8336429258a/odds": {
+   "at_height": 4540245,
+   "market_id": "d5c5682b9462baf256cca8336429258a",
+   "outcomes": [
+    {
+     "bets": 1,
+     "outcome_index": 0,
+     "pool_zat": 1000000,
+     "probability": 0.5
+    },
+    {
+     "bets": 1,
+     "outcome_index": 1,
+     "pool_zat": 1000000,
+     "probability": 0.5
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 2000000
+  },
+  "/markets/d5c5682b9462baf256cca8336429258a/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "3025c7800bb330af",
+     "block_height": 4539796,
+     "note_ref": "bbe38240f22fa9c7",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "258fc181edb52d34",
+     "block_height": 4539799,
+     "note_ref": "48b6b3c121b6f605",
+     "outcome_index": 1,
+     "status": "LOST",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/d5c5682b9462baf256cca8336429258a/resolution": {
+   "evidence": {
+    "block_hash": "00002f6b7f3082c8930e6dc61aab7ec57a8b8da9d9ccd8f617c8371376938c00",
+    "chain_value_zat": 22472198795942,
+    "height": 4539812,
+    "pool": "ironwood",
+    "source": "getblock"
+   },
+   "market_id": "d5c5682b9462baf256cca8336429258a",
+   "status": "RESOLVED",
+   "votes": [],
+   "winning_outcome_index": 0
+  },
+  "/markets/d5c5682b9462baf256cca8336429258a/payout": {
+   "plan": {
+    "items": [
+     {
+      "amount_zat": 10000,
+      "bet_fingerprint": null,
+      "kind": "SWEEP",
+      "note_ref": "9b067cabff225547",
+      "receiver_commitment": null
+     },
+     {
+      "amount_zat": 1980000,
+      "bet_fingerprint": "3025c7800bb330af",
+      "kind": "WIN",
+      "note_ref": "bbe38240f22fa9c7",
+      "receiver_commitment": "5d36ea0bdb853d42afb021f144f559160b4428226afbc6bbf41b8d754bcbb56b"
+     }
+    ],
+    "market_id": "d5c5682b9462baf256cca8336429258a",
+    "operator_fee_zat": 20000,
+    "plan_cutoff_height": 4539817,
+    "plan_kind": "STANDARD",
+    "result": 0
+   },
+   "plan_hash": "9934ade9df87e7c6f9e6d7a15c787f151162d74c45882f97235e60854d34ce81",
+   "signing": {
+    "sessions_done": 3,
+    "sessions_total": 3,
+    "threshold": 2
+   },
+   "status": "CONFIRMED",
+   "summary": {
+    "distributed_zat": 1980000,
+    "operator_fee_zat": 20000,
+    "refunds": 0,
+    "swept": 1,
+    "tx_fee_zat": 15000,
+    "unclaimable": 0,
+    "uneconomic_dust": 0,
+    "winners": 1
+   },
+   "txs": [
+    {
+     "confirmed_height": 4539818,
+     "status": "CONFIRMED",
+     "txid": "ef90d2aed02339b58b33548ab3c191920816c4513e8f53b7aa7570e792e5ae00"
+    }
+   ]
+  },
+  "/markets/dec55f445905e59dc795a664b82473a8": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "dec55f445905e59dc795a664b82473a8",
+    "question": "Will the Ironwood pool hold at least 224,800 TAZ at block 4,540,118?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest16rwmd04jsf9veu6aclned8dn0qm4zgavgs3y3un4chz9h04m6uxn4stfv7482repmwggfytp4utmqm6mv6a5nt794p4qdakxgsh5a8ta"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest1jnq7kcsegktc9vvnsxcmafxfnq8cqj43gjed4wuhxtnpegxxfw8u5w7tj3s939ngsr5w6szdq3sgmgl8np0qrzyw0cdw9qxuly0nw57g"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "ironwood",
+     "comparator": "gte",
+     "threshold_zat": 22480000000000
+    },
+    "birthday_height": 4540038,
+    "close_height": 4540113,
+    "resolve_height": 4540118,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest12yky8hwcw9e2e08lannfhyvlv8n095lydglfymwv2dw4jtptdkds2ec2y675tlujxn0rfzzqrw8zc3fe90rv27cqzqppyx9hfy7f0zu9v8la0xwurh2t2ajh639crz4sdrqs6z574g",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "03c333a3c62d2957c7521b6ad944e9622345d348e088bf9981a08b384fed7413",
+   "status": "SETTLED",
+   "announce_height": 4540039,
+   "announce_txid": "d1c30d24fc0e3758f7b5259e434eb95c76aa750792c196d7fa1e5179cd4e8de7"
+  },
+  "/markets/dec55f445905e59dc795a664b82473a8/odds": {
+   "at_height": 4540245,
+   "market_id": "dec55f445905e59dc795a664b82473a8",
+   "outcomes": [
+    {
+     "bets": 3,
+     "outcome_index": 0,
+     "pool_zat": 6000000,
+     "probability": 1
+    },
+    {
+     "bets": 0,
+     "outcome_index": 1,
+     "pool_zat": 0,
+     "probability": 0
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 6000000
+  },
+  "/markets/dec55f445905e59dc795a664b82473a8/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "6cfca22a018032e8",
+     "block_height": 4540098,
+     "note_ref": "23da6129450e8452",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2500000,
+     "bet_fingerprint": "7aeaebcfbef4a8a5",
+     "block_height": 4540103,
+     "note_ref": "8f88fbe19e27094c",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2500000,
+     "bet_fingerprint": "12497404b611a2c9",
+     "block_height": 4540105,
+     "note_ref": "05f16915f362ca8a",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/dec55f445905e59dc795a664b82473a8/resolution": {
+   "evidence": {
+    "block_hash": "0000566788dc91d3644f64ff1e88d78e5dbedbb70fe8a96a69f604dc16588a45",
+    "chain_value_zat": 22480079243412,
+    "height": 4540118,
+    "pool": "ironwood",
+    "source": "getblock"
+   },
+   "market_id": "dec55f445905e59dc795a664b82473a8",
+   "status": "RESOLVED",
+   "votes": [],
+   "winning_outcome_index": 0
+  },
+  "/markets/dec55f445905e59dc795a664b82473a8/payout": {
+   "plan": {
+    "items": [
+     {
+      "amount_zat": 10000,
+      "bet_fingerprint": null,
+      "kind": "SWEEP",
+      "note_ref": "03e20c6e2f106ded",
+      "receiver_commitment": null
+     },
+     {
+      "amount_zat": 2475000,
+      "bet_fingerprint": "12497404b611a2c9",
+      "kind": "WIN",
+      "note_ref": "05f16915f362ca8a",
+      "receiver_commitment": "5e35f700bd09b8406952208599d0cdfe42de498f6d0532e046e061b4376fb995"
+     },
+     {
+      "amount_zat": 990000,
+      "bet_fingerprint": "6cfca22a018032e8",
+      "kind": "WIN",
+      "note_ref": "23da6129450e8452",
+      "receiver_commitment": "10d6c67cd4f8bc80205e88e71e19289838815448a85765d0f17eafef9cd87a60"
+     },
+     {
+      "amount_zat": 2475000,
+      "bet_fingerprint": "7aeaebcfbef4a8a5",
+      "kind": "WIN",
+      "note_ref": "8f88fbe19e27094c",
+      "receiver_commitment": "be055d51d424b59f1b940eadf19b419365412b7b9f3539e19c6a8360a0986a43"
+     }
+    ],
+    "market_id": "dec55f445905e59dc795a664b82473a8",
+    "operator_fee_zat": 60000,
+    "plan_cutoff_height": 4540173,
+    "plan_kind": "STANDARD",
+    "result": 0
+   },
+   "plan_hash": "ce9c4177ed6be2ff83280e45ac1a5c7192f793e93724a08420b09355b6905712",
+   "signing": {
+    "sessions_done": 4,
+    "sessions_total": 4,
+    "threshold": 2
+   },
+   "status": "CONFIRMED",
+   "summary": {
+    "distributed_zat": 5940000,
+    "operator_fee_zat": 60000,
+    "refunds": 0,
+    "swept": 1,
+    "tx_fee_zat": 20000,
+    "unclaimable": 0,
+    "uneconomic_dust": 0,
+    "winners": 3
+   },
+   "txs": [
+    {
+     "confirmed_height": 4540181,
+     "status": "CONFIRMED",
+     "txid": "affcf2d67423adbe4b8bac82d43918193d82713bd622a6d05a4ec038ed5678ff"
+    }
+   ]
+  },
+  "/markets/99b07cc1fc3682fc2a36820f08b3fd82": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "99b07cc1fc3682fc2a36820f08b3fd82",
+    "question": "Will the Orchard pool be below 236,900 TAZ at block 4,540,120?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest15vchu6jmw3qvrrewy0nuel7tcftxjxwkru7vrdh28893wspqmr5m5prfmp39dzaxu5x24rnzwu3gyx2pnamka5s34nmwhjunkyr9exaw"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest1uta6ty58vjmgv4zhz8whnzyaz8a9d8vz92f7tu6jcwqrxdrlykh7ts4t62npre8zvtraxh8q45x4utkr42kzlyva5qctp3f8hssgqds6"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "orchard",
+     "comparator": "lt",
+     "threshold_zat": 23690000000000
+    },
+    "birthday_height": 4540038,
+    "close_height": 4540115,
+    "resolve_height": 4540120,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest1npjcd5fqtslrym2eccagzk40lku4x4t59s0nvw3lh6hhltr3s0g5uxcsfq9al34k3wvt0h2neu0cscejs6jqskjcdduhxcmut3avm9rrxep8vvv4emah567s76g6yerfm28sj3sjf2",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "7b3f2c770ca76d307f8147a4691cb7197bbdb16414b13c504210c70370c18aa0",
+   "status": "SETTLED",
+   "announce_height": 4540044,
+   "announce_txid": "0f6965669a9cf995f36c15d48ea2f8ea501ed250336dabf710fe998ded529824"
+  },
+  "/markets/99b07cc1fc3682fc2a36820f08b3fd82/odds": {
+   "at_height": 4540245,
+   "market_id": "99b07cc1fc3682fc2a36820f08b3fd82",
+   "outcomes": [
+    {
+     "bets": 0,
+     "outcome_index": 0,
+     "pool_zat": 0,
+     "probability": 0
+    },
+    {
+     "bets": 4,
+     "outcome_index": 1,
+     "pool_zat": 7000000,
+     "probability": 1
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 7000000
+  },
+  "/markets/99b07cc1fc3682fc2a36820f08b3fd82/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "fd3931241f9b0ac7",
+     "block_height": 4540099,
+     "note_ref": "1c48bae6a29d265e",
+     "outcome_index": 1,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "38c30da257485c80",
+     "block_height": 4540103,
+     "note_ref": "881d3088669f3b2e",
+     "outcome_index": 1,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2500000,
+     "bet_fingerprint": "8b2a355f99e22962",
+     "block_height": 4540105,
+     "note_ref": "47fd0d28d8712f89",
+     "outcome_index": 1,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2500000,
+     "bet_fingerprint": "9b01729e2cf3cba9",
+     "block_height": 4540109,
+     "note_ref": "8f4cd792f2ac292a",
+     "outcome_index": 1,
+     "status": "PAID",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/99b07cc1fc3682fc2a36820f08b3fd82/resolution": {
+   "evidence": {
+    "block_hash": "000023366df5da68162efcb9b60a500f6c2c98e4dbc179daeb3ccb785d51e005",
+    "chain_value_zat": 23693032438050,
+    "height": 4540120,
+    "pool": "orchard",
+    "source": "getblock"
+   },
+   "market_id": "99b07cc1fc3682fc2a36820f08b3fd82",
+   "status": "RESOLVED",
+   "votes": [],
+   "winning_outcome_index": 1
+  },
+  "/markets/99b07cc1fc3682fc2a36820f08b3fd82/payout": {
+   "plan": {
+    "items": [
+     {
+      "amount_zat": 990000,
+      "bet_fingerprint": "fd3931241f9b0ac7",
+      "kind": "WIN",
+      "note_ref": "1c48bae6a29d265e",
+      "receiver_commitment": "494eeac998bbdfde64f9687830ca12c97af565f7d4d579d21ff3707e92a02184"
+     },
+     {
+      "amount_zat": 10000,
+      "bet_fingerprint": null,
+      "kind": "SWEEP",
+      "note_ref": "43e615a917f12c20",
+      "receiver_commitment": null
+     },
+     {
+      "amount_zat": 2475000,
+      "bet_fingerprint": "8b2a355f99e22962",
+      "kind": "WIN",
+      "note_ref": "47fd0d28d8712f89",
+      "receiver_commitment": "b5c7d22aaa45a4e10cc0940aa000076deb3a1f0a3ff16f2819d6be56ae219a5d"
+     },
+     {
+      "amount_zat": 990000,
+      "bet_fingerprint": "38c30da257485c80",
+      "kind": "WIN",
+      "note_ref": "881d3088669f3b2e",
+      "receiver_commitment": "5be6bbf4f547b779f0bb7c8519992d6ea70ea6f9b0dce51071bc92b062653075"
+     },
+     {
+      "amount_zat": 2475000,
+      "bet_fingerprint": "9b01729e2cf3cba9",
+      "kind": "WIN",
+      "note_ref": "8f4cd792f2ac292a",
+      "receiver_commitment": "49f8cdafa453eecaef053a1dd0171a645fe044a015e331da57ae6fbcdca10b1b"
+     }
+    ],
+    "market_id": "99b07cc1fc3682fc2a36820f08b3fd82",
+    "operator_fee_zat": 70000,
+    "plan_cutoff_height": 4540181,
+    "plan_kind": "STANDARD",
+    "result": 1
+   },
+   "plan_hash": "dbc7a969176be6c98c09dc517aae1741b7881b114457c8c6def2067c97a13e75",
+   "signing": {
+    "sessions_done": 5,
+    "sessions_total": 5,
+    "threshold": 2
+   },
+   "status": "CONFIRMED",
+   "summary": {
+    "distributed_zat": 6930000,
+    "operator_fee_zat": 70000,
+    "refunds": 0,
+    "swept": 1,
+    "tx_fee_zat": 25000,
+    "unclaimable": 0,
+    "uneconomic_dust": 0,
+    "winners": 4
+   },
+   "txs": [
+    {
+     "confirmed_height": 4540184,
+     "status": "CONFIRMED",
+     "txid": "e15ab7328f7ce8c94a2d58bfe94bc93f3d997308c090d86d10407d24cd3ebbdf"
+    }
+   ]
+  },
+  "/markets/cacfed05752d422203b769a103f1c534": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "cacfed05752d422203b769a103f1c534",
+    "question": "Will the Sapling pool hold at least 1.53 million TAZ at block 4,540,122?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1v62zlv00ec5m7hrkuf5e62x9qzw8028jryk4wgd0f9kv8vvzqctnmqvy3u04s2c7mr68sleh8h55lvgrpgqpf5meyu8frf69ayl3f2dv"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest183l2vlszg350fwpvyc7vrc6rgffnkh6f0ykqdw53nzdme8lnjgdnr468kuqlrx9dqer0vgjv75d0mwcac4536x5x65ryz5gjlcyhvtud"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "sapling",
+     "comparator": "gte",
+     "threshold_zat": 153000000000000
+    },
+    "birthday_height": 4540038,
+    "close_height": 4540117,
+    "resolve_height": 4540122,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest1tw4jv3w59rk08xszcpkd48ylcxjymtemauswzfzypvg2q9lwfarnfl5k0jtker344l9qshxpxsk3nlqasl9tpa6xtyuku7dz0xye5r5qgvvqhx465mt9vd5ankfjdddltwkqgh2al0",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "daf77f01e32121a73da69de69d47c8c25bf44606019cab58217813d8a773a25c",
+   "status": "SETTLED",
+   "announce_height": 4540050,
+   "announce_txid": "f77f197e8f20847d3f919496b8e744471a260eaa52f2dfc884e92dd34cdab668"
+  },
+  "/markets/cacfed05752d422203b769a103f1c534/odds": {
+   "at_height": 4540245,
+   "market_id": "cacfed05752d422203b769a103f1c534",
+   "outcomes": [
+    {
+     "bets": 0,
+     "outcome_index": 0,
+     "pool_zat": 0,
+     "probability": 0
+    },
+    {
+     "bets": 3,
+     "outcome_index": 1,
+     "pool_zat": 6000000,
+     "probability": 1
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 6000000
+  },
+  "/markets/cacfed05752d422203b769a103f1c534/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 2500000,
+     "bet_fingerprint": "bfa9dc30d56ace04",
+     "block_height": 4540099,
+     "note_ref": "2085275b5b3c441e",
+     "outcome_index": 1,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2500000,
+     "bet_fingerprint": "3a15a81752360687",
+     "block_height": 4540103,
+     "note_ref": "9fa833731186bcbd",
+     "outcome_index": 1,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "893366ab2f274849",
+     "block_height": 4540105,
+     "note_ref": "b6ff33a338db34a6",
+     "outcome_index": 1,
+     "status": "PAID",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/cacfed05752d422203b769a103f1c534/resolution": {
+   "evidence": {
+    "block_hash": "000096c7eb8807e8c7913c6f6bad3ef1f4d32d1772641c629114fc962bbee74b",
+    "chain_value_zat": 152877093160994,
+    "height": 4540122,
+    "pool": "sapling",
+    "source": "getblock"
+   },
+   "market_id": "cacfed05752d422203b769a103f1c534",
+   "status": "RESOLVED",
+   "votes": [],
+   "winning_outcome_index": 1
+  },
+  "/markets/cacfed05752d422203b769a103f1c534/payout": {
+   "plan": {
+    "items": [
+     {
+      "amount_zat": 10000,
+      "bet_fingerprint": null,
+      "kind": "SWEEP",
+      "note_ref": "1905dd85e681f662",
+      "receiver_commitment": null
+     },
+     {
+      "amount_zat": 2475000,
+      "bet_fingerprint": "bfa9dc30d56ace04",
+      "kind": "WIN",
+      "note_ref": "2085275b5b3c441e",
+      "receiver_commitment": "e550ad3482f1961afea6a7f082b11fdd9e1bdc2fc8d19b84b312c1153c8a9a13"
+     },
+     {
+      "amount_zat": 2475000,
+      "bet_fingerprint": "3a15a81752360687",
+      "kind": "WIN",
+      "note_ref": "9fa833731186bcbd",
+      "receiver_commitment": "e7b182fda4353a81285b93e03629a842619ae00282f4426436b16e4982c2b894"
+     },
+     {
+      "amount_zat": 990000,
+      "bet_fingerprint": "893366ab2f274849",
+      "kind": "WIN",
+      "note_ref": "b6ff33a338db34a6",
+      "receiver_commitment": "03bab6ba97f9d5b0d9120500f390bf072bee97d37a729b905b97996e580a56ec"
+     }
+    ],
+    "market_id": "cacfed05752d422203b769a103f1c534",
+    "operator_fee_zat": 60000,
+    "plan_cutoff_height": 4540184,
+    "plan_kind": "STANDARD",
+    "result": 1
+   },
+   "plan_hash": "8a849a0f4bb8a24e35546f23bbc0e0f523d23a575f6394c580463f32da3048ab",
+   "signing": {
+    "sessions_done": 4,
+    "sessions_total": 4,
+    "threshold": 2
+   },
+   "status": "CONFIRMED",
+   "summary": {
+    "distributed_zat": 5940000,
+    "operator_fee_zat": 60000,
+    "refunds": 0,
+    "swept": 1,
+    "tx_fee_zat": 20000,
+    "unclaimable": 0,
+    "uneconomic_dust": 0,
+    "winners": 3
+   },
+   "txs": [
+    {
+     "confirmed_height": 4540194,
+     "status": "CONFIRMED",
+     "txid": "8912a0856780a2da9f00982a3299ff933572c095e756d70bcaa3c193a4598f32"
+    }
+   ]
+  },
+  "/markets/8efc3ac8d987bb88c349aa27fb46ed5b": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "8efc3ac8d987bb88c349aa27fb46ed5b",
+    "question": "Will the transparent pool be below 15.8 million TAZ at block 4,540,125?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1vkvuaqc9jyspax6cg354mzr7r4ujy8wt40fpr9693edff77q8xfxej6x6x6nqdx9v50zj8y6u6ght0jzdx272vl6xrp3w8nxfq8cg600"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest1st83sa288gvcdtqm9es0hx3zpzfs93v67ldgvrmsms6yp35vlwkn6m0m5dvejqktg6ynsk72sry47h58ysxpssu3nj848sdf7c0qcznk"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "transparent",
+     "comparator": "lt",
+     "threshold_zat": 1580000000000000
+    },
+    "birthday_height": 4540039,
+    "close_height": 4540120,
+    "resolve_height": 4540125,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest1tapwpyeknvjm94ef852n0kvdwjdgmzp8526j5d3hwg43hce83n8qj50ssyzrrcy5c0smpqdqmszang5e0xhjvn94vrdqy64kkdj37k3rfpgx5cjp2zg8yvc3rkgamlmrfc3qphuafm",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "0c52e712a55c97267fdebea6d2c0314da045aecdf4a48b79a214e5910243e6b3",
+   "status": "SETTLED",
+   "announce_height": 4540058,
+   "announce_txid": "864b4af4e542baa2edb2dc6bd9fd2b1f2abbe3c09c445220d8f073e8fbe0b562"
+  },
+  "/markets/8efc3ac8d987bb88c349aa27fb46ed5b/odds": {
+   "at_height": 4540245,
+   "market_id": "8efc3ac8d987bb88c349aa27fb46ed5b",
+   "outcomes": [
+    {
+     "bets": 1,
+     "outcome_index": 0,
+     "pool_zat": 1000000,
+     "probability": 0.2222222222222222
+    },
+    {
+     "bets": 2,
+     "outcome_index": 1,
+     "pool_zat": 3500000,
+     "probability": 0.7777777777777778
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 4500000
+  },
+  "/markets/8efc3ac8d987bb88c349aa27fb46ed5b/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "b89b64ff1fd86abd",
+     "block_height": 4540099,
+     "note_ref": "c1b48d8fe03eb9c2",
+     "outcome_index": 1,
+     "status": "LOST",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "a8a5c07ea961f8a6",
+     "block_height": 4540105,
+     "note_ref": "d627ce9ab5778418",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2500000,
+     "bet_fingerprint": "22d3e85829b5f54e",
+     "block_height": 4540108,
+     "note_ref": "8f52bfd74ca7119b",
+     "outcome_index": 1,
+     "status": "LOST",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/8efc3ac8d987bb88c349aa27fb46ed5b/resolution": {
+   "evidence": {
+    "block_hash": "000079e861f1485225add1aadb5abe0681c45f0e70da4290e7ea4b6d319f0860",
+    "chain_value_zat": 1579042916946166,
+    "height": 4540125,
+    "pool": "transparent",
+    "source": "getblock"
+   },
+   "market_id": "8efc3ac8d987bb88c349aa27fb46ed5b",
+   "status": "RESOLVED",
+   "votes": [],
+   "winning_outcome_index": 0
+  },
+  "/markets/8efc3ac8d987bb88c349aa27fb46ed5b/payout": {
+   "plan": {
+    "items": [
+     {
+      "amount_zat": 10000,
+      "bet_fingerprint": null,
+      "kind": "SWEEP",
+      "note_ref": "099381181d62ba28",
+      "receiver_commitment": null
+     },
+     {
+      "amount_zat": 4455000,
+      "bet_fingerprint": "a8a5c07ea961f8a6",
+      "kind": "WIN",
+      "note_ref": "d627ce9ab5778418",
+      "receiver_commitment": "d9d9a294136712fae3c3182a79983425c86eb89fddcbf098a40d6af63dc6b8b3"
+     }
+    ],
+    "market_id": "8efc3ac8d987bb88c349aa27fb46ed5b",
+    "operator_fee_zat": 45000,
+    "plan_cutoff_height": 4540194,
+    "plan_kind": "STANDARD",
+    "result": 0
+   },
+   "plan_hash": "0e31b20f9195010a48a75915ba75c00599f7cc18ee130dba0bf06a9b9538a337",
+   "signing": {
+    "sessions_done": 4,
+    "sessions_total": 4,
+    "threshold": 2
+   },
+   "status": "CONFIRMED",
+   "summary": {
+    "distributed_zat": 4455000,
+    "operator_fee_zat": 45000,
+    "refunds": 0,
+    "swept": 1,
+    "tx_fee_zat": 20000,
+    "unclaimable": 0,
+    "uneconomic_dust": 0,
+    "winners": 1
+   },
+   "txs": [
+    {
+     "confirmed_height": 4540201,
+     "status": "CONFIRMED",
+     "txid": "1463e52df77ba97e5e52e579cf7265181ee0d8f5e13da6b99bddd73ec22533e5"
+    }
+   ]
+  },
+  "/markets/a608aa10137d160d234aeee45a4c081e": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "a608aa10137d160d234aeee45a4c081e",
+    "question": "Will the lockbox hold at least 176,200 TAZ at block 4,540,127?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1w8euq36cde789fce4rm9vj9qj03hm724kkckxva3fln07ludmcafwallugch69yt2makzps3t4utyxqd5shgd9gtwph8ypv9zurl85ek"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest1u72m59gj0wvr5jj64y8plcymm3h0z547dw6aj0a5nx09ugv9rywzly62ye2f2hvr5w92drt3md2qemkkj5m736cnz9t652ms653s982f"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "lockbox",
+     "comparator": "gte",
+     "threshold_zat": 17620000000000
+    },
+    "birthday_height": 4540039,
+    "close_height": 4540122,
+    "resolve_height": 4540127,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest1rsanys5pehss7qhdp8u72w2p67uypuatuq7rx5ru2g6llsdx9l5syeyzshcgvle0fe2ddwqrw90mljmtvegzchca6lkf9lt99tgytur89z9gduzhtchcw965tjf0yu33k36sxdypsz",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "c81e23d238fb4f72ff6888f9bae6705f14ab6827baed23590ee0aec482c2b8b4",
+   "status": "SETTLED",
+   "announce_height": 4540069,
+   "announce_txid": "79ba8e11c7cfd9ea77b3a3bb594348f5fff3224b8b10ba62f080f2295986634c"
+  },
+  "/markets/a608aa10137d160d234aeee45a4c081e/odds": {
+   "at_height": 4540245,
+   "market_id": "a608aa10137d160d234aeee45a4c081e",
+   "outcomes": [
+    {
+     "bets": 2,
+     "outcome_index": 0,
+     "pool_zat": 3500000,
+     "probability": 0.5833333333333334
+    },
+    {
+     "bets": 2,
+     "outcome_index": 1,
+     "pool_zat": 2500000,
+     "probability": 0.4166666666666667
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 6000000
+  },
+  "/markets/a608aa10137d160d234aeee45a4c081e/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "5b54d80bd317abf3",
+     "block_height": 4540099,
+     "note_ref": "dd1c0047e8c89624",
+     "outcome_index": 1,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2500000,
+     "bet_fingerprint": "9378aeef3ae0f820",
+     "block_height": 4540105,
+     "note_ref": "97949cfffb23d4f9",
+     "outcome_index": 0,
+     "status": "LOST",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "f42960077e086c00",
+     "block_height": 4540109,
+     "note_ref": "6ea053f8dd948293",
+     "outcome_index": 0,
+     "status": "LOST",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1500000,
+     "bet_fingerprint": "b96799a23dcae5ec",
+     "block_height": 4540116,
+     "note_ref": "292751e1fb809029",
+     "outcome_index": 1,
+     "status": "PAID",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/a608aa10137d160d234aeee45a4c081e/resolution": {
+   "evidence": {
+    "block_hash": "0000b92d299bf1f292932d49ff1945f7570c85c75777a2ad90551f0d586421f2",
+    "chain_value_zat": 17615624967078,
+    "height": 4540127,
+    "pool": "lockbox",
+    "source": "getblock"
+   },
+   "market_id": "a608aa10137d160d234aeee45a4c081e",
+   "status": "RESOLVED",
+   "votes": [],
+   "winning_outcome_index": 1
+  },
+  "/markets/a608aa10137d160d234aeee45a4c081e/payout": {
+   "plan": {
+    "items": [
+     {
+      "amount_zat": 3564000,
+      "bet_fingerprint": "b96799a23dcae5ec",
+      "kind": "WIN",
+      "note_ref": "292751e1fb809029",
+      "receiver_commitment": "f10ea51d6d2def358ee54228854a8b4ffc93cf7dc6833199b4293219ef9cb576"
+     },
+     {
+      "amount_zat": 10000,
+      "bet_fingerprint": null,
+      "kind": "SWEEP",
+      "note_ref": "af7788447aee2575",
+      "receiver_commitment": null
+     },
+     {
+      "amount_zat": 2376000,
+      "bet_fingerprint": "5b54d80bd317abf3",
+      "kind": "WIN",
+      "note_ref": "dd1c0047e8c89624",
+      "receiver_commitment": "4edac09ed0b7e0affd957985bcff8decf229735639c6c3bd3b60d8d4ba6ac291"
+     }
+    ],
+    "market_id": "a608aa10137d160d234aeee45a4c081e",
+    "operator_fee_zat": 60000,
+    "plan_cutoff_height": 4540201,
+    "plan_kind": "STANDARD",
+    "result": 1
+   },
+   "plan_hash": "b01ab94bd8100b28a0cae7cbc39b66ef2a7044fd72a653b1e63c094b87ab5d70",
+   "signing": {
+    "sessions_done": 5,
+    "sessions_total": 5,
+    "threshold": 2
+   },
+   "status": "CONFIRMED",
+   "summary": {
+    "distributed_zat": 5940000,
+    "operator_fee_zat": 60000,
+    "refunds": 0,
+    "swept": 1,
+    "tx_fee_zat": 25000,
+    "unclaimable": 0,
+    "uneconomic_dust": 0,
+    "winners": 2
+   },
+   "txs": [
+    {
+     "confirmed_height": 4540210,
+     "status": "CONFIRMED",
+     "txid": "f3791d2ed05677911129a5f0887c9fe3177b2724c4c8b46c6b44c95ee185af80"
+    }
+   ]
+  },
+  "/markets/01caf9805e21c324525f476364aa5451": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "01caf9805e21c324525f476364aa5451",
+    "question": "Will NU7 be active at block 4,540,129?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1upyzch5yy926x085xemnzvkek8acxhv0ex6g6k5e4zg8zqz72vfgyrh7msp2gkv09wkra37y59eq0y3r2hpun8cy9x79nhh9hs83swv8"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest1pn8se4tzux8j5c440rwmgwtamfwa66me2kdsm6fw8dzzlmcfxcgtm3a405che3fvrkq3erzervy9tc5gvszaggxhuamnr997pusrz4m7"
+     }
+    ],
+    "resolution_type": "UPGRADE_ACTIVE",
+    "resolution_params": {
+     "upgrade_name": "NU7"
+    },
+    "birthday_height": 4540040,
+    "close_height": 4540124,
+    "resolve_height": 4540129,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest1d0ytyh0zdqlmswf3ls773eu3st05na5nv6vpyl03q39ats4h48q2hrc7582xp6z2q9uck8vnskxpcgqxyyr0c3qsc80g2gjcqvtsq5na4qce0fs57hy5230gzha7p7e94cms4yfasp",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "e79d96f01f22cb841882de35d344d624367eb69bc54e34f392483aa3ac31340f",
+   "status": "SETTLED",
+   "announce_height": 4540072,
+   "announce_txid": "c677280850b557066dfb49fe25a0e691d7f17b6934196fd8f530e4f5960b1fc6"
+  },
+  "/markets/01caf9805e21c324525f476364aa5451/odds": {
+   "at_height": 4540245,
+   "market_id": "01caf9805e21c324525f476364aa5451",
+   "outcomes": [
+    {
+     "bets": 3,
+     "outcome_index": 0,
+     "pool_zat": 6000000,
+     "probability": 1
+    },
+    {
+     "bets": 0,
+     "outcome_index": 1,
+     "pool_zat": 0,
+     "probability": 0
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 6000000
+  },
+  "/markets/01caf9805e21c324525f476364aa5451/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "2969dacee5201f14",
+     "block_height": 4540099,
+     "note_ref": "47b2d7a6bfed0c82",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "bbfa33c48638e483",
+     "block_height": 4540105,
+     "note_ref": "712eb5f7e5e429c0",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "453e09edf9d7430e",
+     "block_height": 4540116,
+     "note_ref": "0c2452c6251552fd",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/01caf9805e21c324525f476364aa5451/resolution": {
+   "evidence": {
+    "block_hash": "000065e9826a5807a3a75d172985ece34e064c713ed4b752afec0d13a866c061",
+    "height": 4540129,
+    "reported_upgrades": [
+     {
+      "activation_height": 584000,
+      "name": "Blossom"
+     },
+     {
+      "activation_height": 4134000,
+      "name": "NU6.3"
+     },
+     {
+      "activation_height": 3536500,
+      "name": "NU6.1"
+     },
+     {
+      "activation_height": 4052000,
+      "name": "NU6.2"
+     },
+     {
+      "activation_height": 207500,
+      "name": "Overwinter"
+     },
+     {
+      "activation_height": 280000,
+      "name": "Sapling"
+     },
+     {
+      "activation_height": 4465026,
+      "name": "NU7"
+     },
+     {
+      "activation_height": 1842420,
+      "name": "NU5"
+     },
+     {
+      "activation_height": 2976000,
+      "name": "NU6"
+     },
+     {
+      "activation_height": 1028500,
+      "name": "Canopy"
+     },
+     {
+      "activation_height": 903800,
+      "name": "Heartwood"
+     }
+    ],
+    "source": "getblockchaininfo"
+   },
+   "market_id": "01caf9805e21c324525f476364aa5451",
+   "status": "RESOLVED",
+   "votes": [],
+   "winning_outcome_index": 0
+  },
+  "/markets/01caf9805e21c324525f476364aa5451/payout": {
+   "plan": {
+    "items": [
+     {
+      "amount_zat": 1980000,
+      "bet_fingerprint": "453e09edf9d7430e",
+      "kind": "WIN",
+      "note_ref": "0c2452c6251552fd",
+      "receiver_commitment": "46e71cb237c29938f5b83b255de93cd60edd1bc95e722415185e3552ecc30168"
+     },
+     {
+      "amount_zat": 10000,
+      "bet_fingerprint": null,
+      "kind": "SWEEP",
+      "note_ref": "25ba936b0cc4b6d2",
+      "receiver_commitment": null
+     },
+     {
+      "amount_zat": 1980000,
+      "bet_fingerprint": "2969dacee5201f14",
+      "kind": "WIN",
+      "note_ref": "47b2d7a6bfed0c82",
+      "receiver_commitment": "782676ac210ea21342623ea080f0c8f937056b04d12b7f2f0230f023081499e8"
+     },
+     {
+      "amount_zat": 1980000,
+      "bet_fingerprint": "bbfa33c48638e483",
+      "kind": "WIN",
+      "note_ref": "712eb5f7e5e429c0",
+      "receiver_commitment": "d3537c395eb449293fd3bce7298eb4314665fb9ed0dc3364b4cd45190b0215a7"
+     }
+    ],
+    "market_id": "01caf9805e21c324525f476364aa5451",
+    "operator_fee_zat": 60000,
+    "plan_cutoff_height": 4540209,
+    "plan_kind": "STANDARD",
+    "result": 0
+   },
+   "plan_hash": "dd8c360f97d77c5e484f9b6332eaa56b2655b87e5f88f5c046ad5e222f6be85b",
+   "signing": {
+    "sessions_done": 4,
+    "sessions_total": 4,
+    "threshold": 2
+   },
+   "status": "CONFIRMED",
+   "summary": {
+    "distributed_zat": 5940000,
+    "operator_fee_zat": 60000,
+    "refunds": 0,
+    "swept": 1,
+    "tx_fee_zat": 20000,
+    "unclaimable": 0,
+    "uneconomic_dust": 0,
+    "winners": 3
+   },
+   "txs": [
+    {
+     "confirmed_height": 4540215,
+     "status": "CONFIRMED",
+     "txid": "b828f7669422d72f2f0c3a956d2ed8af131599049699730d894560a47a94dde2"
+    }
+   ]
+  },
+  "/markets/6f3b741bb5cdc6c3ddde624f9e1b55d0": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "6f3b741bb5cdc6c3ddde624f9e1b55d0",
+    "question": "Will the Sprout pool hold at least 428,300 TAZ at block 4,540,132?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1hs5rh93sg5qt3rhj37zwwlrctm0lf3l9q46ae9c2pqlaw0qxz943l70ml58w3swy8gtgl9jdjdttqwkpd5qsjj5nz2mpce0r6um83c0t"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest17plypsprwxjdcst66e7g65r6l90fcr0v6hs2akndxny905d0u5gffaajljw7wj93mfv0l00n8tr4qwd6k9g6qgpvr9w460zq4u2tvs5c"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "sprout",
+     "comparator": "gte",
+     "threshold_zat": 42830000000000
+    },
+    "birthday_height": 4540040,
+    "close_height": 4540127,
+    "resolve_height": 4540132,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest1c2m58g20hxf3egv5gv34l962jzlgmwgsp0d4wdktuw3xjjy5q0vpp6j2p0k5r4cgq4rutzma9whfhu2mtt2larewzyxfdnxcpjaedzxy6yk7ux3v3lszkruzwxqj2wlh4vrq6gljfl",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "aa4395033123276c054c93a5fd9def3be8a0ad4dddcec3d8fc2884dd056a7952",
+   "status": "SETTLED",
+   "announce_height": 4540084,
+   "announce_txid": "0a2bb037e9c8f7e08c3303561ab2b99fb0bc19bc41051126f77b84453b32bd2b"
+  },
+  "/markets/6f3b741bb5cdc6c3ddde624f9e1b55d0/odds": {
+   "at_height": 4540245,
+   "market_id": "6f3b741bb5cdc6c3ddde624f9e1b55d0",
+   "outcomes": [
+    {
+     "bets": 4,
+     "outcome_index": 0,
+     "pool_zat": 5000000,
+     "probability": 1
+    },
+    {
+     "bets": 0,
+     "outcome_index": 1,
+     "pool_zat": 0,
+     "probability": 0
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 5000000
+  },
+  "/markets/6f3b741bb5cdc6c3ddde624f9e1b55d0/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "d2c70222a7cb71ed",
+     "block_height": 4540101,
+     "note_ref": "c97fea5cb783b3e5",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "c69fb1cde25d07ab",
+     "block_height": 4540105,
+     "note_ref": "66d1ff7c26eb51d4",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1500000,
+     "bet_fingerprint": "cfbacd48b544edac",
+     "block_height": 4540109,
+     "note_ref": "51fc418cbc3bba00",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1500000,
+     "bet_fingerprint": "8f01e8f3918459e5",
+     "block_height": 4540116,
+     "note_ref": "8ea2dde66d2b0951",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/6f3b741bb5cdc6c3ddde624f9e1b55d0/resolution": {
+   "evidence": {
+    "block_hash": "0000c972ab1495775ed9980c470461c2059263af8c8121b7852457ea3b208b94",
+    "chain_value_zat": 42832983037484,
+    "height": 4540132,
+    "pool": "sprout",
+    "source": "getblock"
+   },
+   "market_id": "6f3b741bb5cdc6c3ddde624f9e1b55d0",
+   "status": "RESOLVED",
+   "votes": [],
+   "winning_outcome_index": 0
+  },
+  "/markets/6f3b741bb5cdc6c3ddde624f9e1b55d0/payout": {
+   "plan": {
+    "items": [
+     {
+      "amount_zat": 10000,
+      "bet_fingerprint": null,
+      "kind": "SWEEP",
+      "note_ref": "2476a96d9a0224e6",
+      "receiver_commitment": null
+     },
+     {
+      "amount_zat": 1485000,
+      "bet_fingerprint": "cfbacd48b544edac",
+      "kind": "WIN",
+      "note_ref": "51fc418cbc3bba00",
+      "receiver_commitment": "cad80c535c39cb3fa1c55bb0b8ff55618df9b93df1ed6f5d28ff9c6c81bdf759"
+     },
+     {
+      "amount_zat": 990000,
+      "bet_fingerprint": "c69fb1cde25d07ab",
+      "kind": "WIN",
+      "note_ref": "66d1ff7c26eb51d4",
+      "receiver_commitment": "312319cb3b30bb1b41782e3d54f73fd86631f79bf539118318e3b0aa7f294b56"
+     },
+     {
+      "amount_zat": 1485000,
+      "bet_fingerprint": "8f01e8f3918459e5",
+      "kind": "WIN",
+      "note_ref": "8ea2dde66d2b0951",
+      "receiver_commitment": "4526e3ce8ad890e07ed0c44212e981551d62722a64a218a19312db8da8c59b7f"
+     },
+     {
+      "amount_zat": 990000,
+      "bet_fingerprint": "d2c70222a7cb71ed",
+      "kind": "WIN",
+      "note_ref": "c97fea5cb783b3e5",
+      "receiver_commitment": "1abf8dff7bbc22e31fadc0e910516d0e82d89a47ff1d5b87534bbc644ecf1cae"
+     }
+    ],
+    "market_id": "6f3b741bb5cdc6c3ddde624f9e1b55d0",
+    "operator_fee_zat": 50000,
+    "plan_cutoff_height": 4540215,
+    "plan_kind": "STANDARD",
+    "result": 0
+   },
+   "plan_hash": "2f8f9223e91211df66fa144ef1322da5835fc88ee5d7528364b3ebce2bd74a53",
+   "signing": {
+    "sessions_done": 5,
+    "sessions_total": 5,
+    "threshold": 2
+   },
+   "status": "CONFIRMED",
+   "summary": {
+    "distributed_zat": 4950000,
+    "operator_fee_zat": 50000,
+    "refunds": 0,
+    "swept": 1,
+    "tx_fee_zat": 25000,
+    "unclaimable": 0,
+    "uneconomic_dust": 0,
+    "winners": 4
+   },
+   "txs": [
+    {
+     "confirmed_height": 4540219,
+     "status": "CONFIRMED",
+     "txid": "6f4bce563df9c1cf8b1802832b403ce5c33743d42f91815941b61f4041ba363a"
+    }
+   ]
+  },
+  "/markets/3adcc87cb388b8d1d332b7550a7a717e": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "3adcc87cb388b8d1d332b7550a7a717e",
+    "question": "Will the Ironwood pool be below 224,700 TAZ at block 4,540,134?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1wx7727yxwfld5y75kx3tuq5qpkstvtfmfayxmf5n4yp58w692mlcx9yhpgcye3a3emj8vmjmg02n5et0zp2nwnrrqdrarhpju57lzafe"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest14s66z8wxh049vlmedrfsqg40kmxru5e6d3t7mjp37z9scz2tc4p703lxs0h45w2rv84yrehsdfrxxrkzqxuy90a04cx86pmj6qtu5u32"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "ironwood",
+     "comparator": "lt",
+     "threshold_zat": 22470000000000
+    },
+    "birthday_height": 4540042,
+    "close_height": 4540129,
+    "resolve_height": 4540134,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest1vlcs3re6qwk896ma20gmkch3mrl638pxy964dxsgvpa8c3ddh6vt25nxxcky7paq2mqf8md05xyl3lkznym87hcludtan4gtpelerttdfw9nymyvftlzlucqgkz4n6aef6pq46pk5a",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "cf697698c3bd893bf244a70e85247ea3a6fa3d7f8e206b4f3d8acf27e021c82e",
+   "status": "SETTLED",
+   "announce_height": 4540091,
+   "announce_txid": "160e06f3b016682adfe269e8c2f9d1d60f4c5ed669f41a596aae76f98c3837d5"
+  },
+  "/markets/3adcc87cb388b8d1d332b7550a7a717e/odds": {
+   "at_height": 4540245,
+   "market_id": "3adcc87cb388b8d1d332b7550a7a717e",
+   "outcomes": [
+    {
+     "bets": 4,
+     "outcome_index": 0,
+     "pool_zat": 6500000,
+     "probability": 1
+    },
+    {
+     "bets": 0,
+     "outcome_index": 1,
+     "pool_zat": 0,
+     "probability": 0
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 6500000
+  },
+  "/markets/3adcc87cb388b8d1d332b7550a7a717e/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "692bc5739010de7d",
+     "block_height": 4540101,
+     "note_ref": "4f033133729400b6",
+     "outcome_index": 0,
+     "status": "REFUNDED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "839864e5e7b2f8af",
+     "block_height": 4540105,
+     "note_ref": "ba0e59022ec633f8",
+     "outcome_index": 0,
+     "status": "REFUNDED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1500000,
+     "bet_fingerprint": "8e832bf89de12f7b",
+     "block_height": 4540108,
+     "note_ref": "4cf776a7e0935776",
+     "outcome_index": 0,
+     "status": "REFUNDED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "5398a17e02922d6d",
+     "block_height": 4540109,
+     "note_ref": "ed9d52f46af3113b",
+     "outcome_index": 0,
+     "status": "REFUNDED",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/3adcc87cb388b8d1d332b7550a7a717e/resolution": {
+   "evidence": {
+    "block_hash": "000046006dd7da13073ff440f34f5eabe052c0a453f12c18ca9b41d01c5e8c11",
+    "chain_value_zat": 22480209316742,
+    "height": 4540134,
+    "pool": "ironwood",
+    "source": "getblock"
+   },
+   "market_id": "3adcc87cb388b8d1d332b7550a7a717e",
+   "status": "VOID",
+   "votes": [],
+   "winning_outcome_index": null
+  },
+  "/markets/3adcc87cb388b8d1d332b7550a7a717e/payout": {
+   "plan": {
+    "items": [
+     {
+      "amount_zat": 10000,
+      "bet_fingerprint": null,
+      "kind": "SWEEP",
+      "note_ref": "115fdbc6618a26d1",
+      "receiver_commitment": null
+     },
+     {
+      "amount_zat": 1495000,
+      "bet_fingerprint": "8e832bf89de12f7b",
+      "kind": "REFUND",
+      "note_ref": "4cf776a7e0935776",
+      "receiver_commitment": "3d90752c3af1a0f6aec9af9c6a477a5715b61313168e0210dbaca5ff55c26ed8"
+     },
+     {
+      "amount_zat": 995000,
+      "bet_fingerprint": "692bc5739010de7d",
+      "kind": "REFUND",
+      "note_ref": "4f033133729400b6",
+      "receiver_commitment": "6235364dedf48f4f62100035e42074281667bb84db71fda1ffdc915beba514bc"
+     },
+     {
+      "amount_zat": 1995000,
+      "bet_fingerprint": "839864e5e7b2f8af",
+      "kind": "REFUND",
+      "note_ref": "ba0e59022ec633f8",
+      "receiver_commitment": "878a3d5544142102baed1365dc378c7c59d2e29038802a4d7d776455c0dd422d"
+     },
+     {
+      "amount_zat": 1995000,
+      "bet_fingerprint": "5398a17e02922d6d",
+      "kind": "REFUND",
+      "note_ref": "ed9d52f46af3113b",
+      "receiver_commitment": "d2c1a91b0e9df21d3f05ac799a6d7abcaf81db56e8408c99bf992fee0b034577"
+     }
+    ],
+    "market_id": "3adcc87cb388b8d1d332b7550a7a717e",
+    "operator_fee_zat": 0,
+    "plan_cutoff_height": 4540218,
+    "plan_kind": "STANDARD",
+    "result": "VOID"
+   },
+   "plan_hash": "11a9fd12e95375943273916a0140f05949ca66f0b230011448d3c07158ff892f",
+   "signing": {
+    "sessions_done": 5,
+    "sessions_total": 5,
+    "threshold": 2
+   },
+   "status": "CONFIRMED",
+   "summary": {
+    "distributed_zat": 6500000,
+    "operator_fee_zat": 0,
+    "refunds": 4,
+    "swept": 1,
+    "tx_fee_zat": 25000,
+    "unclaimable": 0,
+    "uneconomic_dust": 0,
+    "winners": 0
+   },
+   "txs": [
+    {
+     "confirmed_height": 4540225,
+     "status": "CONFIRMED",
+     "txid": "5612a596154948efeec3111361ba4d6438ea99edc0a7cccbbb341ab102456c05"
+    }
+   ]
+  },
+  "/markets/a2293474577fafb82d2ee11d08358f90": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "a2293474577fafb82d2ee11d08358f90",
+    "question": "Will the Orchard pool hold at least 237,000 TAZ at block 4,540,138?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1pxec2wmdnsez5eal5p90clxwwuac37cuqd3u63s8a2ulmnz37u09032pevezuu6qut2skvx9ujp4dyu8k5y5mfk7nhmakvcxhytthnf9"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest1f9cae3n0akprr05rsfrjcgg4cjxecm6qxel46kut38n9yz4ssfensc7awzpddrvufd9s8d60m8uzlw2crg3gj3xfk5asqczecue6lwl6"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "orchard",
+     "comparator": "gte",
+     "threshold_zat": 23700000000000
+    },
+    "birthday_height": 4540042,
+    "close_height": 4540133,
+    "resolve_height": 4540138,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest198pvasg0wvufa354skdrrmfm9lfznr9lphuz6srpgmdyvct5sxcp4hq4m9qapjrufjp6t4l9eu2rm3mkvhjhm4mx6nz0vnlsw5yasn87cwnwes4klkd8e2z4t3lev6cjl63sx8weq7",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "c6f70fc94dfcc03a58d657f891419ba13a5958a117f43f122319dcfc1a445935",
+   "status": "SETTLED",
+   "announce_height": 4540099,
+   "announce_txid": "b72c82dd2e6678371d8696f3ec8b72805556ea1b6b9d633b4b0e637c2c061a0f"
+  },
+  "/markets/a2293474577fafb82d2ee11d08358f90/odds": {
+   "at_height": 4540245,
+   "market_id": "a2293474577fafb82d2ee11d08358f90",
+   "outcomes": [
+    {
+     "bets": 0,
+     "outcome_index": 0,
+     "pool_zat": 0,
+     "probability": 0
+    },
+    {
+     "bets": 3,
+     "outcome_index": 1,
+     "pool_zat": 5000000,
+     "probability": 1
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 5000000
+  },
+  "/markets/a2293474577fafb82d2ee11d08358f90/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 2500000,
+     "bet_fingerprint": "04345de936ce5b5f",
+     "block_height": 4540105,
+     "note_ref": "4ead89243324c4f4",
+     "outcome_index": 1,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "9b83ebbffeed6a92",
+     "block_height": 4540113,
+     "note_ref": "2993006b5500606b",
+     "outcome_index": 1,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1500000,
+     "bet_fingerprint": "c0ce15783eb4a3f8",
+     "block_height": 4540117,
+     "note_ref": "68568fd024f7a077",
+     "outcome_index": 1,
+     "status": "PAID",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/a2293474577fafb82d2ee11d08358f90/resolution": {
+   "evidence": {
+    "block_hash": "00007f39df0139c74af4e2ebf7a8f3e51ff0790cf8cee466f365187fcf344f4d",
+    "chain_value_zat": 23693032438050,
+    "height": 4540138,
+    "pool": "orchard",
+    "source": "getblock"
+   },
+   "market_id": "a2293474577fafb82d2ee11d08358f90",
+   "status": "RESOLVED",
+   "votes": [],
+   "winning_outcome_index": 1
+  },
+  "/markets/a2293474577fafb82d2ee11d08358f90/payout": {
+   "plan": {
+    "items": [
+     {
+      "amount_zat": 990000,
+      "bet_fingerprint": "9b83ebbffeed6a92",
+      "kind": "WIN",
+      "note_ref": "2993006b5500606b",
+      "receiver_commitment": "d638ff7b5787d7910f6fc746bbe271899fa1c1d9461cf5763454afe63eee4a4b"
+     },
+     {
+      "amount_zat": 2475000,
+      "bet_fingerprint": "04345de936ce5b5f",
+      "kind": "WIN",
+      "note_ref": "4ead89243324c4f4",
+      "receiver_commitment": "ffce595163873b20f34756e96ce10a6412de326262762f8966b4942b5e4787d1"
+     },
+     {
+      "amount_zat": 1485000,
+      "bet_fingerprint": "c0ce15783eb4a3f8",
+      "kind": "WIN",
+      "note_ref": "68568fd024f7a077",
+      "receiver_commitment": "6abe842740464b9a4c35dece2e936dda7ab0d9d19febb19e7a7c60810d96dcec"
+     },
+     {
+      "amount_zat": 10000,
+      "bet_fingerprint": null,
+      "kind": "SWEEP",
+      "note_ref": "d050ddf8f02d1de8",
+      "receiver_commitment": null
+     }
+    ],
+    "market_id": "a2293474577fafb82d2ee11d08358f90",
+    "operator_fee_zat": 50000,
+    "plan_cutoff_height": 4540225,
+    "plan_kind": "STANDARD",
+    "result": 1
+   },
+   "plan_hash": "f837e7c95abd3659c0f73665ea251376b326e2f460e5a6c59ec176206679a662",
+   "signing": {
+    "sessions_done": 4,
+    "sessions_total": 4,
+    "threshold": 2
+   },
+   "status": "CONFIRMED",
+   "summary": {
+    "distributed_zat": 4950000,
+    "operator_fee_zat": 50000,
+    "refunds": 0,
+    "swept": 1,
+    "tx_fee_zat": 20000,
+    "unclaimable": 0,
+    "uneconomic_dust": 0,
+    "winners": 3
+   },
+   "txs": [
+    {
+     "confirmed_height": 4540231,
+     "status": "CONFIRMED",
+     "txid": "2223888e2f69abbd4e1f3554e99ec0526aa4ac24666b499a91eb3b4568a267f6"
+    }
+   ]
+  },
+  "/markets/d27a9efb3aff0e1b37fecbca4e86a5f1": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "d27a9efb3aff0e1b37fecbca4e86a5f1",
+    "question": "Will NU6.3 be active at block 4,540,140?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1cxlxmwd64d9un47zr76ga2c5ysajew4s3423j0nt6dcrhvacmaw3uktwkkjgkw27jp2fv62x3fl0jw9g2xuprtktu569tr3d2c0grkdd"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest1k3f4ge76nw7es88yce3cydf0zna8rjp8jjzzkkmkg2emjyg77hp8vhu3seea0ue9dz8uc3ew8xku88wd7z99q3juyf6x5afvl5y7zuw3"
+     }
+    ],
+    "resolution_type": "UPGRADE_ACTIVE",
+    "resolution_params": {
+     "upgrade_name": "NU6.3"
+    },
+    "birthday_height": 4540042,
+    "close_height": 4540135,
+    "resolve_height": 4540140,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest16ux78fq7s3569tsufuu3l2kwcyzlh3ypsecflxp9gvn0ldz8n43y4n65zplwp6ykykkfe8mpy7qs8yu838dgxmsrsch7taklazmp9a6u6addtjhq7rweauxujsgpy3murhnq0uyvyk",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "57a9e6e97c2be4ef836e29e07aae1712214dec4c640cce2407b3934e7e8d2b4d",
+   "status": "SETTLED",
+   "announce_height": 4540105,
+   "announce_txid": "b26b30902e1b2678b70143f5c8d42e0eadd2c0e00c255f5ab0dc270679c42fe6"
+  },
+  "/markets/d27a9efb3aff0e1b37fecbca4e86a5f1/odds": {
+   "at_height": 4540245,
+   "market_id": "d27a9efb3aff0e1b37fecbca4e86a5f1",
+   "outcomes": [
+    {
+     "bets": 1,
+     "outcome_index": 0,
+     "pool_zat": 1000000,
+     "probability": 0.16666666666666666
+    },
+    {
+     "bets": 3,
+     "outcome_index": 1,
+     "pool_zat": 5000000,
+     "probability": 0.8333333333333334
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 6000000
+  },
+  "/markets/d27a9efb3aff0e1b37fecbca4e86a5f1/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 1500000,
+     "bet_fingerprint": "9f8ad4447aaf9aa9",
+     "block_height": 4540109,
+     "note_ref": "65ac551419c8e5a3",
+     "outcome_index": 1,
+     "status": "LOST",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "db26fd9f969fbddf",
+     "block_height": 4540109,
+     "note_ref": "367de99d86f49ed1",
+     "outcome_index": 0,
+     "status": "PAID",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2500000,
+     "bet_fingerprint": "df9bef1ace93d510",
+     "block_height": 4540124,
+     "note_ref": "36fcb5aa3466bd87",
+     "outcome_index": 1,
+     "status": "LOST",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "3bc36e7e32f4c041",
+     "block_height": 4540126,
+     "note_ref": "4c238ceda72bab41",
+     "outcome_index": 1,
+     "status": "LOST",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/d27a9efb3aff0e1b37fecbca4e86a5f1/resolution": {
+   "evidence": {
+    "block_hash": "00002d42586879683c2e11146fc6ff1f152abebe378204f82b151cb4ba9fb429",
+    "height": 4540140,
+    "reported_upgrades": [
+     {
+      "activation_height": 584000,
+      "name": "Blossom"
+     },
+     {
+      "activation_height": 4134000,
+      "name": "NU6.3"
+     },
+     {
+      "activation_height": 3536500,
+      "name": "NU6.1"
+     },
+     {
+      "activation_height": 4052000,
+      "name": "NU6.2"
+     },
+     {
+      "activation_height": 207500,
+      "name": "Overwinter"
+     },
+     {
+      "activation_height": 280000,
+      "name": "Sapling"
+     },
+     {
+      "activation_height": 4465026,
+      "name": "NU7"
+     },
+     {
+      "activation_height": 1842420,
+      "name": "NU5"
+     },
+     {
+      "activation_height": 2976000,
+      "name": "NU6"
+     },
+     {
+      "activation_height": 1028500,
+      "name": "Canopy"
+     },
+     {
+      "activation_height": 903800,
+      "name": "Heartwood"
+     }
+    ],
+    "source": "getblockchaininfo"
+   },
+   "market_id": "d27a9efb3aff0e1b37fecbca4e86a5f1",
+   "status": "RESOLVED",
+   "votes": [],
+   "winning_outcome_index": 0
+  },
+  "/markets/d27a9efb3aff0e1b37fecbca4e86a5f1/payout": {
+   "plan": {
+    "items": [
+     {
+      "amount_zat": 5940000,
+      "bet_fingerprint": "db26fd9f969fbddf",
+      "kind": "WIN",
+      "note_ref": "367de99d86f49ed1",
+      "receiver_commitment": "80fccde0f75487a83661cef1ccab523852f753f04511a5c24e1cc17c2d762668"
+     },
+     {
+      "amount_zat": 10000,
+      "bet_fingerprint": null,
+      "kind": "SWEEP",
+      "note_ref": "3835459ed48b3bc6",
+      "receiver_commitment": null
+     }
+    ],
+    "market_id": "d27a9efb3aff0e1b37fecbca4e86a5f1",
+    "operator_fee_zat": 60000,
+    "plan_cutoff_height": 4540231,
+    "plan_kind": "STANDARD",
+    "result": 0
+   },
+   "plan_hash": "e95aa1dc90d75287b33ea71935c803b34f986afff25097bfeacf9ecf33b70bc3",
+   "signing": {
+    "sessions_done": 5,
+    "sessions_total": 5,
+    "threshold": 2
+   },
+   "status": "CONFIRMED",
+   "summary": {
+    "distributed_zat": 5940000,
+    "operator_fee_zat": 60000,
+    "refunds": 0,
+    "swept": 1,
+    "tx_fee_zat": 25000,
+    "unclaimable": 0,
+    "uneconomic_dust": 0,
+    "winners": 1
+   },
+   "txs": [
+    {
+     "confirmed_height": 4540242,
+     "status": "CONFIRMED",
+     "txid": "5e2f232a8de4b318a8b042d474c08924bcdf634ba318c809575bd2d6d0ce8658"
+    }
+   ]
+  },
+  "/markets/4e6e1033021cff9cb1a065c1688f43f9": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "4e6e1033021cff9cb1a065c1688f43f9",
+    "question": "Will the Ironwood pool hold at least 230,000 TAZ at block 4,541,847?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1nzkgpmds0323er0fykwhz9sezlyga6wpg5jcv7tju6f4949at5k4crefx5pjpjfxtu8cez00p9g2lasnc3gm4al0uqzmevq3svk9c78c"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest1f83hta3j6azq0t4hnenecm05gmjzk06643d7592v05lh76wllr4fdvgzu9lqkf8xx9us0y6hs9tr9rryjng9my9ksl07azaxcsly5kte"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "ironwood",
+     "comparator": "gte",
+     "threshold_zat": 23000000000000
+    },
+    "birthday_height": 4540042,
+    "close_height": 4541842,
+    "resolve_height": 4541847,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest14hcwtqwurwauvstcgwzty0sxuslsjfnylcm5skp20w7vvwa5gxarw9p3estz6l9kpj6g33pq2yszghglg9lvgf3vhrphmnernpwr6n77a0j69jcktw6r4p44hp2020lyea3sr722pf",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "b95eb53e618918a0238248c00174835bb289a907fd66945d827130326dad97da",
+   "status": "OPEN",
+   "announce_height": 4540109,
+   "announce_txid": "a042a6f179d50e12dca18fe249a0331b5f2555454ad782314d3125f8443c0a2e"
+  },
+  "/markets/4e6e1033021cff9cb1a065c1688f43f9/odds": {
+   "at_height": 4540245,
+   "market_id": "4e6e1033021cff9cb1a065c1688f43f9",
+   "outcomes": [
+    {
+     "bets": 1,
+     "outcome_index": 0,
+     "pool_zat": 2000000,
+     "probability": 0.26666666666666666
+    },
+    {
+     "bets": 3,
+     "outcome_index": 1,
+     "pool_zat": 5500000,
+     "probability": 0.7333333333333333
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 7500000
+  },
+  "/markets/4e6e1033021cff9cb1a065c1688f43f9/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "9812867fc94dfcbe",
+     "block_height": 4540113,
+     "note_ref": "5a141d9a8d7ebddc",
+     "outcome_index": 1,
+     "status": "COUNTED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "2ccbe83c59c79dbf",
+     "block_height": 4540116,
+     "note_ref": "fca20b04df83d959",
+     "outcome_index": 1,
+     "status": "COUNTED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1500000,
+     "bet_fingerprint": "72bb49990819d146",
+     "block_height": 4540117,
+     "note_ref": "87319ce65fd3eecf",
+     "outcome_index": 1,
+     "status": "COUNTED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "42164159c0194a30",
+     "block_height": 4540129,
+     "note_ref": "025b8c7d53014f3d",
+     "outcome_index": 0,
+     "status": "COUNTED",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/4e6e1033021cff9cb1a065c1688f43f9/resolution": null,
+  "/markets/4e6e1033021cff9cb1a065c1688f43f9/payout": null,
+  "/markets/9f79dc0ac399580e979a7d026c5e69a5": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "9f79dc0ac399580e979a7d026c5e69a5",
+    "question": "Will the Orchard pool drop below 230,000 TAZ at block 4,542,048?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1uufy6u9qkg4nfug2gu24htq0z7hmu2amha8xc5dsha4zdt8e9ql2m8l3hz7s0s62eatskxg56ltgxljyrn88cqzqcjgag5xzecs0jhvt"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest1tmep34ar6eczg98ya6p4yx83dt9ev62kqpa6qcyrkxpnresk64g2xtpygy547nx62z9t2u90hmkqrvh5qh2pxsfvhstd38pkmvzkrfsd"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "orchard",
+     "comparator": "lt",
+     "threshold_zat": 23000000000000
+    },
+    "birthday_height": 4540043,
+    "close_height": 4542043,
+    "resolve_height": 4542048,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest1jkjrqcz64s53ptdw25cr90z6tvrrvaxpg4ky8c90wd9qjrxsmc830y57dzysd2q3lt5gyasn49cd5r6x25ehyxc54kvku00cmghl6xljynfj8yv6radvee9j8dxtc9tjp6lqpey7es",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "7dc26db8ebe90bef0710e34cf51b6eacf925c5f35c7d349c5122d1917ef3f745",
+   "status": "OPEN",
+   "announce_height": 4540116,
+   "announce_txid": "be12c8a030bedcf209314d1d249c6544f08c20a3caaabae2c47a8f423090b302"
+  },
+  "/markets/9f79dc0ac399580e979a7d026c5e69a5/odds": {
+   "at_height": 4540245,
+   "market_id": "9f79dc0ac399580e979a7d026c5e69a5",
+   "outcomes": [
+    {
+     "bets": 2,
+     "outcome_index": 0,
+     "pool_zat": 2500000,
+     "probability": 0.5555555555555556
+    },
+    {
+     "bets": 1,
+     "outcome_index": 1,
+     "pool_zat": 2000000,
+     "probability": 0.4444444444444444
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 4500000
+  },
+  "/markets/9f79dc0ac399580e979a7d026c5e69a5/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "7dd5d54b5be41bbd",
+     "block_height": 4540125,
+     "note_ref": "9987a3e4fef15670",
+     "outcome_index": 1,
+     "status": "COUNTED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "7d6dc2f4913702cf",
+     "block_height": 4540129,
+     "note_ref": "8f0f742e542ed725",
+     "outcome_index": 0,
+     "status": "COUNTED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1500000,
+     "bet_fingerprint": "44337e818de27933",
+     "block_height": 4540129,
+     "note_ref": "3f34cd958b8e3623",
+     "outcome_index": 0,
+     "status": "COUNTED",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/9f79dc0ac399580e979a7d026c5e69a5/resolution": null,
+  "/markets/9f79dc0ac399580e979a7d026c5e69a5/payout": null,
+  "/markets/6657ac50521db25f7c6e5ccc684b5134": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "6657ac50521db25f7c6e5ccc684b5134",
+    "question": "Will the Sapling pool hold at least 1.55 million TAZ at block 4,542,248?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest133w77kdwlh2cp2ju3jeezrvmrct79gn3dpxeph5nct747g298nvsm92su2kvah40z5nvawnar7ryzdy7dd4r7ak26aea3z8r5s5cdlct"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest1amsjh5p8lx24sg3hynye0uw7lcjp7lch4rrytrqxtwd9cahypm4uvnrnefr5yum80t9exr3dsxtlr3rg5zsrzdjeus3gl9amuuz7alz9"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "sapling",
+     "comparator": "gte",
+     "threshold_zat": 155000000000000
+    },
+    "birthday_height": 4540043,
+    "close_height": 4542243,
+    "resolve_height": 4542248,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest1hf7etwhw2pmu22h6vruvgtasmckpatpcljekvlye73pnp8fummyz6v8shjr8h0qtckstcm2u0ppr666cj2qtw5mdg7jdtu22k0weru3p80dvnvuqwr4qark3j8ep7mte3utsvvp6hc",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "ba1a5f181bce1286dab4c4482ec4701ef40757d37d51526e4269665cbc7e5c03",
+   "status": "OPEN",
+   "announce_height": 4540123,
+   "announce_txid": "cb332a3549f006cef3f0111c605e1590611f55bcb8e415787db9462ef4ea0301"
+  },
+  "/markets/6657ac50521db25f7c6e5ccc684b5134/odds": {
+   "at_height": 4540245,
+   "market_id": "6657ac50521db25f7c6e5ccc684b5134",
+   "outcomes": [
+    {
+     "bets": 2,
+     "outcome_index": 0,
+     "pool_zat": 3500000,
+     "probability": 0.6363636363636364
+    },
+    {
+     "bets": 1,
+     "outcome_index": 1,
+     "pool_zat": 2000000,
+     "probability": 0.36363636363636365
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 5500000
+  },
+  "/markets/6657ac50521db25f7c6e5ccc684b5134/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "c33e77c373ac975f",
+     "block_height": 4540129,
+     "note_ref": "50f5e2bc0c3838b7",
+     "outcome_index": 1,
+     "status": "COUNTED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "9c7fa74dd1ebf9b4",
+     "block_height": 4540129,
+     "note_ref": "d695073469ffd262",
+     "outcome_index": 0,
+     "status": "COUNTED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1500000,
+     "bet_fingerprint": "5baa601f62601b27",
+     "block_height": 4540198,
+     "note_ref": "19bb63a03f7601c5",
+     "outcome_index": 0,
+     "status": "COUNTED",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/6657ac50521db25f7c6e5ccc684b5134/resolution": null,
+  "/markets/6657ac50521db25f7c6e5ccc684b5134/payout": null,
+  "/markets/75b6ced97706e9347e61007b95dc3455": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "75b6ced97706e9347e61007b95dc3455",
+    "question": "Will the transparent pool drop below 15.5 million TAZ at block 4,542,448?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1g8c8azmmknyx6pkl3lw4p6ydf7pn8cj77s5m5r9904x490rxu2tssrqtyg0zpdcauhpt0zh7zktzkzwgtjyc0p568w294zsffsxrvp37"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest15gnzvmu8au2vuf6xj9n4esu92908z7ctq8cm6fmchylyfg6kx72vzhw6enjnzlxq8zrtss2gj6pv2k5a2x5t83enxtaenqgydun5na0y"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "transparent",
+     "comparator": "lt",
+     "threshold_zat": 1550000000000000
+    },
+    "birthday_height": 4540045,
+    "close_height": 4542443,
+    "resolve_height": 4542448,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest1xcm398swayr65t6f22n69lyr7hw6r0grf2naakut5fp8f2pmewq2qzm3czkvpv0sece2cywwq7dknyt26290e6l3fq075ukltgstf4xpttr0rt5rqvrjqkj8f7q4cnr5wztqn48sr9",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "ff764e5445523d26eb49494b6e592fd73f7d4e2c8a28c6d5e65e1b5d875a936b",
+   "status": "OPEN",
+   "announce_height": 4540130,
+   "announce_txid": "720630b3e644609b95f84c953cda89f698d23c6aa7d56756b7d37b5c205ce77c"
+  },
+  "/markets/75b6ced97706e9347e61007b95dc3455/odds": {
+   "at_height": 4540245,
+   "market_id": "75b6ced97706e9347e61007b95dc3455",
+   "outcomes": [
+    {
+     "bets": 2,
+     "outcome_index": 0,
+     "pool_zat": 3500000,
+     "probability": 0.7777777777777778
+    },
+    {
+     "bets": 1,
+     "outcome_index": 1,
+     "pool_zat": 1000000,
+     "probability": 0.2222222222222222
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 4500000
+  },
+  "/markets/75b6ced97706e9347e61007b95dc3455/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 1500000,
+     "bet_fingerprint": "a77d9568163a8a86",
+     "block_height": 4540160,
+     "note_ref": "afc2998794e34ef3",
+     "outcome_index": 0,
+     "status": "COUNTED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "eb21e35c4cfa2be4",
+     "block_height": 4540199,
+     "note_ref": "691c6272d277beb8",
+     "outcome_index": 0,
+     "status": "COUNTED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "47be451a8124ce16",
+     "block_height": 4540199,
+     "note_ref": "46df39b5a908733d",
+     "outcome_index": 1,
+     "status": "COUNTED",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/75b6ced97706e9347e61007b95dc3455/resolution": null,
+  "/markets/75b6ced97706e9347e61007b95dc3455/payout": null,
+  "/markets/88cc6937c1f481e7eb8940dd775bebf7": {
+   "market_definition": {
+    "version": 1,
+    "params_version": 1,
+    "network": "testnet",
+    "market_id": "88cc6937c1f481e7eb8940dd775bebf7",
+    "question": "Will the lockbox reach 180,000 TAZ at block 4,542,651?",
+    "outcomes": [
+     {
+      "outcome_index": 0,
+      "label": "YES",
+      "address": "utest1czr5tmr8ylp2skyajgx9mcx0p6w9vf2jxvyvnevkl77e0rkzmt9slgspjfrjdngn6kpzvuhpsyjw0fqfy2w4nx6e699thjn5qce9074d"
+     },
+     {
+      "outcome_index": 1,
+      "label": "NO",
+      "address": "utest1q4vptfdw67jk5ds33wfn74007wy4qm3l6z0z5a9mp5l4u35hua5xtfj2cjyvkrjt2x7shsvaus4tlyurltjuf7jmetxds3quqqy9kj76"
+     }
+    ],
+    "resolution_type": "POOL_THRESHOLD",
+    "resolution_params": {
+     "pool": "lockbox",
+     "comparator": "gte",
+     "threshold_zat": 18000000000000
+    },
+    "birthday_height": 4540046,
+    "close_height": 4542646,
+    "resolve_height": 4542651,
+    "fee_bps": 100,
+    "min_bet_zat": 1000000,
+    "refund_fee_zat": 5000,
+    "min_confirmations": 3,
+    "sweep_threshold_zat": 5000,
+    "announce_timeout_blocks": 100,
+    "uivk": "uivktest1ehae66f58mfjwv8805zzqdkp5fkya3mshaenckz7xxj4py0cd6t08f58ruzjzg9354q6l44jn4r4yyu6d8lg5ryzjplxza6cyqfd3hj48akgnkwdt8xecnumv48pqn74u2eqw7vgdv",
+    "envelope_pk": "XRUYMi3NneAxHilDhIDvQb58WCrKqVCjNFDxP6mliQ0",
+    "treasury_address": "utest1ulggulg064gpnnvpz4hg873xfe2xx2yxnr5x59kyt2r8tkjjqc9lx97v8fde6pwwq3q9g0s88c5zzz7msflr3cc6ndfqsfel9k0ud6l3d4tvfvvpnfsjgrnv8kgwu6lat6d8qe7ntq4ugm5clxsp8439yvdr2gc7t7v7e2ulj95gy47qrxdjwsswtguc8yfa5nvd8junhh6yqfrwecv"
+   },
+   "rules_hash": "1a65a3e179ff9b9a4d1723bb3240f4750d7ea08617f0184067665bb731c526ab",
+   "status": "OPEN",
+   "announce_height": 4540134,
+   "announce_txid": "b0a10414c7315a49914436d3a8b8f1f52b194592caf5815538daaf1819251dc1"
+  },
+  "/markets/88cc6937c1f481e7eb8940dd775bebf7/odds": {
+   "at_height": 4540245,
+   "market_id": "88cc6937c1f481e7eb8940dd775bebf7",
+   "outcomes": [
+    {
+     "bets": 3,
+     "outcome_index": 0,
+     "pool_zat": 4500000,
+     "probability": 1
+    },
+    {
+     "bets": 0,
+     "outcome_index": 1,
+     "pool_zat": 0,
+     "probability": 0
+    }
+   ],
+   "pending_bets": 0,
+   "pool_total_zat": 4500000
+  },
+  "/markets/88cc6937c1f481e7eb8940dd775bebf7/bets?limit=500": {
+   "bets": [
+    {
+     "amount_zat": 1000000,
+     "bet_fingerprint": "25ac7e9d579f0965",
+     "block_height": 4540140,
+     "note_ref": "8bc1f59fcd43a178",
+     "outcome_index": 0,
+     "status": "COUNTED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 1500000,
+     "bet_fingerprint": "bf98cc3f4495e03e",
+     "block_height": 4540199,
+     "note_ref": "3f93c9a45a2b78c9",
+     "outcome_index": 0,
+     "status": "COUNTED",
+     "tagged": false
+    },
+    {
+     "amount_zat": 2000000,
+     "bet_fingerprint": "02e2c43744c4509f",
+     "block_height": 4540199,
+     "note_ref": "4e48f13f50e1db51",
+     "outcome_index": 0,
+     "status": "COUNTED",
+     "tagged": false
+    }
+   ]
+  },
+  "/markets/88cc6937c1f481e7eb8940dd775bebf7/resolution": null,
+  "/markets/88cc6937c1f481e7eb8940dd775bebf7/payout": null
+ }
+}

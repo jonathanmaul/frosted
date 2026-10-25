@@ -1,6 +1,16 @@
 // Minimal public API client (docs/PROJECT_SPEC_FROSTED.md §22). Every call tolerates the API being
 // unreachable: callers render "—" instead of invented values.
+import snapshot from "./snapshot.json";
+
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/v1";
+
+/**
+ * Snapshot mode (NEXT_PUBLIC_SNAPSHOT_MODE=true, spec M12.5): a deployment without a live backend serves recorded responses of
+ * the real testnet API (lib/snapshot.json, written by scripts/snapshot.mjs). Nothing is invented; live-only
+ * features (SSE, Thaw, the server-side check) are off.
+ */
+export const SNAPSHOT = process.env.NEXT_PUBLIC_SNAPSHOT_MODE === "true";
+const RECORDED = snapshot.responses as Record<string, unknown>;
 
 export type OutcomeOdds = { outcome_index: number; label: string; probability: number | null };
 export type MarketSummary = {
@@ -14,6 +24,7 @@ export type MarketSummary = {
 };
 
 export async function getJson<T>(path: string): Promise<T | null> {
+  if (SNAPSHOT) return (RECORDED[path] ?? null) as T | null;
   try {
     const res = await fetch(`${API_URL}${path}`, { cache: "no-store", credentials: "omit", signal: AbortSignal.timeout(5000) });
     if (!res.ok) return null;
@@ -27,6 +38,7 @@ export type PostResult<T> = { ok: true; data: T } | { ok: false; code: string; m
 
 /** The only write the browser makes to the API (Thaw). Credential-free, JSON in and out. */
 export async function postJson<T>(path: string, body: unknown): Promise<PostResult<T>> {
+  if (SNAPSHOT) return { ok: false, code: "NETWORK", message: "This action needs the live backend." };
   try {
     const res = await fetch(`${API_URL}${path}`, { method: "POST", credentials: "omit", headers: { "content-type": "application/json" },
       body: JSON.stringify(body), signal: AbortSignal.timeout(30000) });
@@ -52,8 +64,10 @@ export async function fetchTip(): Promise<number | null> {
 export function featuredMarket(markets: MarketSummary[] | null): MarketSummary | null {
   if (!markets) return null;
   const open = markets.filter((m) => m.status === "OPEN");
-  if (open.length === 0) return null;
-  return open.reduce((a, b) => (b.pool_total_zat > a.pool_total_zat ? b : a));
+  // A snapshot has no open market once its recorded market settled; feature the largest recorded pool.
+  const pool = open.length ? open : SNAPSHOT ? markets.filter((m) => m.pool_total_zat > 0) : [];
+  if (pool.length === 0) return null;
+  return pool.reduce((a, b) => (b.pool_total_zat > a.pool_total_zat ? b : a));
 }
 
 export function streamUrl(marketId: string): string {

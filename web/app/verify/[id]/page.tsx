@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PageHead } from "@/components/ui/Scene3D";
 import { ServerCheck } from "@/components/verify/ServerCheck";
+import { SNAPSHOT } from "@/lib/api";
 import { fetchMarket, fetchPayout } from "@/lib/bettor";
 import { verifyCommands } from "@/lib/verify";
 import { BlockRef, TxRef } from "@/components/ui/ChainRef";
@@ -26,7 +27,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       {payout?.txs?.length ? <ul className="verify-list">{payout.txs.map(t => <li key={t.txid}><TxRef txid={t.txid} /> <span className="muted t-5">{t.status}{t.confirmed_height !== null ? `, block ${t.confirmed_height}` : ""}</span></li>)}</ul> : <p className="t-5 muted mt-2">No payout transaction published yet.</p>}
       <p className="t-5 muted mt-4">Check a payout on your own node:</p>
       <p className="ledger-code num t-5">zcash-cli getrawtransaction &lt;txid&gt; 1</p></div>
-    <ServerCheck marketId={id} />
+    {!SNAPSHOT && <ServerCheck marketId={id} />}
     <p className="t-4 mt-6"><Link className="text-link" href={`/markets/${id}`}>Back to the market</Link></p>
   </section>;
 }

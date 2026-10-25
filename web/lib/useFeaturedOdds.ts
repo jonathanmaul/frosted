@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { featuredMarket, fetchMarkets, streamUrl, type MarketSummary } from "@/lib/api";
+import { SNAPSHOT, featuredMarket, fetchMarkets, streamUrl, type MarketSummary } from "@/lib/api";
 import { fetchOdds } from "@/lib/bettor";
 
 export type FeaturedOdds = {
@@ -30,6 +30,7 @@ export function useFeaturedOdds(): FeaturedOdds {
       if (!alive || !market) return;
       const prob = (i: number) => market.odds.find((o) => o.outcome_index === i)?.probability ?? null;
       setState({ market, yes: prob(0), no: prob(1), poolZat: market.pool_total_zat });
+      if (SNAPSHOT) return;
       source = new EventSource(streamUrl(market.market_id));
       source.addEventListener("odds_updated", async (e) => {
         try {

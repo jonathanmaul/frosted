@@ -9,7 +9,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { MonoNumber } from "@/components/ui/MonoNumber";
 import { BlockRef, TxRef } from "@/components/ui/ChainRef";
 import { hasExplorer } from "@/lib/explorer";
-import { fetchTip, streamUrl, formatPercent, formatZec } from "@/lib/api";
+import { SNAPSHOT, fetchTip, streamUrl, formatPercent, formatZec } from "@/lib/api";
 import { exactZec, fetchMarket, fetchOdds, fetchBets, fetchPayout, fetchResolution, type Market, type Odds, type PublicBet, type Payout, type Resolution } from "@/lib/bettor";
 
 const BLOCK_SECONDS = 75;
@@ -65,6 +65,7 @@ export function MarketDetail({ initialMarket, initialOdds, initialBets, initialR
       } while (alive && again);
       refreshing = false;
     };
+    if (SNAPSHOT) return;
     const source = new EventSource(streamUrl(def.market_id));
     source.onopen = () => { setConnected(true); void refresh(); };
     source.onerror = () => setConnected(false);
@@ -77,7 +78,7 @@ export function MarketDetail({ initialMarket, initialOdds, initialBets, initialR
     <p className="num t-5 muted">{def.network.toUpperCase()} / CLOSE {def.close_height.toLocaleString("en-US")} / RESOLVE {def.resolve_height.toLocaleString("en-US")}</p>
     <p className="t-4 mt-3">Bets close at {untilBlock(def.close_height, tip)}. The result is decided at {untilBlock(def.resolve_height, tip)}. {plainRules(def)}</p>
     <div className="market-detail-grid"><div className="detail-odds">
-      <section className="ledger-panel" aria-labelledby="odds-title"><div className="ledger-title"><h2 id="odds-title" className="t-3">Public odds</h2><p className="num t-5 muted" role="status">{connected ? "LIVE" : "RECONNECTING"}</p></div>{sides.length === 2 ? <OddsBar yes={sides[0]} no={sides[1]} /> : sides.map(s => <p className="t-4" key={s.label}>{s.label} <MonoNumber>{formatPercent(s.probability)}</MonoNumber></p>)}<p className="t-3 mt-6"><MonoNumber>{formatZec(odds?.pool_total_zat)}</MonoNumber> ZEC in the pool.</p><dl className="outcome-pools t-5">{def.outcomes.map(o => <div key={o.outcome_index}><dt>{o.label}</dt><dd className="num">{formatZec(odds?.outcomes.find(x => x.outcome_index === o.outcome_index)?.pool_zat)} ZEC</dd></div>)}</dl></section>
+      <section className="ledger-panel" aria-labelledby="odds-title"><div className="ledger-title"><h2 id="odds-title" className="t-3">Public odds</h2>{!SNAPSHOT && <p className="num t-5 muted" role="status">{connected ? "LIVE" : "RECONNECTING"}</p>}</div>{sides.length === 2 ? <OddsBar yes={sides[0]} no={sides[1]} /> : sides.map(s => <p className="t-4" key={s.label}>{s.label} <MonoNumber>{formatPercent(s.probability)}</MonoNumber></p>)}<p className="t-3 mt-6"><MonoNumber>{formatZec(odds?.pool_total_zat)}</MonoNumber> ZEC in the pool.</p><dl className="outcome-pools t-5">{def.outcomes.map(o => <div key={o.outcome_index}><dt>{o.label}</dt><dd className="num">{formatZec(odds?.outcomes.find(x => x.outcome_index === o.outcome_index)?.pool_zat)} ZEC</dd></div>)}</dl></section>
     </div>
     {/* The builder follows the odds on small screens and sticks beside the ledger on desktop. */}
     <aside className="detail-builder"><BetBuilder market={market} /></aside>
