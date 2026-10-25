@@ -5,6 +5,8 @@
 #   scripts/testnet.sh fund <zat>      send testnet coins from the `demo` wallet to the hot wallet
 #   scripts/testnet.sh market [close_in_blocks] [question]   create a chain-verified market
 #   scripts/testnet.sh bet <market_id> <0|1> <zat>           build a bet with the WASM builder and pay it
+#   scripts/testnet.sh address         print the demo wallet address to paste as the payout address in the web Bet Builder
+#   scripts/testnet.sh pay '<zcash:...>'   pay a ZIP-321 URI copied from the web Bet Builder from the `demo` wallet
 #   scripts/testnet.sh payout [market_id]                    plan the payout and sign it with members 1 and 2 (2-of-3)
 #   scripts/testnet.sh web             open the web app for this stack at http://localhost:3100
 #   scripts/testnet.sh fresh           set the old markets and indexer state aside so a new market starts from the chain tip
@@ -204,6 +206,34 @@ JS
     --value "$zat" --memo "$(echo "$out" | json 'd["memo"]')" 2>&1 | strip | grep -E "^[0-9a-f]{64}$|rror" | tail -2
 }
 
+# The web Bet Builder seals the bet in the browser and shows a ZIP-321 URI; the `demo` wallet stands in
+# for the bettor's own wallet app and pays it unchanged.
+cmd_pay() {
+  local uri="${1:-}"
+  [ -n "$uri" ] || die "usage: scripts/testnet.sh pay '<zcash:... uri>'"
+  local parsed addr zat memo
+  parsed="$(python3 -I - "$uri" <<'PY'
+import sys, base64, urllib.parse as u
+p = u.urlparse(sys.argv[1])
+if p.scheme != "zcash":
+    sys.exit("not a zcash: payment URI")
+q = u.parse_qs(p.query)
+amount = round(float(q["amount"][0]) * 1e8)
+memo = q.get("memo", [""])[0]
+memo = base64.urlsafe_b64decode(memo + "=" * (-len(memo) % 4)).decode() if memo else ""
+print(p.path); print(amount); print(memo)
+PY
+)" || die "could not read the payment URI"
+  { read -r addr; read -r zat; read -r memo; } <<< "$parsed"
+  case "$addr" in utest1*) ;; *) die "not a testnet unified address: ${addr:0:12}..." ;; esac
+  demo_sync
+  say "paying $zat zat to ${addr:0:24}..."
+  local txid; txid="$(dt wallet -w "/work/$DEMO_DIR" send -i "/work/$DEMO_DIR/identity.txt" --address "$addr" --value "$zat" --memo "$memo" 2>&1 | strip | grep -oE '^[0-9a-f]{64}$' | tail -1)"
+  [ -n "$txid" ] || die "payment failed (check the demo wallet balance)"
+  echo "txid $txid"
+  echo "the bet shows on the market page after it is mined (about a minute); bet txids are not published by Frosted"
+}
+
 cmd_payout() {
   local id="${1:-$(cat "$STATE/last-market" 2>/dev/null || true)}"
   [ -n "$id" ] || die "usage: scripts/testnet.sh payout <market_id>"
@@ -266,11 +296,13 @@ case "${1:-status}" in
   fund) shift; cmd_fund "$@" ;;
   market) shift; cmd_market "$@" ;;
   bet) shift; cmd_bet "$@" ;;
+  pay) shift; cmd_pay "${1:-}" ;;
+  address) demo_ua ;;
   payout) shift; cmd_payout "$@" ;;
   web) cmd_web ;;
   status) cmd_status ;;
   logs) tail -n 60 -f "$LOGS/${2:?indexer|api|coordinator|helper}.log" | python3 -I -u -c 'import sys
 u = sys.argv[1]
 for l in sys.stdin: print(l.replace(u, "<node-rpc-url>"), end="", flush=True)' "$ZEBRA_RPC_URL" ;;
-  *) sed -n '2,12p' "$0"; exit 2 ;;
+  *) sed -n '2,14p' "$0"; exit 2 ;;
 esac
