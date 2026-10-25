@@ -2,6 +2,7 @@
 
 // S-07. `K_root` leaves this device only when the user presses Thaw, and never before.
 import Link from "next/link";
+import { PageHead } from "@/components/ui/Scene3D";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { MonoNumber } from "@/components/ui/MonoNumber";
@@ -58,11 +59,10 @@ export function ThawPanel() {
   }
 
   if (!loaded) return <section className="bettor-page"><p className="section-index">S-07 / THAW</p><p role="status" className="t-4 muted">Loading local Persona…</p></section>;
-  if (report) return <section className="bettor-page"><p className="section-index">S-07 / THAW REPORT</p><h1 className="t-2 my-6">Thawed: {report.alias}.</h1>
-    <p className="t-4 muted">Registered at block <MonoNumber>{report.registered_height.toLocaleString("en-US")}</MonoNumber>. Your key is now public, and so is this record.</p>
+  if (report) return <section className="bettor-page"><PageHead index="S-07 / THAW REPORT" title={`Thawed: ${report.alias}.`} kind="crystal" lede={<>Registered at block <MonoNumber>{report.registered_height.toLocaleString("en-US")}</MonoNumber>. Your key is now public, and so is this record.</>} />
     <div className="ledger-panel"><ThawReportView report={report} markets={markets} /></div>
     <p className="t-4 mt-6"><Link className="text-link" href={`/p/${report.persona_id}`}>Open the public profile</Link></p></section>;
-  return <section className="bettor-page"><p className="section-index">S-07 / THAW</p><h1 className="t-2 my-6">Thaw.</h1>
+  return <section className="bettor-page"><PageHead index="S-07 / THAW" title="Thaw." kind="crystal" />
     {!record && <p className="t-4">No Persona on this device. <Link className="text-link" href="/persona">Create one first.</Link></p>}
     {record && info?.status === "THAWED" && <p className="t-4">This Persona is already thawed. <Link className="text-link" href={`/p/${record.persona_id}`}>Open the public profile.</Link></p>}
     {record && info?.status !== "THAWED" && <div className="ledger-panel">

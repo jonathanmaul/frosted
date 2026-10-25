@@ -8,8 +8,7 @@ import { BlockRef, TxRef } from "@/components/ui/ChainRef";
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [market, payout] = await Promise.all([fetchMarket(id), fetchPayout(id)]);
-  return <section className="bettor-page"><PageHead index="S-10 / VERIFY" title="Verify this market." kind="chain" />
-    <p className="t-4 muted">{market ? market.market_definition.question : <>Market <span className="num">{id}</span></>}</p>
+  return <section className="bettor-page"><PageHead index="S-10 / VERIFY" title="Verify this market." kind="chain" lede={market ? market.market_definition.question : <>Market <span className="num">{id}</span></>} />
     <div className="ledger-panel"><h2 className="t-3">Run it yourself</h2>
       <p className="t-4 muted mt-2">Needs only your own Zcash node and the public API. The verifier scans the chain with the market&apos;s published viewing key and recomputes every claim: the rules hash, the addresses, the pools, the Chain-Verified outcome, and each item of the payout plan. It holds no secret and cannot see who bet.</p>
       {verifyCommands(id).map((c) => <div key={c.command}><p className="t-5 muted mt-4">{c.label}</p><p className="ledger-code num t-5">{c.command}</p></div>)}

@@ -89,8 +89,7 @@ export function PersonaPanel() {
 
   if (!loaded) return <section className="bettor-page"><p className="section-index">S-06 / PERSONA</p><p role="status" className="t-4 muted">Loading local Persona…</p></section>;
   const registered = info?.registered_height;
-  return <section className="bettor-page"><PageHead index="S-06 / THIS DEVICE" title="Persona." kind="crystal" />
-    <p className="t-4 muted">A Persona proves a track record without a name. Bets you tag are revealed only if you choose to Thaw. One person may control several Personas.</p>
+  return <section className="bettor-page"><PageHead index="S-06 / THIS DEVICE" title="Persona." kind="crystal" lede="A Persona proves a track record without a name. Bets you tag are revealed only if you choose to Thaw. One person may control several Personas." />
     {!record && !draft && <div className="ledger-panel"><p className="t-4">No Persona on this device.</p><div className="ledger-actions mt-4"><Button disabled={busy} onClick={create}>{busy ? "Working locally…" : "Create Persona"}</Button></div></div>}
     {draft && <div className="ledger-panel"><h2 className="t-3">01 / Back up your key</h2>
       <p className="t-4 muted mt-2">This 32-byte key cannot be recovered. Lose it and you cannot Thaw. Anyone who sees it can Thaw as you.</p>
