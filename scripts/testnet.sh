@@ -5,13 +5,15 @@
 #   scripts/testnet.sh fund <zat>      send testnet coins from the `demo` wallet to the hot wallet
 #   scripts/testnet.sh market [close_in_blocks] [question]   create a chain-verified market
 #   scripts/testnet.sh bet <market_id> <0|1> <zat>           build a bet with the WASM builder and pay it
+#   scripts/testnet.sh payout [market_id]                    plan the payout and sign it with members 1 and 2 (2-of-3)
 #   scripts/testnet.sh web             open the web app for this stack at http://localhost:3100
+#   scripts/testnet.sh fresh           set the old markets and indexer state aside so a new market starts from the chain tip
 #   scripts/testnet.sh status | logs <name> | down
 #
 # Needs: ~/.config/frosted/testnet.env with ZEBRA_RPC_URL (a testnet node on the NU7 chain; keep it
 # out of the repo) and the `demo` wallet from `zcash-devtool wallet init -n test`
 # (.regtest/testnet-demo). Light-client traffic goes to testnet.zec.rocks. Nothing here touches
-# mainnet. Testnet blocks arrive about every 25 seconds.
+# mainnet. Testnet blocks arrive about once a minute.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -22,6 +24,7 @@ API="http://127.0.0.1:$API_PORT/v1"
 BIN="$ROOT/target/debug"
 ENVFILE="${FROSTED_TESTNET_ENV:-$HOME/.config/frosted/testnet.env}"
 GRPC="${LIGHTWALLETD_GRPC_URL:-https://testnet.zec.rocks:443}"
+EXPLORER="${EXPLORER_URL:-https://testnet.zecblock.com}"
 DEMO_DIR="testnet-demo"
 
 say() { echo "==> $*"; }
@@ -59,11 +62,32 @@ wait_for() { local what="$1" limit="$2"; shift 2; for _ in $(seq 1 "$limit"); do
 demo_ua() { dt wallet -w "/work/$DEMO_DIR" list-addresses 2>&1 | strip | grep -oE 'utest1[0-9a-z]+' | head -1; }
 demo_sync() { dt wallet -w "/work/$DEMO_DIR" sync >/dev/null 2>&1 || true; }
 
+# Scan the chain up to the tip, showing progress. Starting from a fresh market this takes seconds;
+# catching up on an old market over a rate-limited public RPC can take hours.
+catch_up() {
+  PUBLIC_DB_PATH="$STATE/public.db" "$BIN/glass-indexer" once >"$LOGS/indexer-once.log" 2>&1 &
+  local pid=$! t h
+  t="$(tip)"
+  while kill -0 "$pid" 2>/dev/null; do
+    h="$(sqlite3 "$STATE/public.db" 'select coalesce(max(height),0) from block' 2>/dev/null || echo 0)"
+    [ "$h" = 0 ] || say "indexer scanning: block $h of $t"
+    sleep 10
+  done
+  wait "$pid" || die "indexer failed: $(sed -E 's#https?://[^ "]+#<url>#g' "$LOGS/indexer-once.log" | tail -3)"
+}
+
 cmd_up() {
   [ -x "$ROOT/wallet-helper/target/release/frosted-wallet-helper" ] || die "build the wallet helper first (see docs/TESTING.md)"
   [ -d "$ROOT/.regtest/$DEMO_DIR" ] || die "demo wallet missing: .regtest/$DEMO_DIR"
   mkdir -p "$LOGS"
-  [ ! -f "$PIDFILE" ] || die "already running (scripts/testnet.sh down first)"
+  if [ -f "$PIDFILE" ]; then
+    # A run that died leaves its pid file behind; only refuse while one of its processes is alive.
+    local alive=0 name pid
+    while IFS=: read -r name pid; do [ -z "${pid:-}" ] || ! kill -0 "$pid" 2>/dev/null || alive=1; done < "$PIDFILE"
+    [ "$alive" = 0 ] || die "already running (scripts/testnet.sh down first)"
+    rm -f "$PIDFILE"
+  fi
+  if lsof "$STATE/public.db" >/dev/null 2>&1; then die "another process is using $STATE/public.db (an old indexer?); stop it first"; fi
   say "checking the node (chain, NU7, tip)"
   local info; info="$(rpc getblockchaininfo)" || die "node RPC unreachable"
   echo "$info" | json '"chain=%s tip=%s nu7=%s" % (d["result"]["chain"], d["result"]["blocks"], [u["activationheight"] for u in d["result"]["upgrades"].values() if u["name"]=="NU7"])'
@@ -75,7 +99,7 @@ cmd_up() {
   fi
   local treasury; treasury="$(demo_ua)"; [ -n "$treasury" ] || die "no demo address"
   : > "$PIDFILE"
-  PUBLIC_DB_PATH="$STATE/public.db" "$BIN/glass-indexer" once >/dev/null
+  catch_up
   spawn indexer env PUBLIC_DB_PATH="$STATE/public.db" "$BIN/glass-indexer" run
   spawn api env PUBLIC_DB_PATH="$STATE/public.db" API_BIND="127.0.0.1:$API_PORT" API_PUBLIC_ORIGIN="http://localhost:$WEB_PORT" \
     COORDINATOR_PUBKEY="$(cat "$STATE/pubkey")" "$BIN/frosted-api"
@@ -111,6 +135,25 @@ SH
   echo "  Then:          scripts/testnet.sh market"
 }
 
+cmd_fresh() {
+  if [ -f "$PIDFILE" ]; then die "stop the stack first (scripts/testnet.sh down)"; fi
+  if lsof "$STATE/public.db" >/dev/null 2>&1; then die "a process still uses $STATE/public.db"; fi
+  local old="$STATE/../old-$(date +%Y%m%d-%H%M%S)"
+  mkdir -p "$old"
+  say "copying the old databases to $old"
+  for f in public.db coordinator-indexer.db coordinator.db last-market market.json; do
+    [ ! -e "$STATE/$f" ] || cp "$STATE/$f" "$old/"
+  done
+  rm -f "$STATE"/public.db* "$STATE"/coordinator-indexer.db* "$STATE/last-market"
+  if [ -f "$STATE/coordinator.db" ]; then
+    # Keys, committee and hot wallet stay. Only the old markets go, so no indexer replays their blocks.
+    for t in market resolution payout committee_vote committee_round; do
+      sqlite3 "$STATE/coordinator.db" "DELETE FROM $t;"
+    done
+  fi
+  say "done: the next market starts from the current chain tip (old state kept in $old)"
+}
+
 cmd_fund() {
   local zat="${1:-3000000}"
   demo_sync
@@ -129,7 +172,7 @@ print(json.dumps({"question": sys.argv[1], "outcomes": ["YES", "NO"], "resolutio
   "resolution_params": {"pool": "ironwood", "comparator": "gte", "threshold_zat": 1},
   "close_height": close, "resolve_height": close + 5, "fee_bps": 100}))
 PY
-  say "creating the market (closes at block $((t + close_in)), about $((close_in * 25 / 60)) minutes)"
+  say "creating the market (closes at block $((t + close_in)), about $((close_in * 75 / 60)) minutes)"
   local out
   for _ in 1 2 3 4; do
     if out="$(op market create --file "$STATE/market.json" 2>"$LOGS/create.err")"; then
@@ -161,6 +204,28 @@ JS
     --value "$zat" --memo "$(echo "$out" | json 'd["memo"]')" 2>&1 | strip | grep -E "^[0-9a-f]{64}$|rror" | tail -2
 }
 
+cmd_payout() {
+  local id="${1:-$(cat "$STATE/last-market" 2>/dev/null || true)}"
+  [ -n "$id" ] || die "usage: scripts/testnet.sh payout <market_id>"
+  local status; status="$(op payout status "$id" 2>/dev/null | json 'd.get("status")' 2>/dev/null || echo None)"
+  local plan hash
+  if [ "$status" = "None" ] || [ -z "$status" ]; then
+    say "planning the payout"
+    plan="$(op payout plan "$id")" || die "payout plan failed (is the market resolved? $plan)"
+    hash="$(echo "$plan" | json 'd["plan_hash"]')"
+    echo "$plan" | json '"  %s winners, %s refunds, distributed %s zat, operator fee %s zat" % (d["summary"]["winners"], d["summary"]["refunds"], d["summary"]["distributed_zat"], d["summary"]["operator_fee_zat"])'
+  else
+    hash="$(op payout status "$id" | json 'd["plan_hash"]')"
+  fi
+  local s1 s2
+  s1="$(ls "$STATE"/shares/0100*.share.enc)"; s2="$(ls "$STATE"/shares/0200*.share.enc)"
+  # The demo holds all three shares (ADR-0008). Each member approves by typing the plan hash.
+  say "signing with members 1 and 2 (plan $hash)"
+  printf '%s\n%s\n' "$hash" "$hash" | op payout sign "$id" --plan-hash "$hash" \
+    --share "$s1" --member-key "$PRIV/member-1.key" --share "$s2" --member-key "$PRIV/member-2.key" 2>&1 | strip | tail -3
+  op payout status "$id" | json '"payout %s: %s" % (d["status"], [t["txid"] for t in d["txs"]])'
+}
+
 cmd_web() {
   [ -d "$ROOT/web/node_modules" ] || die "web dependencies missing: cd web && pnpm install"
   lsof -iTCP:"$WEB_PORT" -sTCP:LISTEN >/dev/null 2>&1 && die "port $WEB_PORT is already in use"
@@ -174,7 +239,7 @@ cmd_web() {
     wait_for "frosted-api" 40 curl -sf "$API/health"
   fi
   say "starting the web app on port $WEB_PORT (testnet data from $API)"
-  spawn web env NEXT_DIST_DIR=.next-testnet NEXT_PUBLIC_API_URL="$API" NEXT_PUBLIC_NETWORK=testnet \
+  spawn web env NEXT_DIST_DIR=.next-testnet NEXT_PUBLIC_API_URL="$API" NEXT_PUBLIC_NETWORK=testnet NEXT_PUBLIC_EXPLORER_URL="$EXPLORER" \
     bash -c "cd '$ROOT/web' && exec node_modules/.bin/next dev -p $WEB_PORT"
   wait_for "the web app" 90 curl -s -o /dev/null "http://localhost:$WEB_PORT"
   echo "  Web  http://localhost:$WEB_PORT/markets"
@@ -197,9 +262,11 @@ cmd_status() {
 case "${1:-status}" in
   up) cmd_up ;;
   down) stop_all ;;
+  fresh) cmd_fresh ;;
   fund) shift; cmd_fund "$@" ;;
   market) shift; cmd_market "$@" ;;
   bet) shift; cmd_bet "$@" ;;
+  payout) shift; cmd_payout "$@" ;;
   web) cmd_web ;;
   status) cmd_status ;;
   logs) tail -n 60 -f "$LOGS/${2:?indexer|api|coordinator|helper}.log" | python3 -I -u -c 'import sys
