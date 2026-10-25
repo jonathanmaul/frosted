@@ -5,6 +5,7 @@
 #   scripts/testnet.sh fund <zat>      send testnet coins from the `demo` wallet to the hot wallet
 #   scripts/testnet.sh market [close_in_blocks] [question]   create a chain-verified market
 #   scripts/testnet.sh bet <market_id> <0|1> <zat>           build a bet with the WASM builder and pay it
+#   scripts/testnet.sh market-file <json>   create a market from a definition file (question, outcomes, resolution_type, resolution_params, close_height, resolve_height, fee_bps)
 #   scripts/testnet.sh address         print the demo wallet address to paste as the payout address in the web Bet Builder
 #   scripts/testnet.sh pay '<zcash:...>'   pay a ZIP-321 URI copied from the web Bet Builder from the `demo` wallet
 #   scripts/testnet.sh payout [market_id]                    plan the payout and sign it with members 1 and 2 (2-of-3)
@@ -185,6 +186,18 @@ PY
   die "market create failed: $(cat "$LOGS/create.err")"
 }
 
+cmd_market_file() {
+  local file="${1:-}" out
+  [ -f "$file" ] || die "usage: scripts/testnet.sh market-file <definition.json>"
+  for _ in 1 2 3 4 5 6; do
+    if out="$(op market create --file "$file" 2>"$LOGS/create.err")"; then
+      echo "$out" | json 'd["market_definition"]["market_id"]' | tee "$STATE/last-market"; return 0
+    fi
+    sleep 15
+  done
+  die "market create failed: $(cat "$LOGS/create.err")"
+}
+
 cmd_bet() {
   local id="${1:-$(cat "$STATE/last-market" 2>/dev/null || true)}" outcome="${2:-0}" zat="${3:-1000000}"
   [ -n "$id" ] || die "usage: scripts/testnet.sh bet <market_id> <0|1> <zat>"
@@ -295,6 +308,7 @@ case "${1:-status}" in
   fresh) cmd_fresh ;;
   fund) shift; cmd_fund "$@" ;;
   market) shift; cmd_market "$@" ;;
+  market-file) shift; cmd_market_file "${1:-}" ;;
   bet) shift; cmd_bet "$@" ;;
   pay) shift; cmd_pay "${1:-}" ;;
   address) demo_ua ;;
@@ -304,5 +318,5 @@ case "${1:-status}" in
   logs) tail -n 60 -f "$LOGS/${2:?indexer|api|coordinator|helper}.log" | python3 -I -u -c 'import sys
 u = sys.argv[1]
 for l in sys.stdin: print(l.replace(u, "<node-rpc-url>"), end="", flush=True)' "$ZEBRA_RPC_URL" ;;
-  *) sed -n '2,14p' "$0"; exit 2 ;;
+  *) sed -n '2,15p' "$0"; exit 2 ;;
 esac
