@@ -25,13 +25,13 @@ const contrast = (a: string, b: string) => {
 
 describe("design tokens (docs/DESIGN.md §2)", () => {
   it("defines the exact palette", () => {
-    expect(token("bg").toLowerCase()).toBe("#070b12");
-    expect(token("ice").toLowerCase()).toBe("#dcebff");
-    expect(token("accent").toLowerCase()).toBe("#f4b728");
+    expect(token("bg").toLowerCase()).toBe("#eef3f8");
+    expect(token("ice").toLowerCase()).toBe("#0a1424");
+    expect(token("accent").toLowerCase()).toBe("#c93509");
   });
   it("meets WCAG AA for text tokens on the background", () => {
     for (const t of ["ice", "ice-muted", "yes", "no", "accent"]) expect(contrast(token(t), token("bg"))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(token("bg"), token("accent"))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast("#ffffff", token("accent"))).toBeGreaterThanOrEqual(4.5);
   });
   it("caps the radius at 4px", () => {
     expect(css).toMatch(/--radius-2:\s*4px/);

@@ -1,15 +1,21 @@
 @import "tailwindcss";
 
-/* docs/DESIGN.md §2–§5. Dark-only "frozen ledger" tokens. */
+/* docs/DESIGN.md §2 and §14 (ADR-0019). "Paper" light palette; --ice is the ink colour, the name is kept so components need no rename. */
 :root {
-  --bg: #070b12;
-  --surface: rgba(255, 255, 255, 0.04);
-  --border: rgba(180, 210, 255, 0.14);
-  --ice: #dcebff;
-  --ice-muted: #8fa8c8;
-  --accent: #f4b728;
-  --yes: #7fd1b9;
-  --no: #e58c8a;
+  --bg: #eef3f8;
+  --surface: rgba(10, 20, 36, 0.04);
+  --border: rgba(10, 20, 36, 0.14);
+  --ice: #0a1424;
+  --ice-muted: #4b6078;
+  --accent: #c93509;
+  --accent-hover: #a82a06;
+  --core: #2b59ff;
+  --panel: #ffffff;
+  --band: #0a1424;
+  --on-band: #eaf2ff;
+  --on-band-muted: #9db3cc;
+  --yes: #0b7a55;
+  --no: #c41f37;
 
   /* Fixed 5-step type scale (§3). */
   --type-1: clamp(48px, 7vw, 96px);
@@ -18,6 +24,7 @@
   --type-4: 16px;
   --type-5: 13px;
 
+  --radius-card: 16px;
   --radius-1: 2px;
   --radius-2: 4px;
 
@@ -25,7 +32,7 @@
   --font-body: "IBM Plex Sans", sans-serif;
   --font-number: "IBM Plex Mono", monospace;
 
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -273,10 +280,10 @@ body:has(.frost-experience) .site-nav { min-height: 88px; flex-wrap: nowrap; }
 .journey-specimen { position: absolute; top: 0; left: 0; width: 100%; height: 100svh; z-index: -1; }
 .journey-specimen .hero-visual, .journey-specimen .specimen-stage { position: absolute; inset: 0; width: 100%; height: 100%; }
 .journey-specimen .specimen-stage::before { display: none; }
-.journey-specimen .scene-viewport { opacity: .64; }
-.journey-specimen .specimen-image { padding: 40px; }
+.journey-specimen .scene-viewport { opacity: 1; }
+.journey-specimen .specimen-image { padding: 0; object-fit: cover; }
 .journey-prologue { height: 100svh; min-height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; pointer-events: auto; }
-.journey-prologue::before { content: ""; position: absolute; inset: 0; z-index: -1; background: rgba(7,11,18,.22); pointer-events: none; }
+.journey-prologue::before { content: ""; position: absolute; inset: 0; z-index: -1; background: rgba(238,243,248,.35); pointer-events: none; }
 .journey-prologue .section-index { margin-bottom: 32px; }
 .journey-prologue h1 { line-height: 1; max-width: 960px; }
 .journey-prologue h1 em, .journey-prologue > p.t-4 { color: var(--ice); }
@@ -289,7 +296,7 @@ body:has(.frost-experience) .site-nav { min-height: 88px; flex-wrap: nowrap; }
 
 .landing[data-cinematic] .journey-frame { height: 100svh; min-height: 600px; isolation: isolate; pointer-events: none; }
 /* A full-width vertical scrim keeps captions readable without splitting the 3D space. */
-.landing[data-cinematic] .journey-frame::before { content: ""; position: absolute; z-index: -1; inset: auto 0 0; height: 52%; background: linear-gradient(to top, var(--bg) 0%, rgba(7,11,18,.97) 30%, rgba(7,11,18,.72) 62%, rgba(7,11,18,0) 100%); opacity: var(--world-reveal, 0); }
+.landing[data-cinematic] .journey-frame::before { content: ""; position: absolute; z-index: -1; inset: auto 0 0; height: 52%; background: linear-gradient(to top, var(--bg) 0%, rgba(238,243,248,.97) 30%, rgba(238,243,248,.72) 62%, rgba(238,243,248,0) 100%); opacity: var(--world-reveal, 0); }
 .landing[data-cinematic] .journey-prologue { position: absolute; inset: 0; z-index: 3; height: 100%; min-height: 0; transform-origin: center; }
 .landing[data-cinematic] .journey-specimen { z-index: -2; }
 .landing[data-cinematic] .frost-experience .journey-heading { position: absolute; top: 36px; padding: 0; opacity: 0; }
@@ -403,3 +410,32 @@ body:has(.frost-experience) .site-nav { min-height: 88px; flex-wrap: nowrap; }
 .chain-proof dt { color: var(--muted, inherit); opacity: 0.8; }
 .chain-proof dd { margin: 0.3rem 0 0; overflow-wrap: anywhere; }
 .chain-proof .chain-ref > a { display: inline-block; margin-top: 0.25rem; }
+
+/* Paper redesign (ADR-0019, docs/DESIGN.md §14): soft ground tint, cards, one dark band, small 3D scenes. */
+body { background: radial-gradient(1100px 520px at 88% -8%, rgba(43, 89, 255, 0.09), transparent 62%), radial-gradient(900px 480px at -6% 40%, rgba(255, 79, 31, 0.05), transparent 60%), var(--bg); background-attachment: fixed; }
+.section-index { color: var(--core); }
+.scene3d { position: relative; width: 100%; height: 320px; }
+.scene3d canvas { display: block; }
+.page-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 440px); gap: 32px; align-items: center; }
+.page-title { margin-block: 20px 16px; }
+.page-lede { max-width: 560px; }
+.detail-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 300px); gap: 24px; align-items: center; }
+.detail-top .scene3d { height: 220px; }
+.market-row, .featured-market { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-card); padding: 28px 32px; margin-block: 16px; transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+.market-row:hover, .featured-market:hover { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(10, 20, 36, 0.1); border-color: rgba(43, 89, 255, 0.4); }
+.featured-market { border-top: 3px solid var(--core); }
+.builder { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-card); box-shadow: 0 18px 48px rgba(10, 20, 36, 0.08); }
+.ledger-input { background: var(--panel); }
+.ui-select-list { background: var(--panel); box-shadow: 0 12px 28px rgba(10, 20, 36, 0.12); }
+.band { --ice: var(--on-band); --ice-muted: var(--on-band-muted); --border: rgba(234, 242, 255, 0.2); --surface: rgba(255, 255, 255, 0.06); --core: #8fa9ff; --bg: var(--band); background: var(--band); color: var(--on-band); }
+.closing-note.band { width: 100vw; margin-inline: calc((100% - 100vw) / 2); padding-inline: calc((100vw - 100%) / 2); position: relative; overflow: hidden; grid-template-columns: 1fr 2fr 1.4fr; align-items: center; border-top: 0; }
+.closing-note .band-scene { height: 340px; grid-column: 3; grid-row: 1; }
+.closing-note.band > a, .closing-note.band .text-link { grid-column: auto; }
+.band .text-link { display: inline-flex; }
+@media (max-width: 899px) {
+  .page-head, .detail-top { grid-template-columns: 1fr; gap: 8px; }
+  .scene3d { height: 220px; }
+  .closing-note.band { grid-template-columns: 1fr; }
+  .closing-note .band-scene { grid-column: 1; grid-row: auto; height: 240px; }
+  .market-row, .featured-market { padding: 22px 20px; }
+}
