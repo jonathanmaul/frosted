@@ -258,7 +258,7 @@ Chain regtest, wallet `faucet` dan `recipient` tetap ada. Mengosongkan chain tot
 | Hal | Status |
 | --- | --- |
 | **Zodl di HP** | Task `add-bettor-web` 6.2 masih PENDING. Zodl tidak bisa menjangkau regtest, jadi butuh Zodl dengan opsi **testnet** dan ZEC testnet. Fixture QR dan langkah cek memo: `node scripts/prepare-zodl-test.mjs` (setelah `pnpm build:wasm`), lalu `docs/SPIKES.md` bagian M0.6 |
-| **Testnet / mainnet** | Belum. Direncanakan di `prepare-demo-and-docs` (M12); butuh endpoint testnet atau node lokal (≥ 80 GB). Mainnet di luar cakupan |
+| **Testnet / mainnet** | Testnet: terbukti end-to-end lewat `scripts/testnet.sh` (bagian 10). Mainnet di luar cakupan |
 | **Kustodian tunggal** | Satu orang memegang ketiga share komite (ADR-0008); vote berupa label, bukan tanda tangan (ADR-0007). Jendela sengketa hanyalah simulasi |
 | **Kriptografi** | Belum diaudit independen. `cargo audit` belum dipasang |
 | **Browser** | Hanya Chromium yang diuji otomatis (Safari/Firefox belum) |
@@ -266,31 +266,40 @@ Chain regtest, wallet `faucet` dan `recipient` tetap ada. Mengosongkan chain tot
 | **Keamanan CSP** | `script-src` memakai `'unsafe-inline'` (bootstrap Next). Nonce per request belum dibuat |
 | **Dev mode** | CSP `next dev` lebih longgar dan belum diuji; yang diuji adalah build produksi |
 
-## 10. Testnet tanpa node sendiri (status 2026-10-23)
+## 10. Testnet tanpa node sendiri (status 2026-10-25)
 
-Frosted bisa jalan di testnet publik (NU7) tanpa node lokal: RPC dari endpoint pihak ketiga, dompet ringan lewat `testnet.zec.rocks`.
+Frosted jalan di testnet publik (NU7) tanpa node lokal: RPC dari endpoint pihak ketiga, dompet ringan lewat `testnet.zec.rocks`.
 
 **Persiapan sekali:**
 1. Endpoint RPC testnet **di chain NU7** (mis. node Chainstack paket gratis). Simpan di `~/.config/frosted/testnet.env` sebagai `ZEBRA_RPC_URL=https://...`, di luar repo. Jangan commit dan jangan tempel di chat.
-2. Dompet demo: `zcash-devtool wallet init --name demo -n test` di `.regtest/testnet-demo` (folder ini diabaikan git), lalu isi dari faucet (mis. faucet.testnet.valargroup.dev, 0,125 TAZ per hari).
-3. Explorer yang benar: https://testnet.zecblock.com (`/tx/<txid>`). `testnet.zcashexplorer.app` berada di chain lama sebelum NU7 dan tidak akan menemukan transaksi kita.
+2. Dompet demo: `zcash-devtool wallet init --name demo -n test` di `.regtest/testnet-demo` (folder ini diabaikan git), lalu isi dari faucet (mis. faucet.testnet.valargroup.dev, 0,125 TAZ per hari). Faucet menolak alamat yang membawa receiver Ironwood ("the wallet cannot pay this address"); buat alamat Orchard-only dengan `wallet generate-address -p orchard`.
+3. Explorer yang benar: https://testnet.zecblock.com (`/tx/<txid>`, `/block/<tinggi>`). `testnet.zcashexplorer.app` berada di chain lama sebelum NU7 dan tidak akan menemukan transaksi kita.
 
-**Perintah (`scripts/testnet.sh`):**
+**Alur demo lengkap (`scripts/testnet.sh`):**
 
 ```
+scripts/testnet.sh fresh                # sekali, bila ada state lama: pindahkan market lama agar indexer mulai dari tip
 scripts/testnet.sh up                   # kunci, komite, dompet hot; indexer + API + coordinator
-scripts/testnet.sh fund 3000000         # kirim 0,03 TAZ dari dompet demo ke dompet hot
-scripts/testnet.sh market 80            # market chain-verified, tutup sekitar 80 blok
-scripts/testnet.sh bet <market_id> 0 1000000
-scripts/testnet.sh web                  # tampilan web di http://localhost:3100
+scripts/testnet.sh fund 3000000         # kirim 0,03 TAZ dari dompet demo ke dompet hot (bila perlu)
+scripts/testnet.sh market 30            # market chain-verified, tutup sekitar 30 blok (sekitar 40 menit)
+scripts/testnet.sh bet <market_id> 0 1000000    # bet YES 0,01 TAZ (min bet)
+scripts/testnet.sh bet <market_id> 1 1000000    # bet NO
+scripts/testnet.sh web                  # web di http://localhost:3100/markets, tautan ke testnet.zecblock.com
+# setelah market RESOLVED (blok resolve + konfirmasi):
+scripts/testnet.sh payout <market_id>   # rencana payout + tanda tangan FROST 2-of-3 (member 1 dan 2) + broadcast
 scripts/testnet.sh status | logs <nama> | down
 ```
 
-State ada di `.testnet/run` (diabaikan git). `down` lalu `up` melanjutkan market yang sudah ada.
+Biaya TAZ sangat kecil: pemenang menerima kembali pool dikurangi fee 1%, jadi dua bet minimum menghabiskan sekitar 0,0002 TAZ ditambah biaya jaringan.
 
-**Sudah terbukti di testnet NU7:** pengumuman market, indexer membaca transaksi NU7, bet WASM berstatus COUNTED. **Belum:** resolusi, payout FROST, dan Verify pada market testnet (market `ec81af41…` menunggu blok tutup 4.532.304).
+State ada di `.testnet/run` (diabaikan git). `down` lalu `up` melanjutkan market yang sudah ada. **Jangan** membawa market lama berjam-jam: indexer harus memindai ulang semua block sejak market itu lahir lewat RPC yang dibatasi per detik (sekitar 0,3 block per detik). Pakai `fresh` untuk memulai market baru dari tip.
+
+**Bukti on-chain di UI:** halaman market memiliki panel "On-chain proof" (txid pengumuman, txid payout, tinggi block, tautan ke explorer lewat `NEXT_PUBLIC_EXPLORER_URL`); halaman Verify memuat txid yang sama, alamat escrow dan viewing key. Txid **bet** sengaja tidak dipublikasikan (privasi); bet terlihat sebagai tinggi block di feed anonim.
+
+**Terbukti di testnet NU7 (market `39e7234e…`, 2026-10-25):** pengumuman (tx `497294c4…`, block 4.536.945), dua bet COUNTED (pool 2.000.000 zat), resolusi chain-verified (YES, block 4.536.977), payout FROST 2-of-3 (tx `afa18033…`, CONFIRMED di block 4.537.013), market SETTLED, dan `frosted-verify all` PASS di 12 pemeriksaan terhadap node publik.
 
 **Catatan:**
-- Blok testnet NU7 seharusnya 25 detik, tetapi pada 2026-10-23 terukur sekitar satu menit; hitung jendela market dengan longgar.
+- Blok testnet NU7 seharusnya 25 detik, tetapi terukur sekitar satu menit dan kadang berhenti beberapa menit; hitung jendela market dengan longgar.
 - Dana yang baru diterima baru bisa dibelanjakan setelah beberapa konfirmasi, jadi `announce` gagal berkali-kali di awal. Itu normal.
 - Log bisa memuat URL RPC; gunakan `scripts/testnet.sh logs`, yang menyamarkannya.
+- Editor markdown (mis. Orca) bisa menulis ulang file ini dan merusaknya; tutup file itu di editor sebelum menjalankan skrip dokumentasi.

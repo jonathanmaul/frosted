@@ -29,3 +29,7 @@ openspec/
 web/lib/wasm/pkg/
 web/public/wasm/
 .testnet/
+
+# Local assistant state and pasted screenshots
+.codex/
+docs/orca-paste-*.png
