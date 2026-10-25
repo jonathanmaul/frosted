@@ -2,7 +2,7 @@
   <a href="https://frosted.quest"><img src="docs/assets/banner.jpg" alt="Frosted landing page: Public odds. Private people." width="100%"></a>
 </p>
 
-<p align="center">An anonymous prediction market on Zcash: bets are shielded payments, odds are public, payouts are signed by a FROST 2-of-3 committee, and anyone can recompute every result from the chain.</p>
+<p align="center">An anonymous prediction market on Zcash: positions are shielded payments, odds are public, payouts are signed by a FROST 2-of-3 committee, and anyone can recompute every result from the chain.</p>
 
 <p align="center">
   <a href="https://frosted.quest">frosted.quest</a> ·
@@ -12,36 +12,37 @@
 
 | | |
 | --- | --- |
-| **Track** | Private Markets, Zcash hackathon ([thezecathon.com](https://thezecathon.com)) |
+| **Hackathon** | [ZECATHON](https://thezecathon.com), a Zcash privacy hackathon |
+| **Track** | Private Markets |
 | **Network** | Zcash **testnet** (NU7) |
-| **Live site** | [frosted.quest](https://frosted.quest): 16 real testnet markets, 53 bets, 11 FROST payouts |
+| **Live site** | [frosted.quest](https://frosted.quest): 16 real testnet markets, 53 positions, 11 FROST payouts |
 | **Demo video** | [Watch on YouTube](https://youtu.be/npP0AEk8HhI) |
 
 ---
 
 ## The problem
 
-Public prediction markets are public by default. Every bet is a transaction from a wallet, so anyone can see **who bet what, how much, and when**:
+Public prediction markets are public by default. Every position is a transaction from a wallet, so anyone can see **who took what, how much, and when**:
 
 - big positions are tracked and copied the moment they appear;
-- a wallet's betting history becomes a public profile;
+- a wallet's position history becomes a public profile;
 - people with something to lose (employees, insiders, journalists, people in hostile places) cannot take a position at all, so the odds miss exactly the information a prediction market is supposed to price.
 
 The odds should be public. The people should not.
 
 ## The solution
 
-**Frosted** keeps the market fully auditable while hiding the bettors:
+**Frosted** keeps the market fully auditable while hiding the participants:
 
 | What | How |
 | --- | --- |
-| **Bets are shielded** | A bet is a shielded Zcash payment to the market's escrow. The sender is never on-chain. |
+| **Positions are shielded** | A position is a shielded Zcash payment to the market's escrow. The sender is never on-chain. |
 | **Odds are public** | Each market publishes its **viewing key**. Anyone can decrypt the escrow's incoming notes, count the pools and compute the odds, but nobody can see who sent them. |
 | **Rules can't change** | The market is announced on-chain: a transaction whose memo carries the hash of the canonical rules (`FRSTM1:` + `rules_hash`). |
 | **No human decides chain markets** | Chain-verified markets resolve from data any node reports (pool values, network upgrades). |
 | **Payouts need a quorum** | Winners are paid by a **FROST 2-of-3** threshold signature: two of three committee members approve the public payout plan by its hash. |
 | **Verify everything yourself** | `frosted-verify` recomputes the rules hash, escrow addresses, pools, outcome and payout plan from your own node and exits non-zero on any mismatch. |
-| **No account, no wallet connect** | The bet is built and sealed in the browser (WASM). Any Zcash wallet pays the resulting ZIP-321 request. |
+| **No account, no wallet connect** | The position is built and sealed in the browser (WASM). Any Zcash wallet pays the resulting ZIP-321 request. |
 
 There are **no smart contracts**: Zcash L1 has no scripting for this. Frosted gets its guarantees from shielded payments, public viewing keys, on-chain commitments and threshold signatures instead.
 
@@ -53,7 +54,7 @@ There are **no smart contracts**: Zcash L1 has no scripting for this. Frosted ge
 | [Orchard / Ironwood](https://github.com/zcash/orchard) | The shielded pools escrow notes live in. Amounts and senders stay encrypted. |
 | [Zebra](https://github.com/ZcashFoundation/zebra) | The node the indexer, API and verifier read the chain from (JSON-RPC). Regtest runs Zebra in Docker; testnet uses a hosted Zebra node. |
 | [FROST](https://github.com/ZcashFoundation/frost) (Zcash Foundation) | `frost-rerandomized` + `reddsa`: 2-of-3 RedPallas threshold signatures for payouts. |
-| [ZIP-321](https://zips.z.cash/zip-0321) | The payment request (QR / URI) the Bet Builder produces. |
+| [ZIP-321](https://zips.z.cash/zip-0321) | The payment request (QR / URI) the position builder produces. |
 | [ZIP-316](https://zips.z.cash/zip-0316) unified addresses | Escrow addresses per outcome and payout addresses. |
 | lightwalletd ([testnet.zec.rocks](https://testnet.zec.rocks)) | Light-client access for the wallets. |
 
@@ -66,7 +67,7 @@ There are **no smart contracts**: Zcash L1 has no scripting for this. Frosted ge
 ```mermaid
 flowchart LR
   subgraph Browser
-    W["web (Next.js)<br/>Bet Builder in WASM"]
+    W["web (Next.js)<br/>position builder in WASM"]
   end
   subgraph Public side
     API["frosted-api<br/>REST + SSE"]
@@ -80,7 +81,7 @@ flowchart LR
   L[("lightwalletd")]
   V["frosted-verify (CLI)<br/>your own node"]
 
-  W -- "GET odds, bets, proof" --> API
+  W -- "GET odds, positions, proof" --> API
   API --- IDX
   IDX -- "blocks" --> Z
   CO -- "signed pushes (Ed25519)" --> API
@@ -99,8 +100,8 @@ sequenceDiagram
   participant O as Operator
   participant C as Coordinator
   participant Z as Zcash chain
-  participant B as Bettor (browser)
-  participant WL as Bettor's wallet
+  participant B as Participant (browser)
+  participant WL as Participant's wallet
   participant I as Indexer + API
   participant K as Committee (2 of 3)
 
@@ -108,7 +109,7 @@ sequenceDiagram
   C->>Z: announcement tx, memo FRSTM1 + rules_hash
   Note over Z: rules are now locked on-chain
   B->>I: read market, odds (public)
-  B->>B: seal bet in WASM: FRST1 memo + sealed payout envelope
+  B->>B: seal position in WASM: FRST1 memo + sealed payout envelope
   B->>WL: ZIP-321 payment request (QR / URI)
   WL->>Z: shielded payment to the outcome's escrow address
   I->>Z: decrypt escrow notes with the public viewing key
@@ -142,10 +143,10 @@ stateDiagram-v2
 
 | Public (anyone, from the chain) | Private |
 | --- | --- |
-| Market rules and their hash | Who placed any bet |
-| Every bet's amount, outcome and block height | Bet transaction ids (never published by Frosted) |
+| Market rules and their hash | Who opened any position |
+| Every position's amount, outcome and block height | Position transaction ids (never published by Frosted) |
 | Pools and odds, recomputable with the viewing key | Payout addresses (sealed to the coordinator, never shown publicly) |
-| Resolution evidence and the payout plan (kind and amount per bet) | A Persona's bets, until its owner chooses to Thaw |
+| Resolution evidence and the payout plan (kind and amount per position) | A Persona's positions, until its owner chooses to Thaw |
 | Announcement and payout transaction ids | |
 
 ### Market types
@@ -158,7 +159,7 @@ stateDiagram-v2
 
 ### Personas and Thaw (optional reputation)
 
-A bettor can tag bets with a **Persona** (a commitment registered on-chain). Tagged bets stay unlinkable until the owner **Thaws** the Persona, revealing its key: then every tagged bet, wins and losses alike, becomes public and verifiable. This gives a provable track record without an identity, and only when the owner wants it.
+A participant can tag positions with a **Persona** (a commitment registered on-chain). Tagged positions stay unlinkable until the owner **Thaws** the Persona, revealing its key: then every tagged position, wins and losses alike, becomes public and verifiable. This gives a provable track record without an identity, and only when the owner wants it.
 
 ---
 
@@ -166,7 +167,7 @@ A bettor can tag bets with a **Persona** (a commitment registered on-chain). Tag
 
 There is no contract address on Zcash. The verifiable artefacts are **transactions**: each market's announcement (rules locked on-chain) and its FROST payout. Shielded transactions hide amounts and parties, so an explorer shows that a transaction exists, is confirmed, and when it was mined. Explorer: [testnet.zecblock.com](https://testnet.zecblock.com).
 
-**Full cycle recorded for the demo video** (market `d5c5682b…`, two bets placed through the web Bet Builder):
+**Full cycle recorded for the demo video** (market `d5c5682b…`, two positions placed through the web app):
 
 | Step | Transaction | Block |
 | --- | --- | --- |
@@ -197,7 +198,7 @@ Anyone can re-check a market with `frosted-verify`, using only their own node an
 ## Honest limits
 
 - **Trusted dealer.** In this deployment one person holds all three FROST shares and the coordinator key ([ADR-0008](docs/decisions/0008-roles-and-custody.md)). The 2-of-3 is real cryptography, not yet separation of trust.
-- **The coordinator sees payout addresses** (sealed to it in each bet's envelope), never the bettor's identity. Use a fresh payout address.
+- **The coordinator sees payout addresses** (sealed to it in each position's envelope), never the participant's identity. Use a fresh payout address.
 - **Testnet only**, pre-release libraries, no independent cryptographic audit.
 
 ## License
