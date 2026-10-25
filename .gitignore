@@ -33,3 +33,8 @@ web/public/wasm/
 # Local assistant state and pasted screenshots
 .codex/
 docs/orca-paste-*.png
+
+# Internal docs stay local; the README banner lives in docs/assets
+docs/*
+!docs/assets/
+!docs/test-vectors/

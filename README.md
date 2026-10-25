@@ -197,7 +197,7 @@ Anyone can re-check a market with `frosted-verify`, using only their own node an
 
 ## Honest limits
 
-- **Trusted dealer.** In this deployment one person holds all three FROST shares and the coordinator key ([ADR-0008](docs/decisions/0008-roles-and-custody.md)). The 2-of-3 is real cryptography, not yet separation of trust.
+- **Trusted dealer.** In this deployment one person holds all three FROST shares and the coordinator key. The 2-of-3 is real cryptography, not yet separation of trust.
 - **The coordinator sees payout addresses** (sealed to it in each position's envelope), never the participant's identity. Use a fresh payout address.
 - **Testnet only**, pre-release libraries, no independent cryptographic audit.
 
