@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { MonoNumber } from "@/components/ui/MonoNumber";
+import { SNAPSHOT } from "@/lib/api";
 import type { Market } from "@/lib/bettor";
 import { exactZec, parseAmount } from "@/lib/bettor";
 import { decryptRoot, fetchPersona, getPersona } from "@/lib/persona";
@@ -76,6 +77,8 @@ export function BetBuilder({ market }: { market: Market }) {
     try { await navigator.clipboard.writeText(built!.zip321_uri); setNotice("URI copied."); }
     catch { setError("Clipboard unavailable. Select and copy the URI below."); }
   }
+  // A recorded deployment cannot show new bets, so it never offers a payable request.
+  if (SNAPSHOT && market.status === "OPEN") return <section className="ledger-panel" aria-label="Bet Builder"><h2 className="t-3">Bet Builder</h2><p className="t-4 muted mt-2">Betting opens on the live deployment. Watch the demo video for a full cycle, from sealed bet to FROST payout.</p></section>;
   if (market.status !== "OPEN") return <section className="ledger-panel" aria-label="Bet Builder"><h2 className="t-3">Bet Builder</h2><p className="t-4 muted">{market.status === "ANNOUNCING" ? "Waiting for market announcement." : <>Closed at block <MonoNumber>{def.close_height}</MonoNumber>.</>}</p></section>;
   return <GlassCard className="builder" id="bet-builder">
     <p className="section-index">S-03 / LOCAL BET BUILDER</p><h2 className="t-2">Seal your position.</h2>

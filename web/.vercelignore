@@ -1,0 +1,10 @@
+# Upload the app with its prebuilt WASM (web/public/wasm, web/lib/wasm/pkg are not in git), nothing local-only.
+node_modules
+.next
+.next-*
+.env*
+playwright-report
+test-results
+demo
+e2e
+tests

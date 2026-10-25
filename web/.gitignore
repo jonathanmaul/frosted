@@ -6,3 +6,5 @@ next-env.d.ts
 test-results/
 playwright-report/
 .vitest/
+.vercel
+.env*
