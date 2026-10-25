@@ -475,10 +475,13 @@ impl App {
             .post(&self.config.rpc_url)
             .json(&json!({"jsonrpc":"2.0","id":1,"method":"getrawtransaction","params":[txid,1]}))
             .send()
-            .await?
-            .error_for_status()?
+            .await
+            .and_then(reqwest::Response::error_for_status)
+            // The node URL may carry an access key: keep it out of logs.
+            .map_err(reqwest::Error::without_url)?
             .json()
-            .await?;
+            .await
+            .map_err(reqwest::Error::without_url)?;
         if let Some(error) = response.get("error").filter(|e| !e.is_null()) {
             if error["code"].as_i64() == Some(-5) {
                 return Ok(None);

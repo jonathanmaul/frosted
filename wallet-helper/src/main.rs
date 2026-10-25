@@ -105,10 +105,13 @@ async fn network(r: &Request) -> Result<Network> {
         .timeout(Duration::from_secs(15))
         .json(&serde_json::json!({"jsonrpc":"2.0","id":1,"method":"getblockchaininfo","params":[]}))
         .send()
-        .await?
-        .error_for_status()?
+        .await
+        .and_then(reqwest::Response::error_for_status)
+        // The node URL may carry an access key: keep it out of logs.
+        .map_err(reqwest::Error::without_url)?
         .json()
-        .await?;
+        .await
+        .map_err(reqwest::Error::without_url)?;
     ensure!(v["error"].is_null(), "node RPC failed");
     let chain = v["result"]["chain"]
         .as_str()

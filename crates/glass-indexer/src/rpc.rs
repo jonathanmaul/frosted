@@ -43,9 +43,12 @@ impl Rpc {
                 .json(&body)
                 .send()
                 .await
+                // The node URL may carry an access key: keep it out of logs.
+                .map_err(reqwest::Error::without_url)
                 .with_context(|| format!("{method}: node unreachable"))?
                 .json()
                 .await
+                .map_err(reqwest::Error::without_url)
                 .with_context(|| format!("{method}: invalid JSON"))?;
             if let Some(err) = resp.get("error").filter(|e| !e.is_null()) {
                 // Hosted nodes cap requests per second (-32005); wait and retry instead of failing.
@@ -127,6 +130,16 @@ mod tests {
     const LIMITED: &str =
         r#"{"jsonrpc":"2.0","id":1,"error":{"code":-32005,"message":"RPS limit"}}"#;
     const OK: &str = r#"{"jsonrpc":"2.0","id":1,"result":4537016}"#;
+
+    #[tokio::test]
+    async fn errors_never_name_the_node_url() {
+        // Hosted node URLs carry an access key; a failed call must not print it.
+        let err = Rpc::new("http://127.0.0.1:1/secret-access-key")
+            .block_count()
+            .await
+            .unwrap_err();
+        assert!(!format!("{err:#}").contains("secret-access-key"), "{err:#}");
+    }
 
     #[tokio::test]
     async fn retries_when_the_provider_rate_limits() {

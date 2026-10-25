@@ -129,7 +129,11 @@ pub(crate) async fn verify(
     let run = frosted_verify::run(&local, &*state.verify.node, &id, Command::All);
     let report = match tokio::time::timeout(BUDGET, run).await {
         Err(_) => return Err(unavailable("it took too long".into())),
-        Ok(Err(e)) => return Err(unavailable(format!("{e:#}"))),
+        Ok(Err(e)) => {
+            // Details stay in the server log; a node error can name the node, which is private.
+            tracing::warn!("server-side verification failed for {id}: {e:#}");
+            return Err(unavailable("the check could not complete".into()));
+        }
         Ok(Ok(report)) => report,
     };
     let mut value = serde_json::to_value(&report)?;

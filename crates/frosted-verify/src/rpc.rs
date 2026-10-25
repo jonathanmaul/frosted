@@ -50,9 +50,12 @@ impl RpcNode {
             .json(&body)
             .send()
             .await
-            .with_context(|| format!("{method}: node unreachable at {}", self.url))?
+            // The node URL may carry an access key: keep it out of every error message.
+            .map_err(reqwest::Error::without_url)
+            .with_context(|| format!("{method}: node unreachable"))?
             .json()
             .await
+            .map_err(reqwest::Error::without_url)
             .with_context(|| format!("{method}: node returned invalid JSON"))?;
         if let Some(err) = resp.get("error").filter(|e| !e.is_null()) {
             bail!("{method}: {err}");
@@ -319,5 +322,21 @@ impl Api for HttpApi {
             .get_opt("/personas/registry")
             .await?
             .filter(|v| !v.is_null()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::RpcNode;
+
+    #[tokio::test]
+    async fn errors_never_name_the_node_url() {
+        // Hosted node URLs carry an access key; the public API returns these errors' context.
+        let node = RpcNode::new("http://127.0.0.1:1/secret-access-key").unwrap();
+        let err = node
+            .call::<serde_json::Value>("getblockcount", serde_json::json!([]))
+            .await
+            .unwrap_err();
+        assert!(!format!("{err:#}").contains("secret-access-key"), "{err:#}");
     }
 }
