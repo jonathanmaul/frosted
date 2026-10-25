@@ -1,9 +1,9 @@
 "use client";
 
-// Entire specimen is procedural; material API verified against installed drei (docs/DESIGN.md §6).
-import { Edges, Environment, Lightformer, MeshTransmissionMaterial, useGLTF } from "@react-three/drei";
+// Paper direction (docs/decisions/0019-paper-redesign.md): procedural crystal on a light ground, no external assets.
+import { Edges, Environment, Lightformer } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useEffect, useLayoutEffect, useMemo, useRef, type ComponentRef, type RefObject } from "react";
+import { useEffect, useMemo, useRef, type RefObject } from "react";
 import * as THREE from "three";
 
 import { journeyFrame, type JourneyState } from "@/lib/journey";
@@ -11,15 +11,18 @@ import { formatPercent } from "@/lib/api";
 
 export type SceneProps = { yes: number | null; no: number | null; step: number; journey: RefObject<JourneyState>; active?: boolean; onReady?: () => void; onFailure?: () => void };
 
+const PAPER = "#EEF3F8", INK = "#0A1424", MUTED = "#4B6078", CORE = "#2B59FF", ICE = "#93B0DC", ACCENT = "#FF4F1F", YES = "#0B7A55", NO = "#C41F37";
+const rand = (seed: number) => { const x = Math.sin(seed * 127.1) * 43758.5453; return x - Math.floor(x); };
+
 function Silhouettes({ step, journey }: Pick<SceneProps, "step" | "journey">) {
   const group = useRef<THREE.Group>(null);
   const texture = useMemo(() => {
     const c = document.createElement("canvas");
     c.width = 96; c.height = 192;
     const ctx = c.getContext("2d")!;
-    // Blur is baked into the texture: cursor clearing can never reveal an identity.
+    // Blur is baked into the texture: cursor movement can never reveal an identity.
     ctx.filter = "blur(13px)";
-    ctx.fillStyle = "#8FA8C8";
+    ctx.fillStyle = MUTED;
     ctx.beginPath(); ctx.roundRect(31, 26, 34, 136, 17); ctx.fill();
     return new THREE.CanvasTexture(c);
   }, []);
@@ -28,27 +31,27 @@ function Silhouettes({ step, journey }: Pick<SceneProps, "step" | "journey">) {
     const t = clock.getElapsedTime();
     const p = journey.current.active ? journey.current.progress : 0;
     const spread = THREE.MathUtils.smoothstep(p, 0.16, 0.55);
-    if (group.current) { group.current.position.z = -1.2 - spread * 14; group.current.scale.setScalar(1 + spread * 1.8); }
+    if (group.current) { group.current.position.z = -1.8 - spread * 14; group.current.scale.setScalar(1 + spread * 1.8); }
     group.current?.children.forEach((child, i) => {
       child.position.y = Math.sin(t * 0.19 + i * 1.7) * 0.3 + (i % 2 ? 0.55 : -0.35);
       child.position.x = -1.8 + i * 0.6 + Math.sin(t * 0.12 + i) * 0.1;
     });
   });
-  return <group ref={group} position={[0, 0, -1.2]}>{Array.from({ length: 7 }, (_, i) => <sprite key={i} scale={[0.55, 1.1, 1]}><spriteMaterial map={texture} transparent opacity={step === 3 ? 0.55 : 0.28} depthWrite={false} /></sprite>)}</group>;
+  return <group ref={group} position={[0, 0, -1.8]}>{Array.from({ length: 7 }, (_, i) => <sprite key={i} scale={[0.55, 1.1, 1]}><spriteMaterial map={texture} transparent opacity={step === 3 ? 0.6 : 0.3} depthWrite={false} /></sprite>)}</group>;
 }
 
 function OddsLabel({ yes, no }: Pick<SceneProps, "yes" | "no">) {
   const texture = useMemo(() => {
     const c = document.createElement("canvas"); c.width = 768; c.height = 256;
     const ctx = c.getContext("2d")!;
-    ctx.font = '400 46px "IBM Plex Mono"'; ctx.textAlign = "center";
-    ctx.fillStyle = yes === null ? "#8FA8C8" : "#7FD1B9"; ctx.fillText(`YES  ${formatPercent(yes)}`, 196, 120);
-    ctx.fillStyle = no === null ? "#8FA8C8" : "#E58C8A"; ctx.fillText(`NO  ${formatPercent(no)}`, 572, 120);
+    ctx.font = '500 46px "IBM Plex Mono", monospace'; ctx.textAlign = "center";
+    ctx.fillStyle = yes === null ? MUTED : YES; ctx.fillText(`YES  ${formatPercent(yes)}`, 196, 120);
+    ctx.fillStyle = no === null ? MUTED : NO; ctx.fillText(`NO  ${formatPercent(no)}`, 572, 120);
     const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
     return tex;
   }, [yes, no]);
   useEffect(() => () => texture.dispose(), [texture]);
-  return <mesh position={[0, -0.94, 0.17]}><planeGeometry args={[2, 0.67]} /><meshBasicMaterial map={texture} transparent depthWrite={false} /></mesh>;
+  return <mesh position={[0, -0.94, 0.3]}><planeGeometry args={[2, 0.67]} /><meshBasicMaterial map={texture} transparent depthWrite={false} /></mesh>;
 }
 
 function OddsBars({ yes, no, step }: Pick<SceneProps, "yes" | "no" | "step">) {
@@ -62,75 +65,82 @@ function OddsBars({ yes, no, step }: Pick<SceneProps, "yes" | "no" | "step">) {
       bar.position.y = -0.64 + bar.scale.y / 2;
     });
   });
-  return <><group ref={bars}>{["#7FD1B9", "#E58C8A"].map((color, i) => <mesh key={color} position={[i === 0 ? -0.42 : 0.42, 0, 0]}><boxGeometry args={[0.48, 1, 0.36]} /><meshPhysicalMaterial color={known ? color : "#8FA8C8"} roughness={0.17} metalness={0.35} clearcoat={1} transmission={0.22} thickness={0.3} transparent opacity={known ? 0.85 : 0.28} /><Edges color={known ? color : "#8FA8C8"} transparent opacity={0.5} /></mesh>)}</group><OddsLabel yes={yes} no={no} /></>;
+  return <><group ref={bars}>{[YES, NO].map((color, i) => <mesh key={color} position={[i === 0 ? -0.42 : 0.42, 0, 0]}><boxGeometry args={[0.48, 1, 0.36]} /><meshPhysicalMaterial color={known ? color : MUTED} roughness={0.25} metalness={0.1} clearcoat={1} transparent opacity={known ? 0.92 : 0.4} /><Edges color={INK} transparent opacity={0.35} /></mesh>)}</group><OddsLabel yes={yes} no={no} /></>;
+}
+
+function Shards({ journey }: Pick<SceneProps, "journey">) {
+  const ref = useRef<THREE.InstancedMesh>(null);
+  const COUNT = 30;
+  const seeds = useMemo(() => Array.from({ length: COUNT }, (_, i) => ({ a: rand(i + 1) * Math.PI * 2, r: 2.3 + rand(i + 50) * 1.6, y: (rand(i + 90) - 0.5) * 2.4, s: 0.05 + rand(i + 7) * 0.13, sp: 0.1 + rand(i + 3) * 0.28 })), []);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  useFrame(({ clock }) => {
+    const t = clock.elapsedTime;
+    const p = journey.current.active ? journey.current.progress : 0;
+    const converge = THREE.MathUtils.smoothstep(p, 0.76, 0.94); // payout: shards merge back toward the centre
+    seeds.forEach((s, i) => {
+      const a = s.a + t * s.sp;
+      const r = s.r * (1 - converge * 0.7);
+      dummy.position.set(Math.cos(a) * r, s.y * (1 - converge * 0.6) + Math.sin(t * 0.7 + i) * 0.1, Math.sin(a) * r - 1.8 - THREE.MathUtils.smoothstep(p, 0.16, 0.55) * 2);
+      dummy.rotation.set(t * s.sp * 2, t * s.sp, i);
+      dummy.scale.setScalar(s.s);
+      dummy.updateMatrix();
+      ref.current?.setMatrixAt(i, dummy.matrix);
+    });
+    if (ref.current) ref.current.instanceMatrix.needsUpdate = true;
+  });
+  return <instancedMesh ref={ref} args={[undefined, undefined, COUNT]} frustumCulled={false}><tetrahedronGeometry args={[1, 0]} /><meshStandardMaterial color={ACCENT} emissive={ACCENT} emissiveIntensity={0.35} roughness={0.35} flatShading /></instancedMesh>;
+}
+
+function Snow() {
+  const ref = useRef<THREE.Points>(null);
+  const N = 500;
+  const positions = useMemo(() => { const a = new Float32Array(N * 3); for (let i = 0; i < N; i++) { a[i * 3] = (rand(i) - 0.5) * 14; a[i * 3 + 1] = rand(i + 300) * 8 - 2; a[i * 3 + 2] = (rand(i + 600) - 0.5) * 10 - 2; } return a; }, []);
+  useFrame(({ pointer }, dt) => {
+    const geo = ref.current?.geometry.attributes.position as THREE.BufferAttribute | undefined;
+    if (!geo) return;
+    const px = pointer.x * 5, py = pointer.y * 2.5;
+    for (let i = 0; i < N; i++) {
+      let y = geo.getY(i) - dt * (0.25 + rand(i + 9) * 0.35);
+      let x = geo.getX(i);
+      const dx = x - px, dy = y - py, d2 = dx * dx + dy * dy;
+      if (d2 < 1.6) x += (dx / (Math.sqrt(d2) + 0.01)) * dt * 2.2; // the cursor pushes flakes aside
+      if (y < -2) y = 6;
+      geo.setXY(i, x, y);
+    }
+    geo.needsUpdate = true;
+  });
+  return <points ref={ref} frustumCulled={false}><bufferGeometry><bufferAttribute attach="attributes-position" args={[positions, 3]} /></bufferGeometry><pointsMaterial color={CORE} size={0.04} sizeAttenuation transparent opacity={0.7} depthWrite={false} /></points>;
 }
 
 function Specimen({ yes, no, step, journey }: SceneProps) {
   const group = useRef<THREE.Group>(null);
-  const hovered = useRef(false);
-  const crystal = useGLTF("/models/frost-ledger.glb");
-  const shell = crystal.nodes.IceShell as THREE.Mesh;
-  const inclusions = useMemo(() => {
-    const scene = crystal.scene.clone(true);
-    const outer = scene.getObjectByName("IceShell");
-    if (outer) outer.visible = false;
-    return scene;
-  }, [crystal.scene]);
-  const frost = useMemo(() => {
-    const pixels = new Uint8Array(128 * 128 * 4);
-    let seed = 947;
-    for (let i = 0; i < pixels.length; i += 4) {
-      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-      const tone = 160 + (seed % 96);
-      pixels[i] = pixels[i + 1] = pixels[i + 2] = tone; pixels[i + 3] = 255;
-    }
-    const texture = new THREE.DataTexture(pixels, 128, 128);
-    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(3, 3); texture.needsUpdate = true;
-    return texture;
-  }, []);
-  useEffect(() => () => frost.dispose(), [frost]);
-  const material = useRef<ComponentRef<typeof MeshTransmissionMaterial>>(null);
-  const uniforms = useMemo(() => ({ frostCursor: { value: new THREE.Vector2(-2, -2) }, frostSize: { value: new THREE.Vector2(1, 1) } }), []);
-  useLayoutEffect(() => {
-    // Drei types its ref as JSX props; the runtime instance is a physical material.
-    const m = material.current as unknown as THREE.MeshPhysicalMaterial | null;
-    if (!m) return;
-    const original = m.onBeforeCompile;
-    m.onBeforeCompile = (shader, renderer) => {
-      original.call(m, shader, renderer);
-      Object.assign(shader.uniforms, uniforms);
-      shader.fragmentShader = `uniform vec2 frostCursor; uniform vec2 frostSize;\n${shader.fragmentShader}`;
-      shader.fragmentShader = shader.fragmentShader.replace("#include <roughnessmap_fragment>", `#include <roughnessmap_fragment>
-        vec2 frostDelta = (gl_FragCoord.xy / frostSize - frostCursor) * vec2(frostSize.x / frostSize.y, 1.0);
-        float clearPatch = 1.0 - smoothstep(0.025, 0.15, length(frostDelta));
-        roughnessFactor = mix(roughnessFactor, 0.045, clearPatch);
-      `);
-    };
-    m.needsUpdate = true;
-    return () => { m.onBeforeCompile = original; };
-  }, [uniforms]);
-  useFrame(({ clock, pointer, gl }, delta) => {
+  const core = useRef<THREE.Mesh>(null);
+  useFrame(({ clock, pointer }, delta) => {
     const t = clock.getElapsedTime();
-    gl.getDrawingBufferSize(uniforms.frostSize.value);
-    uniforms.frostCursor.value.set(hovered.current ? (pointer.x + 1) / 2 : -2, hovered.current ? (pointer.y + 1) / 2 : -2);
+    const alignment = journey.current.active ? THREE.MathUtils.smoothstep(journey.current.progress, 0.04, 0.17) : 0;
     if (group.current) {
-      const alignment = journey.current.active ? THREE.MathUtils.smoothstep(journey.current.progress, 0.04, 0.17) : 0;
-      group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, (-0.44 + Math.sin(t * 0.13) * 0.16) * (1 - alignment), 3, delta);
-      group.current.rotation.z = THREE.MathUtils.damp(group.current.rotation.z, -0.1 * (1 - alignment), 3, delta);
-      group.current.position.y = Math.sin(t * 0.22) * 0.045 * (1 - alignment);
+      group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, t * 0.16 * (1 - alignment) + pointer.x * 0.4, 3, delta);
+      group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, Math.sin(t * 0.3) * 0.12 - pointer.y * 0.25, 3, delta);
+      group.current.position.y = Math.sin(t * 0.5) * 0.08;
     }
+    if (core.current) core.current.scale.setScalar(0.62 + Math.sin(t * 1.6) * 0.05);
   });
-  return <group ref={group} onPointerOver={() => { hovered.current = true; }} onPointerOut={() => { hovered.current = false; }} rotation={[0.12, -0.44, -0.1]}>
-    <OddsBars yes={yes} no={no} step={step} />
-    <primitive object={inclusions} dispose={null} />
-    <mesh geometry={shell.geometry}>
-      <MeshTransmissionMaterial ref={material} samples={5} resolution={384} transmission={1} thickness={1.15} roughness={0.28} roughnessMap={frost} chromaticAberration={0.008} anisotropicBlur={0.08} distortion={0.16} distortionScale={0.18} temporalDistortion={0} ior={1.31} clearcoat={1} clearcoatRoughness={0.07} color="#DCEBFF" envMapIntensity={1.5} background={new THREE.Color("#070B12")} />
+  return <>
+  <group ref={group}>
+    <mesh>
+      <icosahedronGeometry args={[1.35, 1]} />
+      <meshPhysicalMaterial color={ICE} flatShading roughness={0.1} metalness={0.1} transmission={0.5} thickness={1.2} ior={1.45} iridescence={1} iridescenceIOR={1.6} clearcoat={1} transparent opacity={0.92} envMapIntensity={1.3} />
+      <Edges color={CORE} threshold={12} transparent opacity={0.75} />
     </mesh>
-  </group>;
+    <mesh ref={core}><octahedronGeometry args={[1, 0]} /><meshBasicMaterial color={CORE} toneMapped={false} /></mesh>
+    <pointLight color={CORE} intensity={14} distance={8} />
+  </group>
+  {/* Outside the spinning group so the YES/NO labels always face the camera. */}
+  <group position={[1.9, -0.5, 1.3]} scale={step === 1 ? 0.7 : 0.8}><OddsBars yes={yes} no={no} step={step} /></group>
+  </>;
 }
 
-/** The camera traverses the original specimen; progress never triggers a React render per frame. */
+/** The camera traverses the crystal into a ledger world; progress never triggers a React render per frame. */
 function JourneyCamera({ journey }: Pick<SceneProps, "journey">) {
   useFrame(({ camera, size }) => {
     const p = journey.current.progress;
@@ -148,16 +158,14 @@ function LedgerWorld({ yes, no, journey }: Pick<SceneProps, "yes" | "no" | "jour
   const world = useRef<THREE.Group>(null);
   const payout = useRef<THREE.Group>(null);
   const publicOdds = useRef<THREE.Group>(null);
-  const crystal = useGLTF("/models/frost-ledger.glb");
-  const cutGlass = (crystal.nodes.IceShell as THREE.Mesh).geometry;
   const label = useMemo(() => {
     const canvas = document.createElement("canvas"); canvas.width = 1024; canvas.height = 256;
     const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle = "#8FA8C8"; ctx.font = '400 28px "IBM Plex Mono"';
+    ctx.fillStyle = MUTED; ctx.font = '400 28px "IBM Plex Mono"';
     ctx.fillText("GLASS ESCROW / PUBLIC VIEWING KEY", 36, 64);
-    ctx.fillStyle = "#DCEBFF"; ctx.font = '400 40px "IBM Plex Mono"';
+    ctx.fillStyle = INK; ctx.font = '400 40px "IBM Plex Mono"';
     ctx.fillText("AMOUNT     OUTCOME     BLOCK", 36, 144);
-    ctx.fillStyle = "#8FA8C8"; ctx.fillText("SENDER     ░▒▓░▒▓░▒▓░▒▓░▒▓", 36, 216);
+    ctx.fillStyle = MUTED; ctx.fillText("SENDER     ░▒▓░▒▓░▒▓░▒▓░▒▓", 36, 216);
     const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
     return texture;
   }, []);
@@ -175,38 +183,37 @@ function LedgerWorld({ yes, no, journey }: Pick<SceneProps, "yes" | "no" | "jour
     });
   });
   return <group ref={world} visible={false}>
-    <gridHelper args={[70, 35, "#8FA8C8", "#263346"]} position={[0, -2.1, -18]} material-transparent material-opacity={0.18} />
+    <gridHelper args={[70, 35, MUTED, ICE]} position={[0, -2.1, -18]} material-transparent material-opacity={0.45} />
     {[0, 1, 2, 3].map((row) => <group key={row} position={[0, 0, -4 - row * 5.5]}>
       {[-1, 1].map((side) => <group key={side} position={[side * 3.7, 0.2, 0]} rotation={[0, side * -0.3, side * 0.035]}>
-        <mesh><boxGeometry args={[2.8, 3.9, 0.035]} /><meshPhysicalMaterial color="#8FA8C8" metalness={0.2} roughness={0.28} transparent opacity={0.055} /><Edges color="#8FA8C8" transparent opacity={0.18} /></mesh>
-        <mesh position={[0, 1.1, 0.03]}><planeGeometry args={[2.55, 0.64]} /><meshBasicMaterial map={label} transparent opacity={0.4} depthWrite={false} /></mesh>
+        <mesh><boxGeometry args={[2.8, 3.9, 0.035]} /><meshPhysicalMaterial color="#FFFFFF" metalness={0.05} roughness={0.3} transparent opacity={0.55} /><Edges color={MUTED} transparent opacity={0.45} /></mesh>
+        <mesh position={[0, 1.1, 0.03]}><planeGeometry args={[2.55, 0.64]} /><meshBasicMaterial map={label} transparent opacity={0.85} depthWrite={false} /></mesh>
         {[0, 1, 2, 3, 4, 5].map((line) => <group key={line} position={[0, 0.3 - line * 0.31, 0.04]}>
-          <mesh><boxGeometry args={[2.4, 0.008, 0.008]} /><meshBasicMaterial color="#8FA8C8" transparent opacity={0.25} /></mesh>
-          <mesh position={[-0.55, 0.12, 0]}><boxGeometry args={[0.85, 0.035, 0.008]} /><meshBasicMaterial color="#DCEBFF" transparent opacity={0.13 + line * 0.025} /></mesh>
+          <mesh><boxGeometry args={[2.4, 0.008, 0.008]} /><meshBasicMaterial color={MUTED} transparent opacity={0.45} /></mesh>
+          <mesh position={[-0.55, 0.12, 0]}><boxGeometry args={[0.85, 0.035, 0.008]} /><meshBasicMaterial color={line % 2 ? CORE : INK} transparent opacity={0.3 + line * 0.05} /></mesh>
         </group>)}
       </group>)}
-      <mesh position={[0, 2.25, 0]}><boxGeometry args={[10.2, 0.012, 0.012]} /><meshBasicMaterial color="#8FA8C8" transparent opacity={0.22} /></mesh>
+      <mesh position={[0, 2.25, 0]}><boxGeometry args={[10.2, 0.012, 0.012]} /><meshBasicMaterial color={MUTED} transparent opacity={0.5} /></mesh>
     </group>)}
-    <group ref={publicOdds} position={[0, 0.55, -12]} scale={0.9}><OddsBars yes={yes} no={no} step={0} /></group>
-    <group ref={payout} position={[0, 0.3, -25]}>{[0, 1, 2].map((i) => <group key={i} position={[(i - 1) * 1.55, 0, 0]}>
-      <mesh geometry={cutGlass} scale={[0.36, 0.4, 0.2]}><meshPhysicalMaterial color="#DCEBFF" metalness={0.15} roughness={0.12} transmission={0.5} thickness={0.16} clearcoat={1} transparent opacity={0.55} /><Edges color="#DCEBFF" transparent opacity={0.45} /></mesh>
-      <mesh position={[0, 0.05, 0.07]}><planeGeometry args={[0.52, 0.13]} /><meshBasicMaterial map={label} transparent /></mesh>
+    <group ref={publicOdds} position={[0, 1.15, -12]} scale={0.6}><OddsBars yes={yes} no={no} step={0} /></group>
+    <group ref={payout} position={[0, 0.9, -25]}>{[0, 1, 2].map((i) => <group key={i} position={[(i - 1) * 1.55, 0, 0]}>
+      <mesh scale={0.5}><icosahedronGeometry args={[1, 0]} /><meshPhysicalMaterial color={ICE} flatShading roughness={0.12} transmission={0.4} thickness={0.5} clearcoat={1} transparent opacity={0.9} /><Edges color={CORE} transparent opacity={0.8} /></mesh>
+      <mesh position={[0, -0.75, 0]}><planeGeometry args={[0.9, 0.22]} /><meshBasicMaterial map={label} transparent /></mesh>
     </group>)}</group>
   </group>;
 }
 
 export default function HeroScene({ active = true, onReady, onFailure, ...props }: SceneProps) {
-  return <Canvas frameloop={active ? "always" : "never"} dpr={[1, 1.25]} camera={{ position: [0, 0.1, 6.5], fov: 37 }} gl={{ antialias: true, alpha: false, powerPreference: "low-power" }} onCreated={({ gl }) => { gl.setClearColor("#070B12"); gl.domElement.addEventListener("webglcontextlost", () => onFailure?.(), { once: true }); onReady?.(); }}>
-    <fog attach="fog" args={["#070B12", 8, 32]} />
+  return <Canvas frameloop={active ? "always" : "never"} dpr={[1, 1.25]} camera={{ position: [0, 0.1, 6.5], fov: 37 }} gl={{ antialias: true, alpha: false, powerPreference: "low-power" }} onCreated={({ gl }) => { gl.setClearColor(PAPER); gl.domElement.addEventListener("webglcontextlost", () => onFailure?.(), { once: true }); onReady?.(); }}>
+    <fog attach="fog" args={[PAPER, 9, 34]} />
     <JourneyCamera journey={props.journey} />
-    <ambientLight intensity={0.6} />
-    <directionalLight position={[-3, 5, 4]} intensity={2.8} />
+    <ambientLight intensity={1.3} />
+    <directionalLight position={[-3, 5, 4]} intensity={2.2} />
     <Environment resolution={128} frames={1}>
-      <Lightformer form="rect" intensity={5} position={[-3, 2, 3]} scale={[1, 7, 1]} target={[0, 0, 0]} />
-      <Lightformer form="rect" intensity={4} position={[3, 1, 2]} scale={[0.35, 5, 1]} target={[0, 0, 0]} />
-      <Lightformer form="rect" intensity={2} position={[1, -2, -3]} scale={[3, 0.3, 1]} target={[0, 0, 0]} />
-      <Lightformer form="rect" intensity={1.2} position={[0, 4, 0]} scale={[5, 1, 1]} target={[0, 0, 0]} />
+      <Lightformer form="rect" intensity={4} position={[-3, 2, 3]} scale={[2, 6, 1]} target={[0, 0, 0]} />
+      <Lightformer form="rect" intensity={3} position={[3, 1, 2]} scale={[1, 5, 1]} target={[0, 0, 0]} />
+      <Lightformer form="rect" intensity={2.5} position={[0, 4, 0]} scale={[6, 1, 1]} target={[0, 0, 0]} />
     </Environment>
-    <Silhouettes step={props.step} journey={props.journey} /><Specimen {...props} /><LedgerWorld yes={props.yes} no={props.no} journey={props.journey} />
+    <Silhouettes step={props.step} journey={props.journey} /><Specimen {...props} /><Shards journey={props.journey} /><Snow /><LedgerWorld yes={props.yes} no={props.no} journey={props.journey} />
   </Canvas>;
 }

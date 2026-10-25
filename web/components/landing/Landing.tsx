@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { HeroVisual } from "@/components/landing/HeroVisual";
 import { ButtonLink } from "@/components/ui/Button";
+import { Scene3D } from "@/components/ui/Scene3D";
 import { DecryptedNumber } from "@/components/ui/Numbers";
 import { OddsBar } from "@/components/ui/OddsBar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -66,7 +67,7 @@ export function Landing({ markets }: { markets?: ReactNode }) {
           if (cinematic) {
             landing.current?.toggleAttribute("data-travelling", inJourney);
             if (inJourney) {
-              Object.assign(surface.style, { opacity: String(Math.min(1, 0.64 + p * 4, (1 - p) / 0.07)) });
+              Object.assign(surface.style, { opacity: String(Math.min(1, (1 - p) / 0.07)) });
             } else surface.removeAttribute("style");
             if (opening) {
               const fade = Math.max(0, 1 - p / 0.14);
@@ -182,7 +183,7 @@ export function Landing({ markets }: { markets?: ReactNode }) {
         {markets}
         <nav className="market-route-links t-5" aria-label="Explore Frosted">{navScreens.filter((screen) => screen.id !== "S-01").map((screen) => <Link key={screen.id} href={screen.href}>{screen.title} <span aria-hidden="true">↗</span></Link>)}</nav>
       </section>
-      <section className="closing-note"><p className="section-index">THE FROSTED PRINCIPLE</p><h2 className="t-2">The numbers tell the story.<br /><em>The people don’t have to.</em></h2><Link href="/how" className="text-link t-4">Know what’s public. Know what isn’t. <span aria-hidden="true">↗</span></Link></section>
+      <section className="closing-note band"><p className="section-index">THE FROSTED PRINCIPLE</p><div><h2 className="t-2">The numbers tell the story.<br /><em>The people don’t have to.</em></h2><Link href="/how" className="text-link t-4 mt-8">Know what’s public. Know what isn’t. <span aria-hidden="true">↗</span></Link></div><Scene3D kind="crystal" className="band-scene" /></section>
     </div>
   );
 }

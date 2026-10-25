@@ -48,7 +48,7 @@ export function HeroVisual({ yes, no, step, journey, onAvailabilityChange }: { y
     <div className="specimen-stage">
       <div className="scene-viewport">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/models/frost-ledger-static.webp" width="800" height="1000" alt="A faceted ice ledger with suspended folios, etched calibration marks, and frosted odds bars." className="specimen-image" />
+        <img src="/models/frost-poster.webp" width="1440" height="900" alt="A faceted blue crystal with orbiting orange shards beside two odds towers." className="specimen-image" />
         {enable3D && !reduced && <SceneBoundary onFailure={() => setEnable3D(false)}><div className="specimen-canvas" aria-hidden="true"><HeroScene yes={yes} no={no} step={step} journey={journey} active={active || step > 0} onReady={() => setReady(true)} onFailure={() => setEnable3D(false)} /></div></SceneBoundary>}
       </div>
     </div>

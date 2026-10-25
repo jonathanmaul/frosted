@@ -1,10 +1,5 @@
-# Frost ledger
+# Models
 
-Original procedural ice sculpture created for Frosted. No downloaded model, remote texture, or third-party model license is required.
+`frost-poster.webp` is the static fallback for the landing hero (SSR, reduced motion, weak hardware, WebGL failure): a local render of the procedural scene in `components/landing/HeroScene.tsx`. All 3D is generated in code; there are no downloaded models or textures. Regenerate the poster by screenshotting the landing with the opening text hidden.
 
-- `frost-ledger.glb`: self-contained GLB 2.0 with beveled asymmetric ice, rim facets, suspended folios, calibration cuts, and fissures. Regenerate from `web/` with `node scripts/generate-frost-model.mjs`.
-- `frost-ledger-static.webp`: local browser render of the same sculpture for SSR, reduced motion, weak hardware, and WebGL failure.
-
-`IceShell` receives the runtime frost/transmission shader. Live odds and permanently blurred silhouettes are rendered separately so the asset contains no invented market data or identities.
-
-See `docs/DESIGN.md` and ADR-0017 for the permanent visual brief and the opening/scroll sequence.
+See `docs/DESIGN.md` §14 and `docs/decisions/0019-paper-redesign.md`.
