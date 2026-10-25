@@ -14,7 +14,6 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { formatZec } from "@/lib/api";
 import { journeyChapter, type JourneyState } from "@/lib/journey";
 import { useReducedMotion } from "@/lib/motion";
-import { navScreens } from "@/lib/screens";
 import { useFeaturedOdds } from "@/lib/useFeaturedOdds";
 
 const STEPS = [
@@ -181,7 +180,6 @@ export function Landing({ markets }: { markets?: ReactNode }) {
         )}
         <p className="market-note num t-5">PUBLIC VIEWING KEY / INDEPENDENTLY VERIFIABLE / NO SENDER IDENTITIES</p>
         {markets}
-        <nav className="market-route-links t-5" aria-label="Explore Frosted">{navScreens.filter((screen) => screen.id !== "S-01").map((screen) => <Link key={screen.id} href={screen.href}>{screen.title} <span aria-hidden="true">↗</span></Link>)}</nav>
       </section>
       <section className="closing-note band"><p className="section-index">THE FROSTED PRINCIPLE</p><div><h2 className="t-2">The numbers tell the story.<br /><em>The people don’t have to.</em></h2><Link href="/how" className="text-link t-4 mt-8">Know what’s public. Know what isn’t. <span aria-hidden="true">↗</span></Link></div><Scene3D kind="crystal" className="band-scene" /></section>
     </div>

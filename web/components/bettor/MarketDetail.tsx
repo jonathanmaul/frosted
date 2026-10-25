@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/Button";
 import { useEffect, useState } from "react";
 import { BetBuilder } from "./BetBuilder";
 import { Settlement } from "./Settlement";
@@ -73,15 +73,19 @@ export function MarketDetail({ initialMarket, initialOdds, initialBets, initialR
   }, [def.market_id]);
   const sides = def.outcomes.map(o => ({ label: o.label, probability: odds?.pool_total_zat ? odds.outcomes.find(x => x.outcome_index === o.outcome_index)?.probability ?? null : null }));
   return <article className="bettor-page">
-    <div className="detail-top"><div><p className="section-index">S-02 / THE PUBLIC LEDGER</p><div className="ledger-title"><h1 className="t-2">{def.question}</h1><StatusBadge status={market.status} /></div></div><Scene3D kind="towers" yes={sides[0]?.probability ?? null} no={sides[1]?.probability ?? null} /></div>
+    <div className="detail-top"><div><div className="detail-index"><p className="section-index">S-02 / THE PUBLIC LEDGER</p><StatusBadge status={market.status} /></div><h1 className="t-2 detail-title">{def.question}</h1></div><Scene3D kind="towers" yes={sides[0]?.probability ?? null} no={sides[1]?.probability ?? null} /></div>
     <p className="num t-5 muted">{def.network.toUpperCase()} / CLOSE {def.close_height.toLocaleString("en-US")} / RESOLVE {def.resolve_height.toLocaleString("en-US")}</p>
     <p className="t-4 mt-3">Bets close at {untilBlock(def.close_height, tip)}. The result is decided at {untilBlock(def.resolve_height, tip)}. {plainRules(def)}</p>
-    <div className="market-detail-grid"><div>
+    <div className="market-detail-grid"><div className="detail-odds">
       <section className="ledger-panel" aria-labelledby="odds-title"><div className="ledger-title"><h2 id="odds-title" className="t-3">Public odds</h2><p className="num t-5 muted" role="status">{connected ? "LIVE" : "RECONNECTING"}</p></div>{sides.length === 2 ? <OddsBar yes={sides[0]} no={sides[1]} /> : sides.map(s => <p className="t-4" key={s.label}>{s.label} <MonoNumber>{formatPercent(s.probability)}</MonoNumber></p>)}<p className="t-3 mt-6"><MonoNumber>{formatZec(odds?.pool_total_zat)}</MonoNumber> ZEC in the pool.</p><dl className="outcome-pools t-5">{def.outcomes.map(o => <div key={o.outcome_index}><dt>{o.label}</dt><dd className="num">{formatZec(odds?.outcomes.find(x => x.outcome_index === o.outcome_index)?.pool_zat)} ZEC</dd></div>)}</dl></section>
+    </div>
+    {/* The builder follows the odds on small screens and sticks beside the ledger on desktop. */}
+    <aside className="detail-builder"><BetBuilder market={market} /></aside>
+    <div className="detail-rest">
       <section className="ledger-panel"><h2 className="t-3">Anonymous feed</h2><p className="t-5 muted mt-2">Amounts. Outcomes. Blocks. No sender identities.</p>{bets?.slice(-20).reverse().map(b => <div className="anonymous-row t-5" key={b.note_ref}><MonoNumber>{formatZec(b.amount_zat)} ZEC</MonoNumber><span>{def.outcomes.find(o => o.outcome_index === b.outcome_index)?.label ?? "Unknown outcome"}</span><span>Block <BlockRef height={b.block_height} /></span></div>)}<p className="t-4 muted mt-4">{bets === null ? "Feed unavailable." : !bets.length ? "No bets observed." : ""}</p></section>
       <Settlement definition={def} resolution={resolution} payout={payout} tip={tip} />
       <section className="ledger-panel" aria-labelledby="chain-title"><h2 id="chain-title" className="t-3">On-chain proof</h2>
-        <p className="t-4 muted mt-3">Every step of this market is a real {def.network} Zcash transaction. {hasExplorer ? "Open them in a public explorer to see that they exist and when they were mined." : "This is a local network, so there is no public explorer; the same ids work with your own node."} Shielded transactions hide amounts and people, so an explorer shows only that they happened.</p>
+        <p className="t-4 muted mt-3">Every step of this market is a real {def.network} Zcash transaction. {hasExplorer ? "Open them in a public explorer to see that they exist and when they were mined." : "No public explorer is configured here; the same ids work with your own node."} Shielded transactions hide amounts and people, so an explorer shows only that they happened.</p>
         <dl className="chain-proof t-5 mt-4">
           <div><dt>Market announced (rules locked on-chain)</dt><dd>{market.announce_txid ? <TxRef txid={market.announce_txid} /> : <span className="muted">Not announced yet.</span>}{market.announce_height != null && <span className="num"> · block <BlockRef height={market.announce_height} /></span>}</dd></div>
           <div><dt>Bets</dt><dd className="t-5">Each bet is a shielded transaction in the block shown in the feed above. Bet transaction ids are not published, so bets cannot be linked to anyone.</dd></div>
@@ -94,7 +98,7 @@ export function MarketDetail({ initialMarket, initialOdds, initialBets, initialR
           <pre className="ledger-code num t-5">{JSON.stringify(def.resolution_params, null, 2)}</pre><p className="t-5 muted">rules_hash</p><p className="ledger-hash num t-5">{market.rules_hash}</p></details>
         <details className="mt-5"><summary className="t-4">Full market definition</summary><pre className="ledger-code num t-5">{JSON.stringify(def, null, 2)}</pre></details>
         <details className="mt-5"><summary className="t-4">Viewing key</summary><p className="t-4 muted mt-3">The public viewing key reveals escrow notes. It does not reveal their senders.</p><p className="ledger-hash num t-5 mt-4">{def.uivk}</p></details>
-        <p className="mt-5"><Link className="text-link t-4" href={`/verify/${encodeURIComponent(def.market_id)}`}>Verify yourself</Link></p></section>
-    </div><aside><BetBuilder market={market} /></aside></div>
+        <div className="mt-6"><ButtonLink variant="ghost" href={`/verify/${encodeURIComponent(def.market_id)}`}>Verify this market yourself <span aria-hidden="true">↗</span></ButtonLink></div></section>
+    </div></div>
   </article>;
 }

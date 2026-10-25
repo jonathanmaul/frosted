@@ -41,7 +41,7 @@ export default function HowPage() {
           </div>
           <figcaption className="num t-5 mt-4 text-[var(--ice-muted)]">FIG. 01 / THE GLASS SHOWS WHAT CAME IN. NEVER WHO SENT IT.</figcaption>
         </figure>
-        <aside className="col-span-12 mt-10 border-l border-[var(--border)] pl-5 max-w-3xl">
+        <aside className="col-span-12 mt-10 max-w-3xl callout">
           <p className="section-index mb-2">READ BEFORE YOU BET</p>
           <p className="t-4 text-[var(--ice-muted)]">This demo has one person holding all committee shares. The coordinator can read payout addresses. Read the trust limits below before sending funds.</p>
         </aside>

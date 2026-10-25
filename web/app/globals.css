@@ -221,7 +221,8 @@ em { font-weight: 400; }
 @media (max-width: 639px) {
   .site-nav, .site-main, .site-footer { padding-inline: 20px; }
   .site-nav { min-height: 80px; }
-  .nav-links { flex-wrap: wrap; justify-content: flex-start; column-gap: 24px; row-gap: 0; }
+  .nav-links { flex-wrap: nowrap; justify-content: flex-start; gap: 22px; overflow-x: auto; scrollbar-width: none; white-space: nowrap; }
+  .nav-links::-webkit-scrollbar { display: none; }
   .nav-links a { min-height: 36px; }
   .ledger-heading { padding-block: 16px; }
   .hero-story-grid { grid-template-columns: repeat(12,minmax(0,1fr)); }
@@ -339,9 +340,10 @@ body:has(.frost-experience) .site-nav { min-height: 88px; flex-wrap: nowrap; }
 .muted { color: var(--ice-muted); }
 .ledger-title { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-block:24px; }
 .ledger-title h1 { max-width:900px; }
-.market-detail-grid { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:48px; margin-top:40px; }
-.market-detail-grid > div { grid-column:span 7; min-width:0; }
-.market-detail-grid > aside { grid-column:span 5; min-width:0; }
+.market-detail-grid { display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); grid-template-rows:auto 1fr; grid-template-areas:"odds builder" "rest builder"; column-gap:48px; margin-top:40px; }
+.detail-odds { grid-area:odds; min-width:0; }
+.detail-rest { grid-area:rest; min-width:0; }
+.detail-builder { grid-area:builder; min-width:0; align-self:start; position:sticky; top:24px; }
 .ledger-panel { border-top:1px solid var(--border); padding-block:28px; }
 .ledger-panel .ledger-title { margin-top:0; }
 .ledger-input { display:block; width:100%; margin-block:8px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-1); background:var(--bg); color:var(--ice); font-size:var(--type-4); }
@@ -370,7 +372,7 @@ body:has(.frost-experience) .site-nav { min-height: 88px; flex-wrap: nowrap; }
 .outcome-pools { display:grid; gap:12px; margin-top:20px; }
 .outcome-pools > div { display:flex; justify-content:space-between; gap:12px; }
 .receipt-row { border-top:1px solid var(--border); padding-block:28px; overflow-wrap:anywhere; }
-@media(max-width:899px) { .market-detail-grid { gap:28px; } .market-detail-grid > div,.market-detail-grid > aside { grid-column:1/-1; } .market-row { grid-template-columns:1fr 1fr; } .market-row > a { grid-column:1/-1; justify-self:start; } }
+@media(max-width:899px) { .market-detail-grid { grid-template-columns:minmax(0,1fr); grid-template-rows:none; grid-template-areas:"odds" "builder" "rest"; row-gap:28px; } .detail-builder { position:static; } .market-row { grid-template-columns:1fr 1fr; } .market-row > a { grid-column:1/-1; justify-self:start; } }
 @media(max-width:639px) { .bettor-page { padding-top:36px; } .ledger-title { flex-wrap:wrap; } .builder { padding:20px; } .market-row { grid-template-columns:1fr; gap:20px; } .ledger-filters > label, .ledger-filters > .ui-select { width:100%; } }
 /* Persona ledger tables (S-07 to S-09): hairlines only, no shadows, radius within the 2-4px cap. */
 .table-scroll { overflow-x:auto; margin-top:24px; }
@@ -439,3 +441,25 @@ body { background: radial-gradient(1100px 520px at 88% -8%, rgba(43, 89, 255, 0.
   .closing-note .band-scene { grid-column: 1; grid-row: auto; height: 240px; }
   .market-row, .featured-market { padding: 22px 20px; }
 }
+
+/* Layout audit fixes (docs/DESIGN.md §14). */
+body { display: flex; flex-direction: column; }
+.site-main { flex: 1 0 auto; width: 100%; }
+.site-footer { width: 100%; }
+.page-head { margin-bottom: 28px; }
+.page-head .scene3d { height: 240px; }
+.detail-index { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.detail-title { margin-block: 18px 20px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.file-button { cursor: pointer; position: relative; }
+.file-button:focus-within { outline: 2px solid var(--ice); outline-offset: 2px; }
+@media (max-width: 899px) {
+  .page-head .scene3d { height: 180px; }
+  .detail-top .scene3d { display: none; }
+  .detail-top { grid-template-columns: 1fr; }
+}
+.escrow-diagram { background: var(--panel); border-radius: var(--radius-card); box-shadow: 0 14px 36px rgba(10, 20, 36, 0.06); }
+.callout { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius-card); padding: 20px 24px; }
+.journey-prologue .section-index { text-wrap: balance; }
+.inline-link { color: var(--ice); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border); }
+.inline-link:hover { text-decoration-color: var(--core); }
