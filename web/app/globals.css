@@ -97,8 +97,8 @@ em { font-weight: 400; }
 .site-header { position: relative; z-index: 10; border-bottom: 1px solid var(--border); }
 .site-nav, .site-main, .site-footer { max-width: 1440px; margin-inline: auto; padding-inline: 64px; }
 .site-nav { display: flex; min-height: 94px; align-items: center; gap: 40px; }
-.wordmark { font-family: var(--font-body); font-size: var(--type-3); font-weight: 500; letter-spacing: .18em; white-space: nowrap; }
-.wordmark-period { color: var(--ice-muted); }
+.wordmark { display: inline-flex; align-items: center; }
+.wordmark img { height: 36px; width: auto; }
 .nav-links { display: flex; align-items: center; gap: 28px; margin-left: auto; font-size: var(--type-5); }
 .nav-links a { color: var(--ice-muted); padding-block: 12px; }
 .nav-links a:hover, .site-footer a:hover { color: var(--ice); }
