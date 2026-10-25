@@ -207,16 +207,24 @@ async fn run(r: Request) -> Result<Response> {
         .timeout(Duration::from_secs(120));
     // Public lightwalletd servers (testnet.zec.rocks) are HTTPS only; local Zaino stays plaintext.
     if r.zaino_url.starts_with("https://") {
-        endpoint = endpoint.tls_config(tonic::transport::ClientTlsConfig::new().with_webpki_roots())?;
+        endpoint =
+            endpoint.tls_config(tonic::transport::ClientTlsConfig::new().with_webpki_roots())?;
     }
     let mut client = CompactTxStreamerClient::new(endpoint.connect().await?);
     if r.op == "broadcast" {
         let raw = hex::decode(r.tx_hex.as_deref().ok_or(anyhow!("missing transaction"))?)?;
         ensure!(raw.len() <= 2_000_000, "transaction too large");
-        let parsed = zcash_primitives::transaction::Transaction::read(
-            raw.as_slice(),
-            zcash_protocol::consensus::BranchId::Nu6_3,
-        )?;
+        // The branch id depends on the network upgrade at the chain tip (NU7 on today's testnet).
+        let tip = client
+            .get_latest_block(service::ChainSpec::default())
+            .await?
+            .into_inner()
+            .height;
+        let branch = zcash_protocol::consensus::BranchId::for_height(
+            &p,
+            BlockHeight::from_u32(u32::try_from(tip)?),
+        );
+        let parsed = zcash_primitives::transaction::Transaction::read(raw.as_slice(), branch)?;
         let txid = parsed.txid().to_string();
         let result = client
             .send_transaction(service::RawTransaction {
