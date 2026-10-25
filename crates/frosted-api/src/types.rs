@@ -8,6 +8,10 @@ pub struct Market {
     pub rules_hash: String,
     pub status: String,
     pub announce_height: Option<u32>,
+    /// The market announcement transaction. Public by design: it carries only the rules hash.
+    /// Bet transactions are never published.
+    #[serde(default)]
+    pub announce_txid: Option<String>,
 }
 
 #[derive(Serialize)]

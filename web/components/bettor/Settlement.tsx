@@ -1,6 +1,7 @@
 // Public settlement ledger. Flat surfaces and type scale follow docs/DESIGN.md.
 import { MonoNumber } from "@/components/ui/MonoNumber";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { BlockRef, TxRef } from "@/components/ui/ChainRef";
 import { CommitteePanel } from "./CommitteePanel";
 import { exactZec, type MarketDefinition, type Payout, type Resolution } from "@/lib/bettor";
 
@@ -43,7 +44,7 @@ export function Settlement({ definition, resolution, payout, tip = null }: { def
       <details className="mt-5"><summary className="t-4">Public plan items</summary><div className="overflow-x-auto mt-3"><table className="num t-5 w-full text-left"><caption className="t-5 muted mb-3">Note references and receiver commitments. No payout addresses.</caption><thead><tr><th scope="col">Note</th><th scope="col">Kind</th><th scope="col">Amount (ZEC)</th><th scope="col">Receiver commitment</th></tr></thead><tbody>{payout.plan.items.map(item => <tr key={item.note_ref}><td className="py-2 pr-4">{item.note_ref}</td><td className="pr-4">{item.kind}</td><td className="pr-4">{exactZec(item.amount_zat)}</td><td>{item.receiver_commitment ?? "Treasury"}</td></tr>)}</tbody></table></div></details>
       <h3 className="t-3 mt-6">Payout transactions</h3>
       <p className="t-5 muted mt-2">These are escrow payout transaction IDs.</p>
-      {payout.txs.length ? payout.txs.map(tx => <div className="mt-4" key={tx.txid}><StatusBadge status={tx.status} /><p className="ledger-hash num t-5 mt-2">{tx.txid}</p>{tx.confirmed_height !== null && <p className="num t-5 mt-2">Confirmed at block {tx.confirmed_height}</p>}</div>) : <p className="t-4 muted mt-3">No payout transaction published.</p>}
+      {payout.txs.length ? payout.txs.map(tx => <div className="mt-4" key={tx.txid}><StatusBadge status={tx.status} /><p className="mt-2"><TxRef txid={tx.txid} /></p>{tx.confirmed_height !== null && <p className="num t-5 mt-2">Confirmed at block <BlockRef height={tx.confirmed_height} /></p>}</div>) : <p className="t-4 muted mt-3">No payout transaction published.</p>}
     </div> : <p className="t-4 muted mt-5">No public payout plan published.</p>}
     <p className="ledger-code num t-5 mt-6">frosted-verify all {definition.market_id}</p>
     <a className="text-link t-4" href="/operator">Payout status</a>

@@ -157,6 +157,7 @@ pub(crate) async fn market(
             rules_hash: push.rules_hash,
             status: row.get(0),
             announce_height: row.get(1),
+            announce_txid: None,
         })?;
         remember(
             &mut tx,
@@ -185,6 +186,7 @@ pub(crate) async fn market(
         rules_hash: push.rules_hash,
         status: "ANNOUNCING".into(),
         announce_height: None,
+        announce_txid: None,
     })?;
     remember(&mut tx, &def.market_id, "market", &version, &response).await?;
     tx.commit().await?;

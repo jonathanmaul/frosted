@@ -30,7 +30,7 @@ it("shows public evidence, exact item amounts and real signing progress", () => 
   expect(progress.getAttribute("value")).toBe("9"); expect(progress.getAttribute("max")).toBe("11");
   expect(screen.getByText("0.00990000")).toBeTruthy();
   expect(screen.getByText("payout-transaction")).toBeTruthy();
-  expect(screen.getByText("Confirmed at block 18")).toBeTruthy();
+  expect(screen.getByText((_, el) => el?.tagName === "P" && el.textContent === "Confirmed at block 18")).toBeTruthy();
 });
 
 it("keeps unknown resolution and payout values unavailable", () => {

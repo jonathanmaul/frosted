@@ -6,6 +6,8 @@ import { Settlement } from "./Settlement";
 import { OddsBar } from "@/components/ui/OddsBar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { MonoNumber } from "@/components/ui/MonoNumber";
+import { BlockRef, TxRef } from "@/components/ui/ChainRef";
+import { hasExplorer } from "@/lib/explorer";
 import { fetchTip, streamUrl, formatPercent, formatZec } from "@/lib/api";
 import { exactZec, fetchMarket, fetchOdds, fetchBets, fetchPayout, fetchResolution, type Market, type Odds, type PublicBet, type Payout, type Resolution } from "@/lib/bettor";
 
@@ -75,8 +77,15 @@ export function MarketDetail({ initialMarket, initialOdds, initialBets, initialR
     <p className="t-4 mt-3">Bets close at {untilBlock(def.close_height, tip)}. The result is decided at {untilBlock(def.resolve_height, tip)}. {plainRules(def)}</p>
     <div className="market-detail-grid"><div>
       <section className="ledger-panel" aria-labelledby="odds-title"><div className="ledger-title"><h2 id="odds-title" className="t-3">Public odds</h2><p className="num t-5 muted" role="status">{connected ? "LIVE" : "RECONNECTING"}</p></div>{sides.length === 2 ? <OddsBar yes={sides[0]} no={sides[1]} /> : sides.map(s => <p className="t-4" key={s.label}>{s.label} <MonoNumber>{formatPercent(s.probability)}</MonoNumber></p>)}<p className="t-3 mt-6"><MonoNumber>{formatZec(odds?.pool_total_zat)}</MonoNumber> ZEC in the pool.</p><dl className="outcome-pools t-5">{def.outcomes.map(o => <div key={o.outcome_index}><dt>{o.label}</dt><dd className="num">{formatZec(odds?.outcomes.find(x => x.outcome_index === o.outcome_index)?.pool_zat)} ZEC</dd></div>)}</dl></section>
-      <section className="ledger-panel"><h2 className="t-3">Anonymous feed</h2><p className="t-5 muted mt-2">Amounts. Outcomes. Blocks. No sender identities.</p>{bets?.slice(-20).reverse().map(b => <div className="anonymous-row t-5" key={b.note_ref}><MonoNumber>{formatZec(b.amount_zat)} ZEC</MonoNumber><span>{def.outcomes.find(o => o.outcome_index === b.outcome_index)?.label ?? "Unknown outcome"}</span><MonoNumber>Block {b.block_height.toLocaleString("en-US")}</MonoNumber></div>)}<p className="t-4 muted mt-4">{bets === null ? "Feed unavailable." : !bets.length ? "No bets observed." : ""}</p></section>
+      <section className="ledger-panel"><h2 className="t-3">Anonymous feed</h2><p className="t-5 muted mt-2">Amounts. Outcomes. Blocks. No sender identities.</p>{bets?.slice(-20).reverse().map(b => <div className="anonymous-row t-5" key={b.note_ref}><MonoNumber>{formatZec(b.amount_zat)} ZEC</MonoNumber><span>{def.outcomes.find(o => o.outcome_index === b.outcome_index)?.label ?? "Unknown outcome"}</span><span>Block <BlockRef height={b.block_height} /></span></div>)}<p className="t-4 muted mt-4">{bets === null ? "Feed unavailable." : !bets.length ? "No bets observed." : ""}</p></section>
       <Settlement definition={def} resolution={resolution} payout={payout} tip={tip} />
+      <section className="ledger-panel" aria-labelledby="chain-title"><h2 id="chain-title" className="t-3">On-chain proof</h2>
+        <p className="t-4 muted mt-3">Every step of this market is a real {def.network} Zcash transaction. {hasExplorer ? "Open them in a public explorer to see that they exist and when they were mined." : "This is a local network, so there is no public explorer; the same ids work with your own node."} Shielded transactions hide amounts and people, so an explorer shows only that they happened.</p>
+        <dl className="chain-proof t-5 mt-4">
+          <div><dt>Market announced (rules locked on-chain)</dt><dd>{market.announce_txid ? <TxRef txid={market.announce_txid} /> : <span className="muted">Not announced yet.</span>}{market.announce_height != null && <span className="num"> · block <BlockRef height={market.announce_height} /></span>}</dd></div>
+          <div><dt>Bets</dt><dd className="t-5">Each bet is a shielded transaction in the block shown in the feed above. Bet transaction ids are not published, so bets cannot be linked to anyone.</dd></div>
+          <div><dt>Payouts</dt><dd>{payout?.txs?.length ? payout.txs.map(t => <div key={t.txid}><TxRef txid={t.txid} /></div>) : <span className="muted">Not paid out yet.</span>}</dd></div>
+        </dl></section>
       <section className="ledger-panel" aria-labelledby="checker-title"><h2 id="checker-title" className="t-3">For checkers</h2>
         <p className="t-4 muted mt-3">You do not need this to bet. It is the raw proof that the rules cannot change and that anyone can recompute the result.</p>
         <details className="mt-5"><summary className="t-4">Locked rules</summary>

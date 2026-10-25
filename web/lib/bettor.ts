@@ -8,7 +8,7 @@ export type MarketDefinition = {
   min_bet_zat: number; refund_fee_zat: number; min_confirmations: number; sweep_threshold_zat: number;
   announce_timeout_blocks: number; uivk: string; envelope_pk: string; treasury_address: string;
 };
-export type Market = { market_definition: MarketDefinition; rules_hash: string; status: string; announce_height: number | null };
+export type Market = { market_definition: MarketDefinition; rules_hash: string; status: string; announce_height: number | null; announce_txid?: string | null };
 export type Odds = { at_height: number; pool_total_zat: number; pending_bets: number; outcomes: { outcome_index: number; probability: number | null; pool_zat: number; bets: number }[] };
 export type PublicBet = { note_ref: string; bet_fingerprint: string | null; outcome_index: number | null; amount_zat: number; block_height: number; status: string; tagged: boolean };
 export type PlanItem = { note_ref: string; bet_fingerprint: string | null; kind: string; amount_zat: number; receiver_commitment: string | null };

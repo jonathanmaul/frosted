@@ -21,11 +21,18 @@ use crate::{
 pub(crate) async fn market(state: &AppState, id: &str) -> Result<Market> {
     let row = sqlx::query("SELECT definition_json, rules_hash, status, announce_height FROM market WHERE market_id = ?")
         .bind(id).fetch_optional(&state.read).await?.ok_or_else(ApiError::market)?;
+    let announce_txid: Option<String> = sqlx::query_scalar(
+        "SELECT substr(bet_id, 1, 64) FROM bet WHERE market_id = ? AND is_announcement = 1 ORDER BY block_height LIMIT 1",
+    )
+    .bind(id)
+    .fetch_optional(&state.read)
+    .await?;
     Ok(Market {
         market_definition: serde_json::from_str(row.get(0))?,
         rules_hash: row.get(1),
         status: row.get(2),
         announce_height: row.get(3),
+        announce_txid,
     })
 }
 pub(crate) async fn height(state: &AppState) -> Result<u32> {
