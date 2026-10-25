@@ -157,6 +157,17 @@ stateDiagram-v2
 | `UPGRADE_ACTIVE` | Whether a network upgrade is active at the resolve block (`getblockchaininfo`) | "Will NU7 be active at block 4,540,129?" |
 | `COMMITTEE` | A vote of the committee with a dispute window, for subjective questions | Any question with a public evidence source |
 
+### Business model
+
+Operators earn a fee on every market they run, and nobody has to trust them about it.
+
+- **The fee is part of the rules.** Each market sets `fee_bps` (100 = 1%) in its on-chain announcement, so it is fixed before the first position arrives and cannot change afterwards.
+- **It is taken only from a resolved market.** At settlement the operator keeps `fee_bps` of the pool, plus rounding dust; winners split the rest pro rata. A void market charges no fee: everyone is refunded, minus a small per-refund amount that covers the network fee.
+- **It is publicly checkable.** The payout plan publishes the operator fee, and `frosted-verify` recomputes it from the chain.
+- **Example:** market `d5c5682b` had a 0.02 TAZ pool at 1%: 0.0198 TAZ went to the winner and 0.0002 TAZ to the operator.
+
+Anyone can run a market with their own committee and set their own fee; positions flow to the markets people trust.
+
 ### Personas and Thaw (optional reputation)
 
 A participant can tag positions with a **Persona** (a commitment registered on-chain). Tagged positions stay unlinkable until the owner **Thaws** the Persona, revealing its key: then every tagged position, wins and losses alike, becomes public and verifiable. This gives a provable track record without an identity, and only when the owner wants it.
