@@ -19,11 +19,16 @@ export function useReducedMotion(): boolean {
 export function canRender3D(): boolean {
   if (typeof window === "undefined") return false;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+  // Core counts are not used: privacy browsers (Brave) report a random, often low number.
   const nav = navigator as Navigator & { deviceMemory?: number };
-  if ((nav.hardwareConcurrency ?? 8) <= 4) return false;
-  if (nav.deviceMemory !== undefined && nav.deviceMemory <= 4) return false;
+  if (nav.deviceMemory !== undefined && nav.deviceMemory <= 1) return false;
   try {
-    return Boolean(document.createElement("canvas").getContext("webgl2"));
+    const gl = document.createElement("canvas").getContext("webgl2");
+    if (!gl) return false;
+    // A software renderer means no GPU: the scene would stutter, so keep the static image.
+    const info = gl.getExtension("WEBGL_debug_renderer_info");
+    const renderer = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "";
+    return !/swiftshader|llvmpipe|software|basic render/i.test(renderer);
   } catch {
     return false;
   }
