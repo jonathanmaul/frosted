@@ -3,6 +3,7 @@
 // S-06. Visual rules: docs/DESIGN.md. `K_root` is shown once for backup, then kept only encrypted.
 import Image from "next/image";
 import Link from "next/link";
+import { PageHead } from "@/components/ui/Scene3D";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { MonoNumber } from "@/components/ui/MonoNumber";
@@ -88,7 +89,7 @@ export function PersonaPanel() {
 
   if (!loaded) return <section className="bettor-page"><p className="section-index">S-06 / PERSONA</p><p role="status" className="t-4 muted">Loading local Persona…</p></section>;
   const registered = info?.registered_height;
-  return <section className="bettor-page"><p className="section-index">S-06 / THIS DEVICE</p><h1 className="t-2 my-6">Persona.</h1>
+  return <section className="bettor-page"><PageHead index="S-06 / THIS DEVICE" title="Persona." kind="crystal" />
     <p className="t-4 muted">A Persona proves a track record without a name. Bets you tag are revealed only if you choose to Thaw. One person may control several Personas.</p>
     {!record && !draft && <div className="ledger-panel"><p className="t-4">No Persona on this device.</p><div className="ledger-actions mt-4"><Button disabled={busy} onClick={create}>{busy ? "Working locally…" : "Create Persona"}</Button></div></div>}
     {draft && <div className="ledger-panel"><h2 className="t-3">01 / Back up your key</h2>

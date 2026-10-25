@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BetBuilder } from "./BetBuilder";
 import { Settlement } from "./Settlement";
+import { Scene3D } from "@/components/ui/Scene3D";
 import { OddsBar } from "@/components/ui/OddsBar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { MonoNumber } from "@/components/ui/MonoNumber";
@@ -72,7 +73,7 @@ export function MarketDetail({ initialMarket, initialOdds, initialBets, initialR
   }, [def.market_id]);
   const sides = def.outcomes.map(o => ({ label: o.label, probability: odds?.pool_total_zat ? odds.outcomes.find(x => x.outcome_index === o.outcome_index)?.probability ?? null : null }));
   return <article className="bettor-page">
-    <p className="section-index">S-02 / THE PUBLIC LEDGER</p><div className="ledger-title"><h1 className="t-2">{def.question}</h1><StatusBadge status={market.status} /></div>
+    <div className="detail-top"><div><p className="section-index">S-02 / THE PUBLIC LEDGER</p><div className="ledger-title"><h1 className="t-2">{def.question}</h1><StatusBadge status={market.status} /></div></div><Scene3D kind="towers" yes={sides[0]?.probability ?? null} no={sides[1]?.probability ?? null} /></div>
     <p className="num t-5 muted">{def.network.toUpperCase()} / CLOSE {def.close_height.toLocaleString("en-US")} / RESOLVE {def.resolve_height.toLocaleString("en-US")}</p>
     <p className="t-4 mt-3">Bets close at {untilBlock(def.close_height, tip)}. The result is decided at {untilBlock(def.resolve_height, tip)}. {plainRules(def)}</p>
     <div className="market-detail-grid"><div>

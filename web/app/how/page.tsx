@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { ButtonLink } from "@/components/ui/Button";
+import { PageHead } from "@/components/ui/Scene3D";
 import { LEAKED_METADATA, LEGAL, PRIVATE_ITEMS, PUBLIC_ITEMS, TRUST_LIMITS } from "@/lib/content/how";
 
 export const metadata: Metadata = { title: "How it works · Frosted" };
@@ -28,12 +29,7 @@ export default function HowPage() {
     // S-12 follows docs/DESIGN.md and preserves every disclosure in spec §24.3.
     <div className="py-12 md:py-20">
       <header className="grid grid-cols-12 gap-x-6 pb-12">
-        <p className="section-index col-span-12 mb-8">S-12 / THE MECHANISM</p>
-        <h1 className="t-1 col-span-12 md:col-span-9">The Glass Escrow.<br /><em className="text-[var(--ice-muted)]">Read the numbers.</em></h1>
-        <p className="t-4 col-span-12 mt-6 max-w-2xl text-[var(--ice-muted)] md:col-span-7">
-          Each market is a shielded Zcash account whose incoming viewing key is published. Anyone can see what
-          came in. Nobody can see who sent it.
-        </p>
+        <div className="col-span-12"><PageHead big index="S-12 / THE MECHANISM" title={<>The Glass Escrow.<br /><em className="text-[var(--ice-muted)]">Read the numbers.</em></>} kind="crystal" lede="Each market is a shielded Zcash account whose incoming viewing key is published. Anyone can see what came in. Nobody can see who sent it." /></div>
         <div className="col-span-12 mt-8"><ButtonLink href="/#markets" variant="ghost">Explore the public ledger <span aria-hidden="true">↗</span></ButtonLink></div>
         <figure className="col-span-12">
           <div className="escrow-diagram">

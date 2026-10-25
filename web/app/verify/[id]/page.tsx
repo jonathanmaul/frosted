@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHead } from "@/components/ui/Scene3D";
 import { ServerCheck } from "@/components/verify/ServerCheck";
 import { fetchMarket, fetchPayout } from "@/lib/bettor";
 import { verifyCommands } from "@/lib/verify";
@@ -7,7 +8,7 @@ import { BlockRef, TxRef } from "@/components/ui/ChainRef";
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [market, payout] = await Promise.all([fetchMarket(id), fetchPayout(id)]);
-  return <section className="bettor-page"><p className="section-index">S-10 / VERIFY</p><h1 className="t-2 my-6">Verify this market.</h1>
+  return <section className="bettor-page"><PageHead index="S-10 / VERIFY" title="Verify this market." kind="chain" />
     <p className="t-4 muted">{market ? market.market_definition.question : <>Market <span className="num">{id}</span></>}</p>
     <div className="ledger-panel"><h2 className="t-3">Run it yourself</h2>
       <p className="t-4 muted mt-2">Needs only your own Zcash node and the public API. The verifier scans the chain with the market&apos;s published viewing key and recomputes every claim: the rules hash, the addresses, the pools, the Chain-Verified outcome, and each item of the payout plan. It holds no secret and cannot see who bet.</p>
