@@ -17,7 +17,7 @@ import { navScreens } from "@/lib/screens";
 
 export const metadata: Metadata = {
   title: "Frosted",
-  description: "Public odds. Invisible bettors.",
+  description: "Public odds. Private people.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <main id="main-content" className="site-main">{children}</main>
         <footer className="site-footer">
           <Link href="/" className="wordmark" aria-label="Frosted home"><Image src="/logo/frosted-logo.png" alt="Frosted" width={907} height={252} priority /></Link>
-          <p className="num t-5">PUBLIC ODDS. INVISIBLE BETTORS.</p>
+          <p className="num t-5">PUBLIC ODDS. PRIVATE PEOPLE.</p>
           <div className="flex gap-6 t-5"><Link href="/how">Trust & privacy</Link><span>Zcash testnet</span></div>
         </footer>
       </body>

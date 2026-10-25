@@ -158,7 +158,7 @@ export function Landing({ markets }: { markets?: ReactNode }) {
           <div ref={specimen} className="journey-specimen"><HeroVisual yes={odds.yes} no={odds.no} step={reduced ? 0 : step} journey={journey} onAvailabilityChange={setSceneReady} /></div>
           <div ref={prologue} className="journey-prologue">
             <p className="section-index">A PUBLIC LEDGER. A PRIVATE WORLD.</p>
-            <h1 id="hero-title" className="t-1">Public odds.{" "}<br /><em>Invisible bettors.</em></h1>
+            <h1 id="hero-title" className="t-1">Public odds.{" "}<br /><em>Private people.</em></h1>
             <p className="t-4">The numbers are yours to read.<br />The people are not.</p>
             <a href="#first-chapter" className="enter-frost num t-5" onClick={(event) => { const top = chapterStops.current[0]; if (top !== undefined) { event.preventDefault(); window.scrollTo({ top, behavior: "instant" }); } }}>SCROLL TO ENTER <span aria-hidden="true">↓</span></a>
           </div>

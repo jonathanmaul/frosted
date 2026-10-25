@@ -15,7 +15,7 @@ describe("frozen ledger landing", () => {
   it("keeps the mechanism readable and never invents market data while offline", () => {
     useOdds.mockReturnValue({ market: null, yes: null, no: null, poolZat: null });
     render(<Landing />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Public odds. Invisible bettors.");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Public odds. Private people.");
     expect(screen.queryByRole("link", { name: /Skip to markets/ })).toBeNull();
     expect(screen.getByText("No open market available.")).toBeTruthy();
     expect(screen.getByText("A bet goes in.")).toBeTruthy();

@@ -57,7 +57,7 @@ Sumber layar dan perilaku: `docs/PROJECT_SPEC_FROSTED.md` §16 (screen list), §
 - Di dalamnya: bar odds YES/NO market unggulan dari `GET /v1/markets`, bergerak saat SSE `odds_updated`.
 - Di belakang kaca: 5–8 siluet kapsul buram yang bergerak pelan (penaruh anonim).
 - Kursor mengurangi frost secara lokal, hanya memperjelas angka, **tidak pernah** siluet.
-- Tagline: "Public odds. Invisible bettors." + CTA "Browse markets" (accent) + "How it works" (ghost).
+- Tagline: "Public odds. Private people." + CTA "Browse markets" (accent) + "How it works" (ghost).
 
 ## 7. Animasi dan library
 
