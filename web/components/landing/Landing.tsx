@@ -37,6 +37,18 @@ export function Landing({ markets }: { markets?: ReactNode }) {
   const chapterStops = useRef<number[]>([]);
   const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  // The opening hides the menu; once the visitor reaches the markets the full top bar comes back.
+  useEffect(() => {
+    const markets = document.getElementById("markets");
+    const root = landing.current;
+    if (!markets || !root) return;
+    const update = () => root.toggleAttribute("data-nav", markets.getBoundingClientRect().top < window.innerHeight * 0.6);
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => { window.removeEventListener("scroll", update); window.removeEventListener("resize", update); root.removeAttribute("data-nav"); };
+  }, []);
+
   useEffect(() => {
     if (reduced || !sceneReady) return;
     let disposed = false;

@@ -466,3 +466,15 @@ body { display: flex; flex-direction: column; }
 .built-on { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; list-style: none; padding: 0; margin: 0; }
 .built-on a { display: flex; flex-direction: column; gap: 8px; height: 100%; padding: 22px 24px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-card); transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
 .built-on a:hover { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(10, 20, 36, 0.1); border-color: rgba(43, 89, 255, 0.4); }
+
+/* Landing: the top bar returns, fixed and complete, once the visitor scrolls past the opening to the markets. */
+body:has(.landing[data-nav]) .site-header { position: fixed; inset: 0 0 auto; z-index: 40; background: rgba(238, 243, 248, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); animation: top-bar-in .3s ease both; }
+body:has(.landing[data-nav]) .nav-links { display: flex; }
+body:has(.landing[data-nav]) .header-ticker { margin-left: 0; border-left: 1px solid var(--border); padding-left: 28px; }
+@keyframes top-bar-in { from { transform: translateY(-100%); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (max-width: 899px) {
+  body:has(.landing[data-nav]) .site-nav { flex-wrap: wrap; }
+  body:has(.landing[data-nav]) .header-ticker { margin-left: auto; border-left: 0; padding-left: 0; }
+}
+.landing #markets { scroll-margin-top: 110px; }
+@media (max-width: 899px) { .landing #markets { scroll-margin-top: 150px; } }
