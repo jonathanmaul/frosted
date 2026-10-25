@@ -1,9 +1,8 @@
 <p align="center">
-  <img src="web/public/logo/frosted-logo.png" alt="Frosted" height="72">
+  <a href="https://frosted.quest"><img src="docs/assets/banner.jpg" alt="Frosted landing page: Public odds. Invisible bettors." width="100%"></a>
 </p>
 
-<p align="center"><b>Public odds. Invisible bettors.</b><br>
-An anonymous prediction market on Zcash: bets are shielded payments, odds are public, payouts are signed by a FROST 2-of-3 committee, and anyone can recompute every result from the chain.</p>
+<p align="center">An anonymous prediction market on Zcash: bets are shielded payments, odds are public, payouts are signed by a FROST 2-of-3 committee, and anyone can recompute every result from the chain.</p>
 
 <p align="center">
   <a href="https://frosted.quest">frosted.quest</a> ·
