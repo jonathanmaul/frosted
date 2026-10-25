@@ -1,22 +1,21 @@
 <p align="center">
-  <a href="https://frosted.quest"><img src="docs/assets/banner.jpg" alt="Frosted landing page: Public odds. Invisible bettors." width="100%"></a>
+  <a href="https://frosted.quest"><img src="docs/assets/banner.jpg" alt="Frosted landing page: Public odds. Private people." width="100%"></a>
 </p>
 
 <p align="center">An anonymous prediction market on Zcash: bets are shielded payments, odds are public, payouts are signed by a FROST 2-of-3 committee, and anyone can recompute every result from the chain.</p>
 
 <p align="center">
   <a href="https://frosted.quest">frosted.quest</a> ·
-  <a href="https://frosted-phi.vercel.app">frosted-phi.vercel.app</a> ·
+  <a href="https://youtu.be/npP0AEk8HhI">Demo video</a> ·
   <a href="#on-chain-proof">On-chain proof</a>
 </p>
 
 | | |
 | --- | --- |
-| **Track** | Zcash hackathon ([thezecathon.com](https://thezecathon.com)) |
-| **Network** | Zcash **testnet** (NU7). Nothing here touches mainnet. |
+| **Track** | Private Markets, Zcash hackathon ([thezecathon.com](https://thezecathon.com)) |
+| **Network** | Zcash **testnet** (NU7) |
 | **Live site** | [frosted.quest](https://frosted.quest): 16 real testnet markets, 53 bets, 11 FROST payouts |
-| **Demo video** | Two-minute walkthrough of a full cycle on testnet (link in the submission) |
-| **License** | MIT or Apache-2.0 |
+| **Demo video** | [Watch on YouTube](https://youtu.be/npP0AEk8HhI) |
 
 ---
 
