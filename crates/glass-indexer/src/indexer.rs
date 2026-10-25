@@ -22,6 +22,15 @@ use crate::rpc::Rpc;
 
 /// Parallel `getrawtransaction` calls per block.
 const TX_FETCH_CONCURRENCY: usize = 8;
+/// Blocks fetched ahead of the one being processed. Fetching is network-bound and stateless, so
+/// it overlaps safely; processing stays strictly in height order.
+const BLOCK_PREFETCH: usize = 2;
+
+/// A block and its raw transactions, fetched but not yet processed.
+struct Fetched {
+    block: crate::rpc::Block,
+    raw: Vec<(usize, String, Vec<u8>)>,
+}
 
 pub struct Indexer {
     pool: SqlitePool,
@@ -270,8 +279,12 @@ impl Indexer {
                 None => tip + 1, // nothing configured yet
             },
         };
-        for height in next..=tip {
-            self.process_block(height, &network).await?;
+        let mut fetched = stream::iter(next..=tip)
+            .map(|height| async move { self.fetch_block(height).await.map(|f| (height, f)) })
+            .buffered(BLOCK_PREFETCH);
+        while let Some(item) = fetched.next().await {
+            let (height, f) = item?;
+            self.process_block(height, &network, f).await?;
         }
         self.promote_and_lifecycle(tip).await?;
         Ok(tip)
@@ -340,18 +353,9 @@ impl Indexer {
             .map_err(Into::into)
     }
 
-    /// J-2 for one block.
-    async fn process_block(&self, height: u32, network: &ScanNetwork) -> Result<()> {
+    /// Network half of J-2: the block and every transaction in it. Touches no database state.
+    async fn fetch_block(&self, height: u32) -> Result<Fetched> {
         let block = self.rpc.block(height).await?;
-        let stored_prev = self.stored_hash(height.saturating_sub(1)).await?;
-        if let (Some(prev), Some(stored)) = (&block.previous_block_hash, stored_prev)
-            && *prev != stored
-        {
-            bail!("block {height} does not extend stored chain; reconcile first");
-        }
-        let mut markets = self.active_markets(height, network).await?;
-        let registry = self.registry_key(height, network).await?;
-
         let raw: Vec<(usize, String, Vec<u8>)> = stream::iter(block.tx.iter().cloned().enumerate())
             .map(|(i, txid)| {
                 let rpc = self.rpc.clone();
@@ -360,6 +364,25 @@ impl Indexer {
             .buffered(TX_FETCH_CONCURRENCY)
             .try_collect()
             .await?;
+        Ok(Fetched { block, raw })
+    }
+
+    /// J-2 for one block.
+    async fn process_block(
+        &self,
+        height: u32,
+        network: &ScanNetwork,
+        fetched: Fetched,
+    ) -> Result<()> {
+        let Fetched { block, raw } = fetched;
+        let stored_prev = self.stored_hash(height.saturating_sub(1)).await?;
+        if let (Some(prev), Some(stored)) = (&block.previous_block_hash, stored_prev)
+            && *prev != stored
+        {
+            bail!("block {height} does not extend stored chain; reconcile first");
+        }
+        let mut markets = self.active_markets(height, network).await?;
+        let registry = self.registry_key(height, network).await?;
 
         let mut tx = self.pool.begin().await?;
         for (tx_index, txid_hex, bytes) in raw {
