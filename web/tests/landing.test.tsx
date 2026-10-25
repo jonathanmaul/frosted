@@ -34,7 +34,7 @@ describe("frozen ledger landing", () => {
   it("renders all ten metadata disclosures and the legal notice on S-12", () => {
     render(<HowPage />);
     for (const disclosure of LEAKED_METADATA) expect(screen.getByText(disclosure)).toBeTruthy();
-    expect(screen.getByText(/Frosted is research and a demo/)).toBeTruthy();
-    expect(screen.getByText(/This demo has one person holding all committee shares/)).toBeTruthy();
+    expect(screen.getByText(/Frosted is a research project/)).toBeTruthy();
+    expect(screen.getByText(/one person holds all three FROST shares/)).toBeTruthy();
   });
 });

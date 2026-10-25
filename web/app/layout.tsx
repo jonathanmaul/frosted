@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <footer className="site-footer">
           <Link href="/" className="wordmark" aria-label="Frosted home"><Image src="/logo/frosted-logo.png" alt="Frosted" width={907} height={252} priority /></Link>
           <p className="num t-5">PUBLIC ODDS. INVISIBLE BETTORS.</p>
-          <div className="flex gap-6 t-5"><Link href="/how">Trust & privacy</Link><span>Research demo / Zcash</span></div>
+          <div className="flex gap-6 t-5"><Link href="/how">Trust & privacy</Link><span>Zcash testnet</span></div>
         </footer>
       </body>
     </html>

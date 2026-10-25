@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { ButtonLink } from "@/components/ui/Button";
 import { PageHead } from "@/components/ui/Scene3D";
-import { LEAKED_METADATA, LEGAL, PRIVATE_ITEMS, PUBLIC_ITEMS, TRUST_LIMITS } from "@/lib/content/how";
+import { BUILT_ON, LEAKED_METADATA, LEGAL, PRIVATE_ITEMS, PUBLIC_ITEMS, TRUST_LIMITS } from "@/lib/content/how";
 
 export const metadata: Metadata = { title: "How it works · Frosted" };
 
@@ -41,10 +41,6 @@ export default function HowPage() {
           </div>
           <figcaption className="num t-5 mt-4 text-[var(--ice-muted)]">FIG. 01 / THE GLASS SHOWS WHAT CAME IN. NEVER WHO SENT IT.</figcaption>
         </figure>
-        <aside className="col-span-12 mt-10 max-w-3xl callout">
-          <p className="section-index mb-2">READ BEFORE YOU BET</p>
-          <p className="t-4 text-[var(--ice-muted)]">This demo has one person holding all committee shares. The coordinator can read payout addresses. Read the trust limits below before sending funds.</p>
-        </aside>
       </header>
       <Section index="01 / PUBLIC" title="What anyone can see" items={PUBLIC_ITEMS} />
       <Section index="02 / PRIVATE" title="What stays private" items={PRIVATE_ITEMS} />
@@ -56,7 +52,24 @@ export default function HowPage() {
           <h2 className="t-2 mb-6">Before using Frosted</h2>
           <details className="border-y border-[var(--border)] py-5" open><summary className="t-3 cursor-pointer">Is Frosted a betting service?</summary><p className="t-4 mt-4 text-[var(--ice-muted)]">{LEGAL}</p></details>
           <details className="border-b border-[var(--border)] py-5"><summary className="t-3 cursor-pointer">Is every part of a bet private?</summary><p className="t-4 mt-4 text-[var(--ice-muted)]">No. Amounts, outcomes, block heights and memos are readable with the public viewing key. The coordinator knows payout addresses. Thaw makes a Persona’s tagged bets public and linked.</p></details>
-          <details className="border-b border-[var(--border)] py-5"><summary className="t-3 cursor-pointer">Can the committee withhold funds?</summary><p className="t-4 mt-4 text-[var(--ice-muted)]">Yes. FROST requires multiple signatures, but there is no Zcash L1 payout script forcing the committee to pay. The demo does not provide independent custody.</p></details>
+          <details className="border-b border-[var(--border)] py-5"><summary className="t-3 cursor-pointer">Can the committee withhold funds?</summary><p className="t-4 mt-4 text-[var(--ice-muted)]">Yes. FROST requires multiple signatures, but there is no Zcash L1 payout script forcing the committee to pay. This deployment does not provide independent custody.</p></details>
+        </div>
+      </section>
+      <section className="grid grid-cols-12 gap-x-6 border-t border-[var(--border)] py-12" aria-labelledby="built-on-title">
+        <p className="section-index col-span-12 mb-4 md:col-span-3 md:mb-0">06 / BUILT ON</p>
+        <div className="col-span-12 md:col-span-9">
+          <h2 id="built-on-title" className="t-2 mb-6">The Zcash stack underneath</h2>
+          <ul className="built-on">
+            {BUILT_ON.map((item) => (
+              <li key={item.name}>
+                <a href={item.href} target="_blank" rel="noopener noreferrer">
+                  <span className="num t-3">{item.name} <span aria-hidden="true">↗</span></span>
+                  <span className="t-4 text-[var(--ice-muted)]">{item.role}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="t-5 mt-6 text-[var(--ice-muted)]">Frosted is an independent project, not affiliated with Electric Coin Co. or the Zcash Foundation.</p>
         </div>
       </section>
     </div>

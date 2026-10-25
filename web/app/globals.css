@@ -463,3 +463,6 @@ body { display: flex; flex-direction: column; }
 .journey-prologue .section-index { text-wrap: balance; }
 .inline-link { color: var(--ice); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--border); }
 .inline-link:hover { text-decoration-color: var(--core); }
+.built-on { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; list-style: none; padding: 0; margin: 0; }
+.built-on a { display: flex; flex-direction: column; gap: 8px; height: 100%; padding: 22px 24px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-card); transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+.built-on a:hover { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(10, 20, 36, 0.1); border-color: rgba(43, 89, 255, 0.4); }

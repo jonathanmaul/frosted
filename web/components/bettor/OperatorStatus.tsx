@@ -26,7 +26,7 @@ export function OperatorStatus({ initialRows }: { initialRows: OperatorRow[] | n
     return () => { alive = false; clearInterval(timer); };
   }, []);
   return <section className="bettor-page">
-    <PageHead index="S-11 / PUBLIC STATUS" title="Payout status." kind="chain" lede="Zcash has no smart contracts, so nothing pays winners automatically. Instead, three signers must agree: any two of them sign the payout transaction together. This page shows how far each market is, and how many signatures are collected. It is read-only. In this demo one trusted dealer holds all three keys, so the 2-of-3 is a simulation. Signing approvals happen on the coordinator host." />
+    <PageHead index="S-11 / PUBLIC STATUS" title="Payout status." kind="chain" lede="Zcash has no smart contracts, so nothing pays winners automatically. Instead, three signers must agree: any two of them sign the payout transaction together. This page shows how far each market is, and how many signatures are collected. It is read-only. In this deployment one trusted dealer holds all three keys, so the 2-of-3 is a simulation. Signing approvals happen on the coordinator host." />
     {rows === null ? <p className="ledger-panel t-4" role="status">Public API unavailable.</p> : !rows.length ? <p className="ledger-panel t-4">No markets published.</p> : rows.map(({ market, payout, committee }) => <article className="ledger-panel" key={market.market_id}>
       <div className="ledger-title"><h2 className="t-3"><Link className="text-link" href={`/markets/${encodeURIComponent(market.market_id)}`}>{market.question}</Link></h2><StatusBadge status={market.status} /></div>
       <p className="num t-5 muted mt-3">{market.market_id}</p>

@@ -17,7 +17,7 @@ export const PRIVATE_ITEMS = [
 export const TRUST_LIMITS = [
   "Trust-minimized, not trustless: the FROST committee cannot lie about a Chain-Verified result, but could withhold funds, because Zcash L1 has no payout script.",
   "The Payout Coordinator opens sealed envelopes, so it knows each bettor's payout address (not their identity). Use a fresh address for payouts.",
-  "In this demo one person holds all three FROST shares and the coordinator key. 2-of-3 is shown technically, not as separation of trust.",
+  "In this deployment one person holds all three FROST shares and the coordinator key. 2-of-3 is shown technically, not as separation of trust.",
   "Thaw does not prevent Sybil: one person can run many Personas.",
 ];
 
@@ -35,4 +35,14 @@ export const LEAKED_METADATA = [
 ];
 
 export const LEGAL =
-  "Frosted is research and a demo, not a betting service. Do not bet money you are not prepared to lose, and check the law where you live.";
+  "Frosted is a research project, not a betting service. Do not bet money you are not prepared to lose, and check the law where you live.";
+
+/** Zcash technology Frosted actually uses (see Cargo.toml and scripts/testnet.sh). Text and links only, no third-party logos. */
+export const BUILT_ON = [
+  { name: "librustzcash", role: "Transactions, keys, note decryption and the hot wallet (pre-release crates for NU7).", href: "https://github.com/zcash/librustzcash" },
+  { name: "Zebra", role: "The node the indexer, API and verifier read the chain from (JSON-RPC).", href: "https://github.com/ZcashFoundation/zebra" },
+  { name: "Orchard · Ironwood", role: "The shielded pools escrow notes live in; amounts and senders stay encrypted.", href: "https://github.com/zcash/orchard" },
+  { name: "FROST", role: "Zcash Foundation threshold signatures: two of three members sign one payout.", href: "https://github.com/ZcashFoundation/frost" },
+  { name: "ZIP-321", role: "The payment request behind the Bet Builder's QR code and URI.", href: "https://zips.z.cash/zip-0321" },
+  { name: "Zcash testnet (NU7)", role: "Where every Frosted transaction is mined; check them on a public explorer.", href: "https://testnet.zecblock.com" },
+];

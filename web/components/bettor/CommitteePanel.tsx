@@ -17,6 +17,6 @@ export function CommitteePanel({ definition, resolution, tip }: { definition: Ma
       <p className="num t-5">{v.member_id} · {VOTE_LABELS[v.action] ?? v.action} · {label(v.outcome_index)}</p>
       {v.evidence_url && <p className="t-5 muted">{isWebUrl(v.evidence_url) ? <a className="text-link" href={v.evidence_url} rel="noopener noreferrer" target="_blank">{v.evidence_url}</a> : v.evidence_url}</p>}
     </li>)}</ul> : <p className="t-4 muted mt-4">No proposal yet. Two of three members must agree on an outcome and its evidence.</p>}
-    <p className="t-5 muted mt-4">Votes are cast on the coordinator host with <MonoNumber>frosted-operator resolution</MonoNumber>. In this demo one person holds all three member keys, so the dispute window is a simulation of a real committee, not a check by independent parties.</p>
+    <p className="t-5 muted mt-4">Votes are cast on the coordinator host with <MonoNumber>frosted-operator resolution</MonoNumber>. In this deployment one person holds all three member keys, so the dispute window is a simulation of a real committee, not a check by independent parties.</p>
   </div>;
 }
