@@ -74,7 +74,7 @@ test.describe("public pages in a real browser", () => {
     await expect(page.getByRole("heading", { name: chain.question })).toBeVisible();
     await expect(page.getByText("LIVE")).toBeVisible();   // the SSE stream connected
     await expect(page.getByText("Seal your position.")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Verify yourself" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Verify this market yourself/ })).toBeVisible();
     await shot(page, "market-detail");
   });
 });
