@@ -40,6 +40,14 @@ pub(crate) async fn events(
     headers: HeaderMap,
 ) -> Result<Sse<impl Stream<Item = Result<Event>>>> {
     public::market(&state, &id).await?;
+    // The permit travels with the stream and is released when the client disconnects.
+    let slot = state.sse_slots.clone().try_acquire_owned().map_err(|_| {
+        ApiError(
+            axum::http::StatusCode::SERVICE_UNAVAILABLE,
+            "TOO_MANY_STREAMS",
+            "Too many live connections; retry shortly".into(),
+        )
+    })?;
     let cursor = headers
         .get("last-event-id")
         .map(|v| {
@@ -52,11 +60,17 @@ pub(crate) async fn events(
         .transpose()?
         .unwrap_or(0);
     let stream = stream::try_unfold(
-        (state, id, cursor, VecDeque::new()),
-        |(state, id, mut cursor, mut pending): (AppState, String, u64, VecDeque<Event>)| async move {
+        (state, id, cursor, VecDeque::new(), slot),
+        |(state, id, mut cursor, mut pending, slot): (
+            AppState,
+            String,
+            u64,
+            VecDeque<Event>,
+            tokio::sync::OwnedSemaphorePermit,
+        )| async move {
             loop {
                 if let Some(event) = pending.pop_front() {
-                    return Ok(Some((event, (state, id, cursor, pending))));
+                    return Ok(Some((event, (state, id, cursor, pending, slot))));
                 }
                 let rows = sqlx::query("SELECT seq, kind, payload_json FROM event WHERE market_id = ? AND seq > ? ORDER BY seq LIMIT 100")
                 .bind(&id).bind(cursor as i64).fetch_all(&state.read).await?;

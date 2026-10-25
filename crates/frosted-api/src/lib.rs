@@ -34,6 +34,12 @@ pub struct AppState {
     pub(crate) config: Config,
     pub(crate) http: reqwest::Client,
     pub(crate) verify: verify::Verifier,
+    /// Last chain tip and when it was read; every page polls the tip, so the node is asked at most once per
+    /// TIP_FRESH_FOR however many visitors there are.
+    /// Live SSE streams each poll the database; past this many, new streams get 503 (SSE_MAX_STREAMS).
+    pub(crate) sse_slots: std::sync::Arc<tokio::sync::Semaphore>,
+    pub(crate) tip_cache:
+        std::sync::Arc<tokio::sync::Mutex<Option<(std::time::Instant, serde_json::Value)>>>,
 }
 impl AppState {
     pub async fn open(config: Config) -> anyhow::Result<Self> {
@@ -61,6 +67,13 @@ impl AppState {
             config,
             http,
             verify,
+            tip_cache: Default::default(),
+            sse_slots: std::sync::Arc::new(tokio::sync::Semaphore::new(
+                std::env::var("SSE_MAX_STREAMS")
+                    .ok()
+                    .and_then(|v| v.parse().ok())
+                    .unwrap_or(256),
+            )),
         })
     }
 }

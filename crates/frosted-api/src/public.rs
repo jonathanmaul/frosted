@@ -72,8 +72,23 @@ async fn rpc(state: &AppState, method: &str, params: Value) -> Result<Value> {
         .cloned()
         .ok_or_else(unavailable)
 }
+const TIP_FRESH_FOR: std::time::Duration = std::time::Duration::from_secs(5);
+
 pub(crate) async fn tip(State(state): State<AppState>) -> Result<Json<Value>> {
-    let height = rpc(&state, "getblockcount", json!([]))
+    // Holding the lock while asking the node collapses concurrent requests into one node call.
+    let mut cache = state.tip_cache.lock().await;
+    if let Some((at, tip)) = cache.as_ref()
+        && at.elapsed() < TIP_FRESH_FOR
+    {
+        return Ok(Json(tip.clone()));
+    }
+    let tip = node_tip(&state).await?;
+    *cache = Some((std::time::Instant::now(), tip.clone()));
+    Ok(Json(tip))
+}
+
+async fn node_tip(state: &AppState) -> Result<Value> {
+    let height = rpc(state, "getblockcount", json!([]))
         .await?
         .as_u64()
         .ok_or(ApiError(
@@ -81,7 +96,7 @@ pub(crate) async fn tip(State(state): State<AppState>) -> Result<Json<Value>> {
             "NODE_UNAVAILABLE",
             "Invalid node height".into(),
         ))?;
-    let hash = rpc(&state, "getblockhash", json!([height])).await?;
+    let hash = rpc(state, "getblockhash", json!([height])).await?;
     if !hash.is_string() {
         return Err(ApiError(
             StatusCode::SERVICE_UNAVAILABLE,
@@ -89,7 +104,7 @@ pub(crate) async fn tip(State(state): State<AppState>) -> Result<Json<Value>> {
             "Invalid node hash".into(),
         ));
     }
-    Ok(Json(json!({"height":height, "hash":hash})))
+    Ok(json!({"height":height, "hash":hash}))
 }
 pub(crate) async fn health(State(state): State<AppState>) -> Result<Json<Value>> {
     let tip = tip(State(state.clone())).await?.0;

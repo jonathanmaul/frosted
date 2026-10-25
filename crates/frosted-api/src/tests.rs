@@ -1186,3 +1186,39 @@ async fn committee_votes_flow_through_ingest_including_a_withdrawal() {
         );
     }
 }
+
+#[tokio::test]
+async fn tip_is_cached_so_visitors_do_not_spend_node_quota() {
+    let f = fixture().await;
+    let (status, _, tip) = get(&f.app, "/v1/chain/tip").await;
+    assert_eq!(status, StatusCode::OK);
+    // With the node gone, the next read inside the freshness window is still served from the cache.
+    f.rpc.abort();
+    let (status, _, cached) = get(&f.app, "/v1/chain/tip").await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(cached, tip);
+}
+
+#[tokio::test]
+async fn live_streams_are_capped() {
+    let f = fixture().await;
+    let slots = f.state.sse_slots.available_permits() as u32;
+    let _held = f
+        .state
+        .sse_slots
+        .clone()
+        .try_acquire_many_owned(slots)
+        .unwrap();
+    let response = f
+        .app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri(format!("/v1/markets/{ID}/stream"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+}

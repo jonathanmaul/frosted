@@ -42,6 +42,7 @@ Semua service: `RAILWAY_RUN_UID=0` (volume Railway dimiliki root). Cek dokumenta
 | `ZEBRA_RPC_URL` | URL RPC hosted (rahasia, berisi kunci) |
 | `API_PUBLIC_ORIGIN` | URL web di Vercel, mis. `https://frosted.vercel.app` |
 | `COORDINATOR_PUBKEY` | keluaran `frosted-operator secrets init` (langkah 3) |
+| `SSE_MAX_STREAMS` | opsional, default `256`: batas koneksi live; lebih dari itu dijawab 503 |
 
 `coordinator`
 
@@ -73,4 +74,5 @@ market lama di database lama bisa butuh jam karena RPC hosted dibatasi per detik
 - **Image Docker di Railway.** Kedua image sudah di-build lokal dan `public` lulus smoke test health; `coordinator` belum dijalankan sebagai container.
 - **Kuota RPC hosted.** Paket gratis Chainstack 3 juta request unit per bulan dan 25 request per detik. Indexer menyesuaikan diri dengan mencoba ulang saat kena batas, tapi jam sibuk bisa memperlambat sinkron.
 - **Biaya dan ukuran Railway.** Kuota, harga, dan batas volume berubah-ubah; cek halaman harga mereka.
+- **Batas per pengunjung.** API tidak membatasi request per IP. Tinggi block di-cache 5 detik dan verifikasi server dijalankan satu per satu, jadi pengunjung tidak bisa menghabiskan kuota RPC lewat halaman biasa, tapi untuk deploy terbuka pasang rate limit di depan API (misalnya Cloudflare di depan domain Railway).
 - **Keamanan.** Kunci masih trusted dealer: siapa pun yang punya akses dashboard Railway ke service `coordinator` bisa membelanjakan escrow. Hanya testnet.
