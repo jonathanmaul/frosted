@@ -8,7 +8,9 @@ Sumber layar dan perilaku: `docs/PROJECT_SPEC_FROSTED.md` §16 (screen list), §
 
 **"Frozen ledger"**: dokumen teknis yang bisa diaudit, bukan dashboard crypto. Kesan yang dituju: angka yang tenang dan bisa dicek, pengirim yang tetap buram.
 
-## 2. Palet (CSS variables, dark-only)
+## 2. Palet (CSS variables, "Paper" terang; lihat §14 dan ADR-0019)
+
+> Tabel di bawah adalah palet gelap lama. Nilai yang berlaku ada di §14.
 
 | Token | Nilai | Pemakaian |
 | --- | --- | --- |
@@ -138,8 +140,30 @@ Perubahan arah ini diminta pengguna: scroll terasa memasuki ruang ledger melalui
 
 API scroll diperiksa di deklarasi GSAP terpasang dan [ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/); pembaruan kamera mengikuti [React Three Fiber hooks](https://r3f.docs.pmnd.rs/api/hooks).
 
-### Patung GLB lokal
+### Patung GLB lokal (dihapus oleh ADR-0019)
+
+> Bagian ini historis: GLB, generator, dan poster lama sudah dihapus; scene sekarang sepenuhnya prosedural (§14).
 
 `web/public/models/frost-ledger.glb` (sekitar 61 KB sebelum kompresi transport) dibuat dengan `node scripts/generate-frost-model.mjs` dari direktori `web`. Geometri original mencakup badan es ber-bevel dengan outline asimetris, facet rim, tiga folio tersuspensi, goresan kalibrasi, dan fissure tipis. Tidak ada identitas, angka pasar contoh, atau tekstur eksternal di aset.
 
 Material runtime menambahkan mikro-frost prosedural, transmission, clearcoat, dan pencahayaan studio lokal. Mesh `IceShell` adalah titik penggantian material; odds dinamis tetap geometri runtime dengan label dan persentase. Generator meng-assert header GLB 2.0, panjang file, mesh utama, ketiadaan buffer eksternal, dan batas 500 KB.
+
+## 14. Paper (ADR-0019)
+
+Menggantikan palet gelap §2 dan aturan permukaan §5/§9 untuk kartu, bayangan, dan gradient tint. Tipografi, skala tipe, copy, privasi, dan aksesibilitas tidak berubah.
+
+| Token | Nilai | Pemakaian |
+| --- | --- | --- |
+| `--bg` | `#EEF3F8` | Latar halaman (dengan tint radial biru/oranye sangat halus) |
+| `--ice` | `#0A1424` | Teks utama (nama token dipertahankan) |
+| `--ice-muted` | `#4B6078` | Teks sekunder |
+| `--accent` | `#C93509` | CTA utama; teks di atasnya putih |
+| `--core` | `#2B59FF` | Indeks section, inti kristal 3D, hover kartu |
+| `--panel` | `#FFFFFF` | Kartu dan panel |
+| `--band` | `#0A1424` | Satu band gelap per halaman; token di dalamnya di-override |
+| `--yes` / `--no` | `#0B7A55` / `#C41F37` | Outcome, selalu dengan label dan persen |
+
+- Kartu (market row, market unggulan, Bet Builder): latar putih, radius `--radius-card` 16px, bayangan lembut, hover naik 3px. Kontrol, tabel, dan badge tetap datar dengan radius 2–4px.
+- Setiap halaman punya scene 3D kecil di header (`Scene3D` / `PageHead`: `crystal`, `towers`, `chain`). Hanya dekoratif; hilang pada reduced-motion, perangkat lemah, atau tanpa WebGL.
+- Landing: perjalanan Through the Frost memakai kristal, serpihan, salju, menara odds YES/NO, dan dunia ledger putih. Band gelap penutup berisi prinsip Frosted dan kristal.
+- Aset 3D prosedural; GLB lama dihapus.
