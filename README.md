@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://frosted.quest">frosted.quest</a> ·
-  <a href="https://youtu.be/npP0AEk8HhI">Demo video</a> ·
+  <a href="https://youtu.be/kC1ArBB6vtE">Demo video</a> ·
   <a href="#on-chain-proof">On-chain proof</a>
 </p>
 
@@ -16,7 +16,7 @@
 | **Track** | Private Markets |
 | **Network** | Zcash **testnet** (NU7) |
 | **Live site** | [frosted.quest](https://frosted.quest): 16 real testnet markets, 53 positions, 11 FROST payouts |
-| **Demo video** | [Watch on YouTube](https://youtu.be/npP0AEk8HhI) |
+| **Demo video** | [Watch on YouTube](https://youtu.be/kC1ArBB6vtE) |
 
 ---
 
