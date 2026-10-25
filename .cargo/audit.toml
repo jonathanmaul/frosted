@@ -1,0 +1,7 @@
+# cargo audit configuration.
+[advisories]
+ignore = [
+    # rsa (Marvin attack): listed in Cargo.lock only because sqlx records its optional MySQL driver;
+    # `cargo tree -i rsa --target all -e all` is empty, so it is never compiled into any binary.
+    "RUSTSEC-2023-0071",
+]
